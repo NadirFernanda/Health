@@ -383,3 +383,93 @@ export function calcularDuracao(inicio: string, fim: string): string {
   const diff = Math.abs((new Date(fim).getTime() - new Date(inicio).getTime()) / 3600000);
   return `${diff % 1 === 0 ? diff : diff.toFixed(1)}h`;
 }
+
+// --- ADMIN TYPES ---
+
+export type EstadoVerificacao = "APROVADO" | "PENDENTE" | "REJEITADO" | "SUSPENSO";
+
+export interface AdminMedico extends Medico {
+  estadoVerificacao: EstadoVerificacao;
+  email: string;
+  criadoEm: string;
+}
+
+export interface AdminClinica extends Clinica {
+  estadoVerificacao: EstadoVerificacao;
+  email: string;
+  nif: string;
+  criadoEm: string;
+}
+
+// --- ADMIN MOCK DATA ---
+
+export const adminMedicosMock: AdminMedico[] = [
+  { ...medicoLogado, estadoVerificacao: "APROVADO", email: "joao.silva@planto.ao", criadoEm: "2026-01-15T10:00:00" },
+  { ...candidatosMock[0], estadoVerificacao: "APROVADO", email: "ana.ferreira@planto.ao", criadoEm: "2026-02-01T09:00:00" },
+  { ...candidatosMock[1], estadoVerificacao: "APROVADO", email: "manuel.costa@planto.ao", criadoEm: "2026-02-10T14:00:00" },
+  { ...candidatosMock[2], estadoVerificacao: "APROVADO", email: "luisa.mbinda@planto.ao", criadoEm: "2026-03-05T11:00:00" },
+  {
+    id: "med-005", nome: "Dr. António Sebastião", especialidade: "Cardiologia",
+    numeroOrdem: "CDOM-HB-2018-0077", provincia: "Huambo", foto: "",
+    rating: 0, totalAvaliacoes: 0, totalPlantoes: 0, verified: false,
+    saldoCarteira: 0, bio: "Cardiologista com 10 anos de experiência.",
+    estadoVerificacao: "PENDENTE", email: "antonio.sebastiao@email.com", criadoEm: "2026-04-20T08:00:00",
+  },
+  {
+    id: "med-006", nome: "Dra. Sofia Teixeira", especialidade: "Pediatria",
+    numeroOrdem: "CDOM-HB-2022-0211", provincia: "Huambo", foto: "",
+    rating: 0, totalAvaliacoes: 0, totalPlantoes: 0, verified: false,
+    saldoCarteira: 0, bio: "Pediatra recém-chegada à cidade.",
+    estadoVerificacao: "PENDENTE", email: "sofia.teixeira@email.com", criadoEm: "2026-04-22T15:30:00",
+  },
+  {
+    id: "med-007", nome: "Dr. Carlos Mendes", especialidade: "Medicina Geral",
+    numeroOrdem: "CDOM-HB-2020-0099", provincia: "Huambo", foto: "",
+    rating: 0, totalAvaliacoes: 0, totalPlantoes: 0, verified: false,
+    saldoCarteira: 0, bio: "Médico geral.",
+    estadoVerificacao: "REJEITADO", email: "carlos.mendes@email.com", criadoEm: "2026-04-10T10:00:00",
+  },
+];
+
+export const adminClinicasMock: AdminClinica[] = [
+  { ...clinicasMock[0], estadoVerificacao: "APROVADO", email: "geral@clinicahorizonte.ao", nif: "500123456", criadoEm: "2026-01-10T09:00:00" },
+  { ...clinicasMock[1], estadoVerificacao: "APROVADO", email: "geral@clinicasaude.ao",     nif: "500234567", criadoEm: "2026-01-20T11:00:00" },
+  { ...clinicasMock[2], estadoVerificacao: "APROVADO", email: "geral@clinicacentral.ao",   nif: "500345678", criadoEm: "2026-02-05T10:00:00" },
+  {
+    id: "cli-004", nome: "Clínica Nova Vida", morada: "Rua dos Plátanos, Nº 30",
+    cidade: "Bairro Académico", provincia: "Huambo", logo: "",
+    rating: 0, totalAvaliacoes: 0, verified: false,
+    estadoVerificacao: "PENDENTE", email: "novavida@email.com", nif: "500456789", criadoEm: "2026-04-19T14:00:00",
+  },
+  {
+    id: "cli-005", nome: "Policlínica Bem-Estar", morada: "Av. Norton de Matos, Nº 5",
+    cidade: "Centro", provincia: "Huambo", logo: "",
+    rating: 0, totalAvaliacoes: 0, verified: false,
+    estadoVerificacao: "PENDENTE", email: "bemestar@email.com", nif: "500567890", criadoEm: "2026-04-21T09:30:00",
+  },
+];
+
+export const allTransacoesMock = [
+  ...transacoesMock,
+  { id: "tx-006", tipo: "CREDITO" as const, valor: 18000, descricao: "Plantão Pediatria — Clínica Central",          data: "2026-04-08T20:00:00", estado: "PROCESSADO" as const },
+  { id: "tx-007", tipo: "CREDITO" as const, valor: 20000, descricao: "Plantão noturno — Clínica Horizonte",          data: "2026-04-05T08:00:00", estado: "PROCESSADO" as const },
+  { id: "tx-008", tipo: "CREDITO" as const, valor: 15000, descricao: "Plantão — Clínica Saúde+",                     data: "2026-04-01T20:00:00", estado: "PROCESSADO" as const },
+  { id: "tx-009", tipo: "DEBITO"  as const, valor: 25000, descricao: "Levantamento — Multicaixa Express",            data: "2026-03-28T11:00:00", estado: "PROCESSADO" as const },
+  { id: "tx-010", tipo: "CREDITO" as const, valor: 15000, descricao: "Plantão — Dra. Ana Ferreira / Cl. Horizonte", data: "2026-03-25T20:00:00", estado: "PROCESSADO" as const },
+];
+
+export const adminStats = {
+  totalMedicos: 7,
+  medicosVerificados: 4,
+  medicosPendentes: 2,
+  medicosRejeitados: 1,
+  totalClinicas: 5,
+  clinicasVerificadas: 3,
+  clinicasPendentes: 2,
+  totalPlantoes: 41,
+  plantoesAbertos: 4,
+  plantoesConcluidos: 28,
+  receitaPlataforma: 285000,
+  comissaoPlataforma: 28500,
+};
+

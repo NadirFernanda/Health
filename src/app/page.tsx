@@ -87,6 +87,10 @@ export default function Home() {
         <p className="text-center text-xs text-gray-400 mt-4">
           Piloto a operar em Huambo · Centralidade Horizonte
         </p>
+
+        <Link href="/admin" className="block text-center text-xs text-gray-300 hover:text-gray-400 mt-2 pb-2 transition-colors">
+          Acesso Administrador
+        </Link>
       </div>
     </div>
   );
