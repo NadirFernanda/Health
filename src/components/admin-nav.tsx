@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { logoutAction } from "@/app/actions/auth";
 
 const navItems = [
   { href: "/admin",            label: "Dashboard", icon: "📊", exact: true },
@@ -23,12 +24,22 @@ export function AdminNav() {
             <p className="text-white/40 text-xs leading-tight">Painel de Gestão</p>
           </div>
         </div>
-        <Link
-          href="/"
-          className="flex items-center gap-1 text-white/50 hover:text-white/80 text-xs transition-colors border border-white/10 px-2.5 py-1 rounded-lg"
-        >
-          ← App
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/"
+            className="flex items-center gap-1 text-white/50 hover:text-white/80 text-xs transition-colors border border-white/10 px-2.5 py-1 rounded-lg"
+          >
+            ← App
+          </Link>
+          <form action={logoutAction}>
+            <button
+              type="submit"
+              className="text-white/40 hover:text-red-400 text-xs transition-colors border border-white/10 hover:border-red-400/30 px-2.5 py-1 rounded-lg"
+            >
+              Sair
+            </button>
+          </form>
+        </div>
       </div>
 
       {/* Nav tabs */}
