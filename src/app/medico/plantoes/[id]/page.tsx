@@ -3,8 +3,9 @@ import { TopBar } from "@/components/nav";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-export default function DetalhePlantao({ params }: { params: { id: string } }) {
-  const plantao = plantoesMock.find((p) => p.id === params.id);
+export default async function DetalhePlantao({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const plantao = plantoesMock.find((p) => p.id === id);
   if (!plantao) return notFound();
 
   const { clinica, especialidade, dataInicio, dataFim, valorKwanzas, vagas, vagasPreenchidas, descricao, equipamentos } = plantao;

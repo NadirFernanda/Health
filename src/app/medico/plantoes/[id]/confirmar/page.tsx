@@ -2,10 +2,11 @@
 import { plantoesMock, formatAOA, formatData, formatHora } from "@/lib/mock-data";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, use } from "react";
 
-export default function ConfirmarCandidatura({ params }: { params: { id: string } }) {
-  const plantao = plantoesMock.find((p) => p.id === params.id);
+export default function ConfirmarCandidatura({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const plantao = plantoesMock.find((p) => p.id === id);
   const router = useRouter();
   const [enviado, setEnviado] = useState(false);
 
@@ -33,7 +34,7 @@ export default function ConfirmarCandidatura({ params }: { params: { id: string 
 
   return (
     <div>
-      <TopBar titulo="Confirmar Candidatura" back={`/medico/plantoes/${params.id}`} />
+      <TopBar titulo="Confirmar Candidatura" back={`/medico/plantoes/${id}`} />
       <div className="px-4 py-6 space-y-4">
         <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
           <p className="text-xs text-gray-400 uppercase font-bold tracking-wide">Resumo</p>
