@@ -3,8 +3,8 @@ import { PlantaoCard } from "@/components/plantao-card";
 import Link from "next/link";
 
 export default function ClinicaDashboard() {
-  const totalPago = 75000;
-  const plantoesConcluidos = 5;
+  const totalPago = plantoesDaClinica.reduce((s, p) => s + p.valorKwanzas, 0);
+  const plantoesConcluidos = plantoesDaClinica.length;
 
   return (
     <div>

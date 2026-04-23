@@ -1,10 +1,12 @@
-import { medicoLogado, plantoesMock, candidaturasMock, formatAOA } from "@/lib/mock-data";
+import { medicoLogado, plantoesMock, candidaturasMock, transacoesMock, formatAOA } from "@/lib/mock-data";
 import { PlantaoCard } from "@/components/plantao-card";
 import Link from "next/link";
 
 export default function MedicoDashboard() {
-  const ganhosMes = 45000;
-  const plantoesMes = 3;
+  const ganhosMes = transacoesMock
+    .filter((t) => t.tipo === "CREDITO" && t.estado === "PROCESSADO")
+    .reduce((sum, t) => sum + t.valor, 0);
+  const plantoesMes = candidaturasMock.filter((c) => c.estado === "ACEITE").length;
 
   return (
     <div>
@@ -43,7 +45,7 @@ export default function MedicoDashboard() {
       <div className="px-4 pt-5">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">As minhas candidaturas</h2>
-          <Link href="/medico/candidaturas" className="text-xs text-[#1A6FBB] font-semibold">Ver todas</Link>
+          <Link href="/medico/buscar" className="text-xs text-[#1A6FBB] font-semibold">Ver todas</Link>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1">
           {candidaturasMock.map((c) => {

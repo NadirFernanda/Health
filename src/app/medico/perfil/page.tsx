@@ -1,4 +1,4 @@
-import { medicoLogado, formatAOA } from "@/lib/mock-data";
+import { medicoLogado } from "@/lib/mock-data";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
 

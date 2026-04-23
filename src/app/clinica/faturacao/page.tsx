@@ -1,4 +1,4 @@
-import { clinicaLogada, plantoesDaClinica, formatAOA } from "@/lib/mock-data";
+import { formatAOA } from "@/lib/mock-data";
 import { TopBar } from "@/components/nav";
 
 const transacoes = [

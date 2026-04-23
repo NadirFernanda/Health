@@ -380,6 +380,6 @@ export function formatHora(isoString: string): string {
 }
 
 export function calcularDuracao(inicio: string, fim: string): string {
-  const diff = (new Date(fim).getTime() - new Date(inicio).getTime()) / 3600000;
-  return `${diff}h`;
+  const diff = Math.abs((new Date(fim).getTime() - new Date(inicio).getTime()) / 3600000);
+  return `${diff % 1 === 0 ? diff : diff.toFixed(1)}h`;
 }

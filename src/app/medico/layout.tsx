@@ -1,4 +1,4 @@
-import { BottomNav, TopBar } from "@/components/nav";
+import { BottomNav } from "@/components/nav";
 
 export default function MedicoLayout({ children }: { children: React.ReactNode }) {
   return (

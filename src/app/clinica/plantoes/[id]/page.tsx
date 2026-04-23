@@ -51,7 +51,7 @@ export default function DetalhePlantaoClinica({ params }: { params: { id: string
                   RECUSAR
                 </button>
                 <Link
-                  href={`/clinica/plantoes/${plantao.id}/pagar?medico=${m.id}`}
+                  href={`/clinica`}
                   className="flex-1 text-center bg-[#27AE60] text-white font-bold py-2.5 rounded-xl text-xs"
                 >
                   ACEITAR
