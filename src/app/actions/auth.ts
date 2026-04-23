@@ -2,35 +2,57 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { createSessionToken, COOKIE_NAME, COOKIE_MAX_AGE } from "@/lib/auth";
+import { createSessionToken, COOKIE_NAME, COOKIE_MAX_AGE, UserRole } from "@/lib/auth";
 
 export type LoginState = { error: string } | null;
 
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME ?? "admin";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "planto@admin2025";
+// ---------------------------------------------------------------------------
+// Credenciais do protótipo (mock) — substituir por BD em produção
+// ---------------------------------------------------------------------------
+type MockUser = { email: string; password: string; role: UserRole; dashboard: string };
+
+const MOCK_USERS: MockUser[] = [
+  {
+    email: (process.env.ADMIN_EMAIL ?? "admin@plantoamed.ao"),
+    password: (process.env.ADMIN_PASSWORD ?? "planto@admin2025"),
+    role: "ADMIN",
+    dashboard: "/admin",
+  },
+  {
+    email: (process.env.MEDICO_EMAIL ?? "medico@plantoamed.ao"),
+    password: (process.env.MEDICO_PASSWORD ?? "med123456"),
+    role: "MEDICO",
+    dashboard: "/medico",
+  },
+  {
+    email: (process.env.CLINICA_EMAIL ?? "clinica@horizonte.ao"),
+    password: (process.env.CLINICA_PASSWORD ?? "cli123456"),
+    role: "CLINICA",
+    dashboard: "/clinica",
+  },
+];
+
+// ---------------------------------------------------------------------------
 
 export async function loginAction(
   _prev: LoginState,
   formData: FormData
 ): Promise<LoginState> {
-  const username = formData.get("username")?.toString().trim() ?? "";
+  const email = formData.get("email")?.toString().trim().toLowerCase() ?? "";
   const password = formData.get("password")?.toString() ?? "";
-  const redirectTo = formData.get("redirect")?.toString() ?? "/admin";
+  const redirectTo = formData.get("redirect")?.toString() ?? "";
 
-  if (!username || !password) {
-    return { error: "Preencha o utilizador e a palavra-passe." };
+  if (!email || !password) {
+    return { error: "Preencha o e-mail e a palavra-passe." };
   }
 
-  // Comparação em tempo constante não é crítica aqui pois é admin interno,
-  // mas evitamos short-circuit com checks simples.
-  const userMatch = username === ADMIN_USERNAME;
-  const passMatch = password === ADMIN_PASSWORD;
+  const user = MOCK_USERS.find((u) => u.email === email && u.password === password);
 
-  if (!userMatch || !passMatch) {
-    return { error: "Credenciais inválidas. Tente novamente." };
+  if (!user) {
+    return { error: "Credenciais inválidas. Verifique e tente novamente." };
   }
 
-  const token = await createSessionToken(username);
+  const token = await createSessionToken(email, user.role);
   const cookieStore = await cookies();
 
   cookieStore.set(COOKIE_NAME, token, {
@@ -41,8 +63,15 @@ export async function loginAction(
     path: "/",
   });
 
-  // Garantir que o redirect é interno (evitar open redirect)
-  const safe = redirectTo.startsWith("/admin") ? redirectTo : "/admin";
+  // Validar redirect: só aceitar caminhos do próprio role ou usar o dashboard padrão
+  const allowedPrefixes: Record<UserRole, string> = {
+    ADMIN: "/admin",
+    MEDICO: "/medico",
+    CLINICA: "/clinica",
+  };
+  const allowed = allowedPrefixes[user.role];
+  const safe = redirectTo.startsWith(allowed) ? redirectTo : user.dashboard;
+
   redirect(safe);
 }
 

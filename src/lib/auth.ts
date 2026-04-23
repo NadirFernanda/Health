@@ -3,6 +3,8 @@
  * NÃO importar APIs Node.js neste módulo.
  */
 
+export type UserRole = "ADMIN" | "MEDICO" | "CLINICA";
+
 export const COOKIE_NAME = "planto_session";
 export const COOKIE_MAX_AGE = 60 * 60 * 8; // 8 horas
 
@@ -37,8 +39,8 @@ async function getHmacKey(): Promise<CryptoKey> {
 /**
  * Cria um token HMAC-SHA256 assinado: base64url(payload).hexSig
  */
-export async function createSessionToken(username: string): Promise<string> {
-  const payload = btoa(JSON.stringify({ sub: username, iat: Date.now() }))
+export async function createSessionToken(username: string, role: UserRole): Promise<string> {
+  const payload = btoa(JSON.stringify({ sub: username, role, iat: Date.now() }))
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=/g, "");
@@ -68,5 +70,22 @@ export async function verifySessionToken(token: string): Promise<boolean> {
     );
   } catch {
     return false;
+  }
+}
+
+/**
+ * Extrai o role do token sem verificar a assinatura (só usar após verifySessionToken).
+ */
+export function getRoleFromToken(token: string): UserRole | null {
+  try {
+    const dot = token.lastIndexOf(".");
+    if (dot === -1) return null;
+    const payload = token.slice(0, dot);
+    const padded = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const json = atob(padded + "==".slice((padded.length + 3) % 4 === 0 ? 2 : (padded.length + 3) % 4 === 3 ? 1 : 0));
+    const parsed = JSON.parse(json);
+    return parsed.role ?? null;
+  } catch {
+    return null;
   }
 }
