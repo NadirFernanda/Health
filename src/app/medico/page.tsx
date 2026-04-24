@@ -1,8 +1,11 @@
+"use client";
+import { useState } from "react";
 import { medicoLogado, plantoesMock, candidaturasMock, transacoesMock, formatAOA } from "@/lib/mock-data";
 import { PlantaoCard } from "@/components/plantao-card";
 import Link from "next/link";
 
 export default function MedicoDashboard() {
+  const [disponivel, setDisponivel] = useState(false);
   const ganhosMes = transacoesMock
     .filter((t) => t.tipo === "CREDITO" && t.estado === "PROCESSADO")
     .reduce((sum, t) => sum + t.valor, 0);
@@ -28,6 +31,20 @@ export default function MedicoDashboard() {
           </span>
         )}
 
+        {/* Toggle Disponível Agora */}
+        <div className={`mt-3 flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors ${disponivel ? "bg-green-500/30" : "bg-white/10"}`}>
+          <div>
+            <p className="text-white text-xs font-bold">Disponível Agora</p>
+            <p className="text-blue-200 text-xs">{disponivel ? "🟢 Clínicas podem contactar-o directamente" : "Activate para receber turnos urgentes"}</p>
+          </div>
+          <button
+            onClick={() => setDisponivel((v) => !v)}
+            className={`w-12 h-6 rounded-full relative transition-colors shrink-0 ${disponivel ? "bg-green-400" : "bg-white/30"}`}
+          >
+            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${disponivel ? "left-6" : "left-0.5"}`} />
+          </button>
+        </div>
+
         {/* Resumo */}
         <div className="grid grid-cols-2 gap-3 mt-4">
           <div className="bg-white/15 rounded-xl p-3">
@@ -38,6 +55,26 @@ export default function MedicoDashboard() {
             <p className="text-blue-200 text-xs">Ganhos este mês</p>
             <p className="text-white text-2xl font-bold mt-0.5">{formatAOA(ganhosMes)}</p>
           </div>
+        </div>
+      </div>
+
+      {/* Acesso rápido: Salas */}
+      <div className="px-4 pt-5">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Space-as-a-Service</h2>
+          <Link href="/medico/salas" className="text-xs text-[#1A6FBB] font-semibold">Ver salas</Link>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Link href="/medico/salas" className="bg-purple-50 border border-purple-100 rounded-2xl p-4 flex flex-col gap-2">
+            <span className="text-2xl">🏥</span>
+            <p className="text-sm font-bold text-purple-800">Reservar Sala</p>
+            <p className="text-xs text-purple-500">Consultórios por hora em Luanda</p>
+          </Link>
+          <Link href="/medico/minhas-reservas" className="bg-brand-50 border border-brand-100 rounded-2xl p-4 flex flex-col gap-2">
+            <span className="text-2xl">📅</span>
+            <p className="text-sm font-bold text-brand-700">Minhas Reservas</p>
+            <p className="text-xs text-brand-400">Ver e gerir reservas activas</p>
+          </Link>
         </div>
       </div>
 

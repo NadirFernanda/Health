@@ -12,6 +12,7 @@ interface NavItem {
 const medicoNav: NavItem[] = [
   { href: "/medico", label: "Início", icon: "🏠" },
   { href: "/medico/buscar", label: "Buscar", icon: "🔍" },
+  { href: "/medico/salas", label: "Salas", icon: "🏥" },
   { href: "/medico/ganhos", label: "Ganhos", icon: "💰" },
   { href: "/medico/perfil", label: "Perfil", icon: "👤" },
 ];
@@ -19,6 +20,7 @@ const medicoNav: NavItem[] = [
 const clinicaNav: NavItem[] = [
   { href: "/clinica", label: "Início", icon: "🏠" },
   { href: "/clinica/plantoes", label: "Plantões", icon: "📋" },
+  { href: "/clinica/salas", label: "Salas", icon: "🏥" },
   { href: "/clinica/faturacao", label: "Faturação", icon: "💳" },
   { href: "/clinica/conta", label: "Conta", icon: "👤" },
 ];

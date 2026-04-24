@@ -2,6 +2,7 @@
 
 import { use, useActionState, useState } from "react";
 import { loginAction, LoginState } from "@/app/actions/auth";
+import Link from "next/link";
 
 export default function LoginForm({
   searchParams,
@@ -65,6 +66,11 @@ export default function LoginForm({
           >
             {showPassword ? "🙈" : "👁️"}
           </button>
+        </div>
+        <div className="text-right mt-1">
+          <Link href="/login/recuperar" className="text-xs text-white/50 hover:text-white/80 transition-colors">
+            Esqueceu a password?
+          </Link>
         </div>
       </div>
 

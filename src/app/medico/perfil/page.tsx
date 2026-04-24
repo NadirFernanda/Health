@@ -59,11 +59,35 @@ export default function PerfilMedico() {
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Informações Profissionais</h3>
         <div className="space-y-2 text-sm text-gray-700">
           <p>🔖 Nº Ordem: <span className="font-mono text-gray-900">{m.numeroOrdem}</span></p>
+          {m.numeroSinome && <p>📋 Nº SINOME: <span className="font-mono text-gray-900">{m.numeroSinome}</span></p>}
           <p>🩺 Especialidade: {m.especialidade}</p>
           <p>📍 Localização: {m.provincia}</p>
           <p className="text-gray-600 leading-5 mt-1">{m.bio}</p>
         </div>
       </div>
+
+      {/* Verificação Express */}
+      {!m.verified && (
+        <div className="mx-4 mt-4 bg-orange-50 border-2 border-orange-200 rounded-2xl p-4">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">🔒</span>
+            <div className="flex-1">
+              <p className="font-bold text-orange-800 text-sm">Perfil não verificado</p>
+              <p className="text-xs text-orange-600 mt-1 leading-5">
+                A Verificação Express desbloqueia candidaturas a plantões e aumenta a sua taxa de aceitação.
+              </p>
+              <div className="mt-3 space-y-1.5 text-xs text-orange-700">
+                <p>✓ Confirmação do SINOME / Ordem</p>
+                <p>✓ Validação de BI/Passaporte</p>
+                <p>✓ Prazo: 24–48h · Taxa única: <strong>2.500 AOA</strong></p>
+              </div>
+              <button className="mt-3 w-full bg-orange-500 text-white font-bold py-2.5 rounded-xl text-sm">
+                Iniciar Verificação Express →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Credenciais */}
       <div className="bg-white mt-2 px-4 py-4 border-b border-gray-100">

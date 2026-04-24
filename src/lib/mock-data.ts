@@ -489,3 +489,175 @@ export const adminStats = {
   comissaoPlataforma: 28500,
 };
 
+// --- SPACE-AS-A-SERVICE ---
+
+export type ZonaLuanda = "Centralidade Horizonte" | "Talatona" | "Miramar" | "Alvalade" | "Kilamba";
+export type TipoSala = "CONSULTORIO" | "OBSERVACAO" | "PROCEDIMENTOS";
+
+export interface Sala {
+  id: string;
+  clinica: Clinica;
+  nome: string;
+  tipo: TipoSala;
+  precoPorHora: number;
+  equipamentos: Equipamentos;
+  zona: ZonaLuanda;
+  descricao: string;
+  disponivel: boolean;
+  avaliacaoMedia: number;
+  totalAvaliacoes: number;
+}
+
+export interface ReservaSala {
+  id: string;
+  sala: Sala;
+  dataInicio: string;
+  dataFim: string;
+  duracaoHoras: number;
+  valorTotal: number;
+  comissaoPlataforma: number;
+  estado: "CONFIRMADA" | "PENDENTE" | "CANCELADA" | "CONCLUIDA";
+  codigoReserva: string;
+  metodoPagamento: "MULTICAIXA_EXPRESS" | "TRANSFERENCIA_BANCARIA";
+  criadoEm: string;
+}
+
+export interface AvaliacaoPlantao {
+  plantaoId: string;
+  nota: number;
+  comentario: string;
+  tipo: "PROFISSIONAL_AVALIA_CLINICA" | "CLINICA_AVALIA_PROFISSIONAL";
+}
+
+const equipamentosCompletos2: Equipamentos = {
+  maca: true, estetoscopio: true, tensiometro: true,
+  termometro: true, computador: true, materiaisBasicos: true,
+  nebulizador: false, oximetro: false, glucometro: false, desfibrilador: false,
+};
+
+export const salasMock: Sala[] = [
+  {
+    id: "sala-001",
+    clinica: clinicasMock[0],
+    nome: "Consultório A",
+    tipo: "CONSULTORIO",
+    precoPorHora: 5000,
+    equipamentos: equipamentosCompletos2,
+    zona: "Centralidade Horizonte",
+    descricao: "Consultório completo com maca, computador com acesso ao sistema. Ideal para consultas de clínica geral. Climatizado e com WC privativo.",
+    disponivel: true,
+    avaliacaoMedia: 4.8,
+    totalAvaliacoes: 14,
+  },
+  {
+    id: "sala-002",
+    clinica: clinicasMock[0],
+    nome: "Consultório B",
+    tipo: "CONSULTORIO",
+    precoPorHora: 4500,
+    equipamentos: { ...equipamentosCompletos2, computador: false },
+    zona: "Centralidade Horizonte",
+    descricao: "Consultório equipado para consultas gerais. Sem sistema informático integrado — trazer portátil se necessário.",
+    disponivel: true,
+    avaliacaoMedia: 4.5,
+    totalAvaliacoes: 8,
+  },
+  {
+    id: "sala-003",
+    clinica: clinicasMock[1],
+    nome: "Sala de Observação",
+    tipo: "OBSERVACAO",
+    precoPorHora: 3500,
+    equipamentos: { ...equipamentosCompletos2, nebulizador: true, oximetro: true },
+    zona: "Miramar",
+    descricao: "Sala de observação com maca articulada e monitorização básica. Adequada para urgências e observação prolongada.",
+    disponivel: true,
+    avaliacaoMedia: 4.3,
+    totalAvaliacoes: 6,
+  },
+  {
+    id: "sala-004",
+    clinica: clinicasMock[2],
+    nome: "Sala de Procedimentos",
+    tipo: "PROCEDIMENTOS",
+    precoPorHora: 6000,
+    equipamentos: { ...equipamentosCompletos2, desfibrilador: true, oximetro: true, glucometro: true },
+    zona: "Talatona",
+    descricao: "Sala totalmente equipada para procedimentos menores e consultas especializadas. Desfibrilador disponível.",
+    disponivel: true,
+    avaliacaoMedia: 4.9,
+    totalAvaliacoes: 22,
+  },
+];
+
+export const minhasReservasMock: ReservaSala[] = [
+  {
+    id: "res-001",
+    sala: salasMock[0],
+    dataInicio: "2026-04-26T09:00:00",
+    dataFim: "2026-04-26T13:00:00",
+    duracaoHoras: 4,
+    valorTotal: 20000,
+    comissaoPlataforma: 3000,
+    estado: "CONFIRMADA",
+    codigoReserva: "MF-2026-0042",
+    metodoPagamento: "MULTICAIXA_EXPRESS",
+    criadoEm: "2026-04-23T10:00:00",
+  },
+  {
+    id: "res-002",
+    sala: salasMock[3],
+    dataInicio: "2026-04-28T14:00:00",
+    dataFim: "2026-04-28T17:00:00",
+    duracaoHoras: 3,
+    valorTotal: 18000,
+    comissaoPlataforma: 2700,
+    estado: "CONFIRMADA",
+    codigoReserva: "MF-2026-0043",
+    metodoPagamento: "TRANSFERENCIA_BANCARIA",
+    criadoEm: "2026-04-23T15:30:00",
+  },
+  {
+    id: "res-003",
+    sala: salasMock[1],
+    dataInicio: "2026-04-20T10:00:00",
+    dataFim: "2026-04-20T14:00:00",
+    duracaoHoras: 4,
+    valorTotal: 18000,
+    comissaoPlataforma: 2700,
+    estado: "CONCLUIDA",
+    codigoReserva: "MF-2026-0038",
+    metodoPagamento: "MULTICAIXA_EXPRESS",
+    criadoEm: "2026-04-18T09:00:00",
+  },
+];
+
+export const reservasDaClinicaMock: ReservaSala[] = [
+  {
+    id: "res-cli-001",
+    sala: salasMock[0],
+    dataInicio: "2026-04-25T08:00:00",
+    dataFim: "2026-04-25T12:00:00",
+    duracaoHoras: 4,
+    valorTotal: 20000,
+    comissaoPlataforma: 3000,
+    estado: "CONFIRMADA",
+    codigoReserva: "MF-2026-0040",
+    metodoPagamento: "MULTICAIXA_EXPRESS",
+    criadoEm: "2026-04-22T14:00:00",
+  },
+  {
+    id: "res-cli-002",
+    sala: salasMock[1],
+    dataInicio: "2026-04-26T14:00:00",
+    dataFim: "2026-04-26T17:00:00",
+    duracaoHoras: 3,
+    valorTotal: 13500,
+    comissaoPlataforma: 2025,
+    estado: "CONFIRMADA",
+    codigoReserva: "MF-2026-0041",
+    metodoPagamento: "TRANSFERENCIA_BANCARIA",
+    criadoEm: "2026-04-23T09:00:00",
+  },
+];
+
