@@ -1,0 +1,267 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  MEDICO
+  CLINICA
+}
+
+enum TipoProfissional {
+  MEDICO
+  ENFERMEIRO
+  TECNICO_SAUDE
+}
+
+enum EstadoPlantao {
+  ABERTO
+  FECHADO
+  EM_ANDAMENTO
+  CONCLUIDO
+  CANCELADO
+}
+
+enum EstadoCandidatura {
+  PENDENTE
+  ACEITE
+  RECUSADO
+}
+
+enum EstadoDocumento {
+  NAO_ENVIADO
+  PENDENTE
+  APROVADO
+  REJEITADO
+}
+
+enum TipoTransacao {
+  CREDITO
+  DEBITO
+}
+
+enum EstadoTransacao {
+  PENDENTE
+  PROCESSADO
+}
+
+enum TipoSala {
+  CONSULTORIO
+  OBSERVACAO
+  PROCEDIMENTOS
+}
+
+enum EstadoReserva {
+  CONFIRMADA
+  CANCELADA
+  CONCLUIDA
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String
+  role         Role
+  criadoEm    DateTime      @default(now())
+
+  profissional Profissional?
+  clinica      Clinica?
+  notificacoes Notificacao[]
+}
+
+model Profissional {
+  id                  String             @id @default(cuid())
+  userId              String             @unique
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nome                String
+  tipo                TipoProfissional   @default(MEDICO)
+  especialidade       String
+  numeroOrdem         String?
+  numeroSinome        String?
+  provincia           String             @default("Luanda")
+  foto                String?
+  bio                 String?
+  rating              Float              @default(0)
+  totalAvaliacoes     Int                @default(0)
+  totalPlantoes       Int                @default(0)
+  verified            Boolean            @default(false)
+  saldoCarteira       Int                @default(0)
+  disponivelAgora     Boolean            @default(false)
+
+  candidaturas        Candidatura[]
+  documentos          Documento[]
+  avaliacoesFeitas    Avaliacao[]        @relation("AutorAvaliacao")
+  avaliacoesRecebidas Avaliacao[]        @relation("AlvoMedicoAvaliacao")
+  reservas            ReservaSala[]
+  transacoes          TransacaoCarteira[]
+}
+
+model Clinica {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nome            String
+  morada          String?
+  cidade          String?
+  provincia       String    @default("Luanda")
+  logo            String?
+  rating          Float     @default(0)
+  totalAvaliacoes Int       @default(0)
+  verified        Boolean   @default(false)
+
+  plantoes            Plantao[]
+  salas               Sala[]
+  avaliacoesRecebidas Avaliacao[] @relation("AlvoClinicaAvaliacao")
+}
+
+model Plantao {
+  id               String        @id @default(cuid())
+  clinicaId        String
+  clinica          Clinica       @relation(fields: [clinicaId], references: [id])
+  especialidade    String
+  dataInicio       DateTime
+  dataFim          DateTime
+  valorKwanzas     Int
+  vagas            Int
+  vagasPreenchidas Int           @default(0)
+  estado           EstadoPlantao @default(ABERTO)
+  descricao        String?
+
+  // Equipamentos
+  maca             Boolean @default(false)
+  estetoscopio     Boolean @default(false)
+  tensiometro      Boolean @default(false)
+  termometro       Boolean @default(false)
+  computador       Boolean @default(false)
+  materiaisBasicos Boolean @default(true)
+  nebulizador      Boolean @default(false)
+  oximetro         Boolean @default(false)
+  glucometro       Boolean @default(false)
+  desfibrilador    Boolean @default(false)
+
+  candidaturas Candidatura[]
+  avaliacoes   Avaliacao[]
+  criadoEm    DateTime      @default(now())
+}
+
+model Candidatura {
+  id             String            @id @default(cuid())
+  plantaoId      String
+  plantao        Plantao           @relation(fields: [plantaoId], references: [id])
+  profissionalId String
+  profissional   Profissional      @relation(fields: [profissionalId], references: [id])
+  estado         EstadoCandidatura @default(PENDENTE)
+  criadoEm      DateTime          @default(now())
+
+  @@unique([plantaoId, profissionalId])
+}
+
+model Sala {
+  id               String    @id @default(cuid())
+  clinicaId        String
+  clinica          Clinica   @relation(fields: [clinicaId], references: [id])
+  nome             String
+  tipo             TipoSala
+  precoPorHora     Int
+  zona             String
+  descricao        String?
+  fotos            String[]  @default([])
+  disponivel       Boolean   @default(true)
+  avaliacaoMedia   Float     @default(0)
+  totalAvaliacoes  Int       @default(0)
+
+  // Equipamentos
+  maca             Boolean @default(false)
+  estetoscopio     Boolean @default(false)
+  tensiometro      Boolean @default(false)
+  termometro       Boolean @default(false)
+  computador       Boolean @default(false)
+  materiaisBasicos Boolean @default(true)
+  nebulizador      Boolean @default(false)
+  oximetro         Boolean @default(false)
+  glucometro       Boolean @default(false)
+  desfibrilador    Boolean @default(false)
+
+  reservas   ReservaSala[]
+  avaliacoes Avaliacao[]  @relation("AlvoSalaAvaliacao")
+  criadoEm  DateTime     @default(now())
+}
+
+model ReservaSala {
+  id             String        @id @default(cuid())
+  salaId         String
+  sala           Sala          @relation(fields: [salaId], references: [id])
+  profissionalId String
+  profissional   Profissional  @relation(fields: [profissionalId], references: [id])
+  data           DateTime
+  horaInicio     String
+  duracaoHoras   Int
+  valorTotal     Int
+  estado         EstadoReserva @default(CONFIRMADA)
+  codigoQr       String        @default(cuid())
+  criadoEm      DateTime      @default(now())
+}
+
+model Avaliacao {
+  id            String        @id @default(cuid())
+  autorId       String?
+  autor         Profissional? @relation("AutorAvaliacao", fields: [autorId], references: [id])
+  alvoMedicoId  String?
+  alvoMedico    Profissional? @relation("AlvoMedicoAvaliacao", fields: [alvoMedicoId], references: [id])
+  alvoClinicaId String?
+  alvoClinica   Clinica?      @relation("AlvoClinicaAvaliacao", fields: [alvoClinicaId], references: [id])
+  salaId        String?
+  sala          Sala?         @relation("AlvoSalaAvaliacao", fields: [salaId], references: [id])
+  plantaoId     String?
+  plantao       Plantao?      @relation(fields: [plantaoId], references: [id])
+  estrelas      Int
+  comentario    String?
+  criadoEm     DateTime      @default(now())
+}
+
+model Documento {
+  id             String          @id @default(cuid())
+  profissionalId String
+  profissional   Profissional    @relation(fields: [profissionalId], references: [id])
+  tipo           String
+  ficheiro       String?
+  estado         EstadoDocumento @default(NAO_ENVIADO)
+  criadoEm      DateTime        @default(now())
+  atualizadoEm  DateTime        @updatedAt
+}
+
+model TransacaoCarteira {
+  id             String          @id @default(cuid())
+  profissionalId String
+  profissional   Profissional    @relation(fields: [profissionalId], references: [id])
+  tipo           TipoTransacao
+  valor          Int
+  descricao      String
+  estado         EstadoTransacao @default(PROCESSADO)
+  criadoEm      DateTime        @default(now())
+}
+
+model Notificacao {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  tipo     String
+  titulo   String
+  corpo    String
+  href     String?
+  lida     Boolean  @default(false)
+  criadoEm DateTime @default(now())
+}
+

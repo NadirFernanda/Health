@@ -1,15 +1,61 @@
 "use client";
-import { useState } from "react";
-import { medicoLogado, plantoesMock, candidaturasMock, transacoesMock, formatAOA } from "@/lib/mock-data";
+import { useState, useEffect } from "react";
 import { PlantaoCard } from "@/components/plantao-card";
 import Link from "next/link";
 
+type Perfil = { nome: string; verified: boolean; disponivelAgora: boolean; saldoCarteira: number };
+type PlantaoAPI = {
+  id: string; especialidade: string; dataInicio: string; dataFim: string;
+  valorKwanzas: number; vagas: number; vagasPreenchidas: number; estado: string;
+  descricao: string; clinica: { id: string; nome: string; morada: string; cidade: string; provincia: string; logo: string; rating: number; totalAvaliacoes: number; verified: boolean };
+  equipamentos: Record<string, boolean>;
+};
+type Candidatura = { id: string; estado: string; plantao: { clinica: { nome: string } } };
+
+function formatAOA(v: number) {
+  return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
+}
+
 export default function MedicoDashboard() {
+  const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [disponivel, setDisponivel] = useState(false);
-  const ganhosMes = transacoesMock
-    .filter((t) => t.tipo === "CREDITO" && t.estado === "PROCESSADO")
-    .reduce((sum, t) => sum + t.valor, 0);
-  const plantoesMes = candidaturasMock.filter((c) => c.estado === "ACEITE").length;
+  const [plantoes, setPlantoes] = useState<PlantaoAPI[]>([]);
+  const [candidaturas, setCandidaturas] = useState<Candidatura[]>([]);
+  const [ganhosMes, setGanhosMes] = useState(0);
+  const [plantoesMes, setPlantoesMes] = useState(0);
+
+  useEffect(() => {
+    fetch("/api/medico/perfil").then((r) => r.json()).then((d) => {
+      if (d.nome) { setPerfil(d); setDisponivel(d.disponivelAgora ?? false); }
+    });
+    fetch("/api/plantoes").then((r) => r.json()).then((d) => {
+      if (Array.isArray(d)) setPlantoes(d.filter((p: PlantaoAPI) => p.estado === "ABERTO").slice(0, 5));
+    });
+    fetch("/api/medico/candidaturas").then((r) => r.json()).then((d) => {
+      if (Array.isArray(d)) {
+        setCandidaturas(d.slice(0, 5));
+        setPlantoesMes(d.filter((c: Candidatura) => c.estado === "ACEITE").length);
+      }
+    });
+    fetch("/api/medico/ganhos").then((r) => r.json()).then((d) => {
+      if (d.transacoes) {
+        const total = d.transacoes
+          .filter((t: { tipo: string; estado: string }) => t.tipo === "CREDITO" && t.estado === "PROCESSADO")
+          .reduce((s: number, t: { valor: number }) => s + t.valor, 0);
+        setGanhosMes(total);
+      }
+    });
+  }, []);
+
+  const toggleDisponivel = async () => {
+    const next = !disponivel;
+    setDisponivel(next);
+    await fetch("/api/medico/perfil", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ disponivelAgora: next }),
+    });
+  };
 
   return (
     <div>
@@ -18,17 +64,16 @@ export default function MedicoDashboard() {
         <div className="flex items-center justify-between mb-1">
           <div>
             <p className="text-blue-200 text-sm">Olá 👋</p>
-            <h1 className="text-white font-bold text-xl">{medicoLogado.nome}</h1>
+            <h1 className="text-white font-bold text-xl">{perfil?.nome ?? "..."}</h1>
           </div>
           <div className="flex gap-2">
             <Link href="/medico/notificacoes" className="relative w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-lg">
               🔔
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center">3</span>
             </Link>
             <Link href="/medico/perfil" className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-lg">👤</Link>
           </div>
         </div>
-        {medicoLogado.verified && (
+        {perfil?.verified && (
           <span className="inline-flex items-center gap-1 bg-[#27AE60]/30 text-green-200 text-xs font-semibold px-2.5 py-1 rounded-full mt-2">
             ✓ Perfil Verificado
           </span>
@@ -41,7 +86,7 @@ export default function MedicoDashboard() {
             <p className="text-blue-200 text-xs">{disponivel ? "🟢 Clínicas podem contactar-o directamente" : "Activate para receber turnos urgentes"}</p>
           </div>
           <button
-            onClick={() => setDisponivel((v) => !v)}
+            onClick={toggleDisponivel}
             className={`w-12 h-6 rounded-full relative transition-colors shrink-0 ${disponivel ? "bg-green-400" : "bg-white/30"}`}
           >
             <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${disponivel ? "left-6" : "left-0.5"}`} />
@@ -61,45 +106,27 @@ export default function MedicoDashboard() {
         </div>
       </div>
 
-      {/* Acesso rápido: Salas */}
-      <div className="px-4 pt-5">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Space-as-a-Service</h2>
-          <Link href="/medico/salas" className="text-xs text-[#1A6FBB] font-semibold">Ver salas</Link>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <Link href="/medico/salas" className="bg-purple-50 border border-purple-100 rounded-2xl p-4 flex flex-col gap-2">
-            <span className="text-2xl">🏥</span>
-            <p className="text-sm font-bold text-purple-800">Reservar Sala</p>
-            <p className="text-xs text-purple-500">Consultórios por hora em Luanda</p>
-          </Link>
-          <Link href="/medico/minhas-reservas" className="bg-brand-50 border border-brand-100 rounded-2xl p-4 flex flex-col gap-2">
-            <span className="text-2xl">📅</span>
-            <p className="text-sm font-bold text-brand-700">Minhas Reservas</p>
-            <p className="text-xs text-brand-400">Ver e gerir reservas activas</p>
-          </Link>
-        </div>
-      </div>
-
       {/* Candidaturas recentes */}
-      <div className="px-4 pt-5">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">As minhas candidaturas</h2>
-          <Link href="/medico/buscar" className="text-xs text-[#1A6FBB] font-semibold">Ver todas</Link>
+      {candidaturas.length > 0 && (
+        <div className="px-4 pt-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">As minhas candidaturas</h2>
+            <Link href="/medico/buscar" className="text-xs text-[#1A6FBB] font-semibold">Ver todas</Link>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {candidaturas.map((c) => {
+              const cor = c.estado === "ACEITE" ? "bg-green-50 text-green-700 border-green-200"
+                : c.estado === "RECUSADO" ? "bg-red-50 text-red-600 border-red-200"
+                : "bg-yellow-50 text-yellow-700 border-yellow-200";
+              return (
+                <div key={c.id} className={`shrink-0 border rounded-xl px-3 py-2 text-xs font-semibold ${cor}`}>
+                  {c.estado === "ACEITE" ? "✓" : c.estado === "RECUSADO" ? "✗" : "⏳"} {c.plantao.clinica.nome}
+                </div>
+              );
+            })}
+          </div>
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {candidaturasMock.map((c) => {
-            const cor = c.estado === "ACEITE" ? "bg-green-50 text-green-700 border-green-200"
-              : c.estado === "RECUSADO" ? "bg-red-50 text-red-600 border-red-200"
-              : "bg-yellow-50 text-yellow-700 border-yellow-200";
-            return (
-              <div key={c.id} className={`shrink-0 border rounded-xl px-3 py-2 text-xs font-semibold ${cor}`}>
-                {c.estado === "ACEITE" ? "✓" : c.estado === "RECUSADO" ? "✗" : "⏳"} {c.plantao.clinica.nome}
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      )}
 
       {/* Plantões disponíveis */}
       <div className="px-4 pt-5">
@@ -108,8 +135,8 @@ export default function MedicoDashboard() {
           <Link href="/medico/buscar" className="text-xs text-[#1A6FBB] font-semibold">Ver todos</Link>
         </div>
         <div className="space-y-3">
-          {plantoesMock.filter(p => p.estado === "ABERTO").map((p) => (
-            <PlantaoCard key={p.id} plantao={p} showCandidatarBtn />
+          {plantoes.map((p) => (
+            <PlantaoCard key={p.id} plantao={p as never} showCandidatarBtn />
           ))}
         </div>
       </div>

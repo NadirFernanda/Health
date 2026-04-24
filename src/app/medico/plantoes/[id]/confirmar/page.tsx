@@ -1,20 +1,58 @@
-"use client";
-import { plantoesMock, medicoLogado, formatAOA, formatData, formatHora } from "@/lib/mock-data";
+﻿"use client";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
-import { useState, use } from "react";
+import { useState, use, useEffect } from "react";
 import Link from "next/link";
+
+type PlantaoInfo = {
+  id: string; especialidade: string; dataInicio: string; dataFim: string;
+  valorKwanzas: number;
+  clinica: { nome: string };
+};
+
+function formatAOA(v: number) { return new Intl.NumberFormat("pt-AO").format(v) + " AOA"; }
+function formatData(s: string) {
+  return new Date(s).toLocaleDateString("pt-AO", { weekday: "long", day: "2-digit", month: "long" });
+}
+function formatHora(s: string) {
+  return new Date(s).toLocaleTimeString("pt-AO", { hour: "2-digit", minute: "2-digit" });
+}
 
 export default function ConfirmarCandidatura({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const plantao = plantoesMock.find((p) => p.id === id);
   const router = useRouter();
+  const [plantao, setPlantao] = useState<PlantaoInfo | null>(null);
+  const [verified, setVerified] = useState<boolean | null>(null);
   const [enviado, setEnviado] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState("");
 
-  if (!plantao) return null;
+  useEffect(() => {
+    fetch(`/api/plantoes/${id}`).then((r) => r.json()).then((d) => { if (d.id) setPlantao(d); });
+    fetch("/api/medico/perfil").then((r) => r.json()).then((d) => { if (typeof d.verified === "boolean") setVerified(d.verified); });
+  }, [id]);
+
+  const handleCandidatar = async () => {
+    setLoading(true);
+    setErro("");
+    const res = await fetch("/api/medico/candidaturas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plantaoId: id }),
+    });
+    setLoading(false);
+    if (res.ok) {
+      setEnviado(true);
+    } else {
+      const d = await res.json();
+      setErro(d.error ?? "Erro ao enviar candidatura.");
+    }
+  };
+
+  if (!plantao) return <div className="p-8 text-center text-gray-400">A carregar...</div>;
 
   // Verificação Express — bloquear se não verificado
-  if (!medicoLogado.verified) {
+  if (verified === false) {
     return (
       <div>
         <TopBar titulo="Candidatura" back={`/medico/plantoes/${id}`} />
@@ -22,7 +60,7 @@ export default function ConfirmarCandidatura({ params }: { params: Promise<{ id:
           <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center text-4xl">🔒</div>
           <h2 className="text-xl font-bold text-gray-900">Verificação Necessária</h2>
           <p className="text-gray-500 text-sm leading-6 max-w-sm">
-            Para se candidatar a plantões precisa de completar a Verificação Express. 
+            Para se candidatar a plantões precisa de completar a Verificação Express.
             Garante a confiança das clínicas no seu perfil.
           </p>
           <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 w-full text-left space-y-2">
@@ -34,14 +72,14 @@ export default function ConfirmarCandidatura({ params }: { params: Promise<{ id:
               <li>• Prazo: 24–48h úteis</li>
             </ul>
           </div>
-          <div className="bg-brand-50 rounded-2xl p-4 w-full">
-            <p className="text-xs text-brand-600 font-bold mb-1">Taxa de verificação única</p>
-            <p className="text-3xl font-bold text-brand-700">2.500 AOA</p>
+          <div className="bg-blue-50 rounded-2xl p-4 w-full">
+            <p className="text-xs text-[#1A6FBB] font-bold mb-1">Taxa de verificação única</p>
+            <p className="text-3xl font-bold text-[#1A6FBB]">2.500 AOA</p>
             <p className="text-xs text-gray-400 mt-1">Pagamento via Multicaixa Express</p>
           </div>
           <Link
             href="/medico/perfil"
-            className="w-full bg-brand-500 text-white font-bold py-4 rounded-2xl text-center block"
+            className="w-full bg-[#1A6FBB] text-white font-bold py-4 rounded-2xl text-center block"
           >
             Iniciar Verificação Express →
           </Link>
@@ -98,11 +136,14 @@ export default function ConfirmarCandidatura({ params }: { params: Promise<{ id:
           </ul>
         </div>
 
+        {erro && <p className="text-red-500 text-sm text-center">{erro}</p>}
+
         <button
-          onClick={() => setEnviado(true)}
-          className="w-full bg-[#1A6FBB] hover:bg-[#0D4F8A] text-white font-bold py-4 rounded-2xl transition-colors text-base"
+          onClick={handleCandidatar}
+          disabled={loading}
+          className="w-full bg-[#1A6FBB] hover:bg-[#0D4F8A] disabled:opacity-60 text-white font-bold py-4 rounded-2xl transition-colors text-base"
         >
-          CONFIRMAR CANDIDATURA
+          {loading ? "A enviar..." : "CONFIRMAR CANDIDATURA"}
         </button>
         <button
           onClick={() => router.back()}

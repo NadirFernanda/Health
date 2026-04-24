@@ -1,26 +1,37 @@
-import { plantoesMock, formatAOA, formatData, formatHora, calcularDuracao } from "@/lib/mock-data";
+﻿import { prisma } from "@/lib/db";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+function formatAOA(v: number) { return new Intl.NumberFormat("pt-AO").format(v) + " AOA"; }
+function formatData(d: Date) { return d.toLocaleDateString("pt-AO", { weekday: "long", day: "2-digit", month: "long", year: "numeric" }); }
+function formatHora(d: Date) { return d.toLocaleTimeString("pt-AO", { hour: "2-digit", minute: "2-digit" }); }
+function calcularDuracao(inicio: Date, fim: Date) {
+  const h = Math.round((fim.getTime() - inicio.getTime()) / 3600000);
+  return `${h}h`;
+}
+
 export default async function DetalhePlantao({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const plantao = plantoesMock.find((p) => p.id === id);
+  const plantao = await prisma.plantao.findUnique({
+    where: { id },
+    include: { clinica: true },
+  });
   if (!plantao) return notFound();
 
-  const { clinica, especialidade, dataInicio, dataFim, valorKwanzas, vagas, vagasPreenchidas, descricao, equipamentos } = plantao;
+  const { clinica, especialidade, dataInicio, dataFim, valorKwanzas, vagas, vagasPreenchidas, descricao } = plantao;
 
   const equipList = [
-    { label: "Maca de exame", ok: equipamentos.maca },
-    { label: "Estetoscópio", ok: equipamentos.estetoscopio },
-    { label: "Tensiômetro", ok: equipamentos.tensiometro },
-    { label: "Termómetro", ok: equipamentos.termometro },
-    { label: "Computador", ok: equipamentos.computador },
-    { label: "Materiais básicos", ok: equipamentos.materiaisBasicos },
-    { label: "Nebulizador", ok: equipamentos.nebulizador },
-    { label: "Oxímetro", ok: equipamentos.oximetro },
-    { label: "Glucómetro", ok: equipamentos.glucometro },
-    { label: "Desfibrilador", ok: equipamentos.desfibrilador },
+    { label: "Maca de exame", ok: plantao.maca },
+    { label: "Estetoscópio", ok: plantao.estetoscopio },
+    { label: "Tensiômetro", ok: plantao.tensiometro },
+    { label: "Termómetro", ok: plantao.termometro },
+    { label: "Computador", ok: plantao.computador },
+    { label: "Materiais básicos", ok: plantao.materiaisBasicos },
+    { label: "Nebulizador", ok: plantao.nebulizador },
+    { label: "Oxímetro", ok: plantao.oximetro },
+    { label: "Glucómetro", ok: plantao.glucometro },
+    { label: "Desfibrilador", ok: plantao.desfibrilador },
   ];
 
   return (

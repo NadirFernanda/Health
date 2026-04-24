@@ -1,39 +1,51 @@
-"use client";
-import { useState } from "react";
-import { plantoesMock, Especialidade, ZonaLuanda } from "@/lib/mock-data";
+﻿"use client";
+import { useState, useEffect } from "react";
 import { PlantaoCard } from "@/components/plantao-card";
 import { TopBar } from "@/components/nav";
 
-const especialidades: Especialidade[] = [
+type PlantaoAPI = {
+  id: string; especialidade: string; dataInicio: string; dataFim: string;
+  valorKwanzas: number; vagas: number; vagasPreenchidas: number; estado: string;
+  descricao: string; clinica: { id: string; nome: string; morada: string; cidade: string; provincia: string; logo: string; rating: number; totalAvaliacoes: number; verified: boolean };
+  equipamentos: Record<string, boolean>;
+};
+
+const especialidades = [
   "Medicina Geral", "Pediatria", "Ginecologia", "Cardiologia",
   "Cirurgia", "Ortopedia", "Dermatologia", "Psiquiatria",
   "Enfermagem Geral", "Enfermagem de Urgência",
   "Técnico de Análises Clínicas", "Técnico de Radiologia",
 ];
 
-const zonas: ZonaLuanda[] = ["Centralidade Horizonte", "Talatona", "Miramar", "Alvalade", "Kilamba"];
+const zonas = ["Centralidade Horizonte", "Talatona", "Miramar", "Alvalade", "Kilamba"];
 
 export default function BuscarPlantoes() {
+  const [plantoes, setPlantoes] = useState<PlantaoAPI[]>([]);
   const [filtroEsp, setFiltroEsp] = useState<string>("Todas");
   const [filtroValor, setFiltroValor] = useState<string>("todos");
   const [filtroZona, setFiltroZona] = useState<string>("Todas");
   const [disponivelAgora, setDisponivelAgora] = useState(false);
 
-  const agora = new Date();
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (filtroEsp !== "Todas") params.set("especialidade", filtroEsp);
+    if (filtroZona !== "Todas") params.set("zona", filtroZona);
+    if (disponivelAgora) params.set("disponivelAgora", "true");
+    fetch(`/api/plantoes?${params}`).then((r) => r.json()).then((d) => {
+      if (Array.isArray(d)) setPlantoes(d);
+    });
+  }, [filtroEsp, filtroZona, disponivelAgora]);
 
-  const plantoesFiltrados = plantoesMock.filter((p) => {
-    const espOk = filtroEsp === "Todas" || p.especialidade === filtroEsp;
+  const agora = new Date();
+  const plantoesFiltrados = plantoes.filter((p) => {
     const valorOk =
       filtroValor === "todos" ||
       (filtroValor === "ate15" && p.valorKwanzas <= 15000) ||
       (filtroValor === "15a20" && p.valorKwanzas > 15000 && p.valorKwanzas <= 20000) ||
       (filtroValor === "mais20" && p.valorKwanzas > 20000);
-    // Zona: comparamos a cidade da clínica vs zona (mock simplificado)
-    const zonaOk = filtroZona === "Todas" || p.clinica.cidade.includes(filtroZona) || filtroZona === "Centralidade Horizonte";
-    // Disponível agora: turno que começa nas próximas 4h
     const inicio = new Date(p.dataInicio);
     const dispOk = !disponivelAgora || (inicio.getTime() - agora.getTime() < 4 * 60 * 60 * 1000 && inicio > agora);
-    return espOk && valorOk && zonaOk && p.estado === "ABERTO" && (!disponivelAgora || dispOk);
+    return valorOk && p.estado === "ABERTO" && (!disponivelAgora || dispOk);
   });
 
   return (
@@ -48,7 +60,7 @@ export default function BuscarPlantoes() {
         </div>
         <button
           onClick={() => setDisponivelAgora((v) => !v)}
-          className={`w-12 h-6 rounded-full relative transition-colors shrink-0 ${disponivelAgora ? "bg-brand-500" : "bg-gray-200"}`}
+          className={`w-12 h-6 rounded-full relative transition-colors shrink-0 ${disponivelAgora ? "bg-[#1A6FBB]" : "bg-gray-200"}`}
         >
           <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${disponivelAgora ? "left-6" : "left-0.5"}`} />
         </button>
@@ -130,7 +142,7 @@ export default function BuscarPlantoes() {
             </div>
           ) : (
             plantoesFiltrados.map((p) => (
-              <PlantaoCard key={p.id} plantao={p} showCandidatarBtn />
+              <PlantaoCard key={p.id} plantao={p as never} showCandidatarBtn />
             ))
           )}
         </div>

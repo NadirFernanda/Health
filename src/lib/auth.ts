@@ -39,8 +39,8 @@ async function getHmacKey(): Promise<CryptoKey> {
 /**
  * Cria um token HMAC-SHA256 assinado: base64url(payload).hexSig
  */
-export async function createSessionToken(username: string, role: UserRole): Promise<string> {
-  const payload = btoa(JSON.stringify({ sub: username, role, iat: Date.now() }))
+export async function createSessionToken(id: string, email: string, role: UserRole): Promise<string> {
+  const payload = btoa(JSON.stringify({ id, sub: email, role, iat: Date.now() }))
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=/g, "");
@@ -74,18 +74,27 @@ export async function verifySessionToken(token: string): Promise<boolean> {
 }
 
 /**
- * Extrai o role do token sem verificar a assinatura (só usar após verifySessionToken).
+ * Extrai o payload completo do token sem verificar a assinatura (só usar após verifySessionToken).
  */
-export function getRoleFromToken(token: string): UserRole | null {
+export function getPayloadFromToken(token: string): { id: string; sub: string; role: UserRole } | null {
   try {
     const dot = token.lastIndexOf(".");
     if (dot === -1) return null;
     const payload = token.slice(0, dot);
     const padded = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const json = atob(padded + "==".slice((padded.length + 3) % 4 === 0 ? 2 : (padded.length + 3) % 4 === 3 ? 1 : 0));
+    const rem = padded.length % 4;
+    const json = atob(rem === 0 ? padded : padded + "====".slice(rem));
     const parsed = JSON.parse(json);
-    return parsed.role ?? null;
+    if (!parsed.id || !parsed.sub || !parsed.role) return null;
+    return parsed;
   } catch {
     return null;
   }
+}
+
+/**
+ * Extrai o role do token sem verificar a assinatura (só usar após verifySessionToken).
+ */
+export function getRoleFromToken(token: string): UserRole | null {
+  return getPayloadFromToken(token)?.role ?? null;
 }
