@@ -47,7 +47,7 @@ export default function AdminDashboard() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-3">
-        <KpiCard icon="👨‍⚕️" title="Médicos"   value={adminStats.totalMedicos}  sub={`${adminStats.medicosVerificados} verificados · ${adminStats.medicosPendentes} pendentes`}   color="blue"   />
+        <KpiCard icon="🧑‍⚕️" title="Profissionais"   value={adminStats.totalMedicos}  sub={`${adminStats.medicosVerificados} verificados · ${adminStats.medicosPendentes} pendentes`}   color="blue"   />
         <KpiCard icon="🏥"   title="Clínicas"  value={adminStats.totalClinicas}  sub={`${adminStats.clinicasVerificadas} verificadas · ${adminStats.clinicasPendentes} pendentes`}  color="green"  />
         <KpiCard icon="📋"   title="Plantões"  value={adminStats.totalPlantoes}  sub={`${adminStats.plantoesAbertos} activos · ${adminStats.plantoesConcluidos} concluídos`}        color="orange" />
         <KpiCard icon="💰"   title="Comissões" value={formatAOA(adminStats.comissaoPlataforma)} sub={`Receita total: ${formatAOA(adminStats.receitaPlataforma)}`}                   color="purple" />

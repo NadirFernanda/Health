@@ -8,13 +8,21 @@ export type Especialidade =
   | "Cirurgia"
   | "Ortopedia"
   | "Dermatologia"
-  | "Psiquiatria";
+  | "Psiquiatria"
+  | "Enfermagem Geral"
+  | "Enfermagem de Urgência"
+  | "Técnico de Análises Clínicas"
+  | "Técnico de Radiologia";
+
+export type TipoProfissional = "MEDICO" | "ENFERMEIRO" | "TECNICO_SAUDE";
 
 export interface Medico {
   id: string;
   nome: string;
+  tipo: TipoProfissional;
   especialidade: Especialidade;
   numeroOrdem: string;
+  numeroSinome: string;
   provincia: string;
   foto: string;
   rating: number;
@@ -86,9 +94,11 @@ export interface TransacaoCarteira {
 export const medicoLogado: Medico = {
   id: "med-001",
   nome: "Dr. João Silva",
+  tipo: "MEDICO",
   especialidade: "Medicina Geral",
-  numeroOrdem: "CDOM-HB-2019-0042",
-  provincia: "Huambo",
+  numeroOrdem: "OA-LDA-2019-0042",
+  numeroSinome: "SINOME-LDA-2019-0042",
+  provincia: "Luanda",
   foto: "",
   rating: 4.8,
   totalAvaliacoes: 23,
@@ -103,7 +113,7 @@ export const clinicaLogada: Clinica = {
   nome: "Clínica Horizonte",
   morada: "Rua da Saúde, Nº 12",
   cidade: "Centralidade Horizonte",
-  provincia: "Huambo",
+  provincia: "Luanda",
   logo: "",
   rating: 4.6,
   totalAvaliacoes: 38,
@@ -116,7 +126,7 @@ export const clinicasMock: Clinica[] = [
     nome: "Clínica Horizonte",
     morada: "Rua da Saúde, Nº 12",
     cidade: "Centralidade Horizonte",
-    provincia: "Huambo",
+    provincia: "Luanda",
     logo: "",
     rating: 4.7,
     totalAvaliacoes: 38,
@@ -125,9 +135,9 @@ export const clinicasMock: Clinica[] = [
   {
     id: "cli-002",
     nome: "Clínica Saúde+",
-    morada: "Av. Principal, Nº 45",
-    cidade: "Centro",
-    provincia: "Huambo",
+    morada: "Av. Miramar, Nº 45",
+    cidade: "Miramar",
+    provincia: "Luanda",
     logo: "",
     rating: 4.2,
     totalAvaliacoes: 19,
@@ -137,8 +147,8 @@ export const clinicasMock: Clinica[] = [
     id: "cli-003",
     nome: "Clínica Central",
     morada: "Rua dos Médicos, Nº 8",
-    cidade: "Centro",
-    provincia: "Huambo",
+    cidade: "Talatona",
+    provincia: "Luanda",
     logo: "",
     rating: 4.5,
     totalAvaliacoes: 27,
@@ -318,9 +328,11 @@ export const candidatosMock: Medico[] = [
   {
     id: "med-002",
     nome: "Dra. Ana Ferreira Neto",
+    tipo: "MEDICO",
     especialidade: "Medicina Geral",
-    numeroOrdem: "CDOM-HB-2019-0412",
-    provincia: "Huambo",
+    numeroOrdem: "OA-LDA-2019-0412",
+    numeroSinome: "SINOME-LDA-2019-0412",
+    provincia: "Luanda",
     foto: "",
     rating: 4.8,
     totalAvaliacoes: 23,
@@ -331,24 +343,28 @@ export const candidatosMock: Medico[] = [
   },
   {
     id: "med-003",
-    nome: "Dr. Manuel Costa",
-    especialidade: "Medicina Geral",
-    numeroOrdem: "CDOM-HB-2020-0188",
-    provincia: "Huambo",
+    nome: "Enf.ª Maria Costa",
+    tipo: "ENFERMEIRO",
+    especialidade: "Enfermagem Geral",
+    numeroOrdem: "OE-LDA-2020-0188",
+    numeroSinome: "SINOME-LDA-2020-0188",
+    provincia: "Luanda",
     foto: "",
     rating: 4.3,
     totalAvaliacoes: 11,
     totalPlantoes: 18,
     verified: true,
     saldoCarteira: 0,
-    bio: "Médico geral, experiência em urgência.",
+    bio: "Enfermeira geral, experiência em urgência.",
   },
   {
     id: "med-004",
     nome: "Dra. Luísa Mbinda",
+    tipo: "MEDICO",
     especialidade: "Medicina Geral",
-    numeroOrdem: "CDOM-HB-2021-0305",
-    provincia: "Huambo",
+    numeroOrdem: "OA-LDA-2021-0305",
+    numeroSinome: "SINOME-LDA-2021-0305",
+    provincia: "Luanda",
     foto: "",
     rating: 4.6,
     totalAvaliacoes: 8,
@@ -404,27 +420,27 @@ export interface AdminClinica extends Clinica {
 // --- ADMIN MOCK DATA ---
 
 export const adminMedicosMock: AdminMedico[] = [
-  { ...medicoLogado, estadoVerificacao: "APROVADO", email: "joao.silva@planto.ao", criadoEm: "2026-01-15T10:00:00" },
-  { ...candidatosMock[0], estadoVerificacao: "APROVADO", email: "ana.ferreira@planto.ao", criadoEm: "2026-02-01T09:00:00" },
-  { ...candidatosMock[1], estadoVerificacao: "APROVADO", email: "manuel.costa@planto.ao", criadoEm: "2026-02-10T14:00:00" },
-  { ...candidatosMock[2], estadoVerificacao: "APROVADO", email: "luisa.mbinda@planto.ao", criadoEm: "2026-03-05T11:00:00" },
+  { ...medicoLogado, estadoVerificacao: "APROVADO", email: "joao.silva@medfreela.ao", criadoEm: "2026-01-15T10:00:00" },
+  { ...candidatosMock[0], estadoVerificacao: "APROVADO", email: "ana.ferreira@medfreela.ao", criadoEm: "2026-02-01T09:00:00" },
+  { ...candidatosMock[1], estadoVerificacao: "APROVADO", email: "maria.costa@medfreela.ao", criadoEm: "2026-02-10T14:00:00" },
+  { ...candidatosMock[2], estadoVerificacao: "APROVADO", email: "luisa.mbinda@medfreela.ao", criadoEm: "2026-03-05T11:00:00" },
   {
-    id: "med-005", nome: "Dr. António Sebastião", especialidade: "Cardiologia",
-    numeroOrdem: "CDOM-HB-2018-0077", provincia: "Huambo", foto: "",
+    id: "med-005", nome: "Dr. António Sebastião", tipo: "MEDICO" as TipoProfissional, especialidade: "Cardiologia" as Especialidade,
+    numeroOrdem: "OA-LDA-2018-0077", numeroSinome: "SINOME-LDA-2018-0077", provincia: "Luanda", foto: "",
     rating: 0, totalAvaliacoes: 0, totalPlantoes: 0, verified: false,
     saldoCarteira: 0, bio: "Cardiologista com 10 anos de experiência.",
     estadoVerificacao: "PENDENTE", email: "antonio.sebastiao@email.com", criadoEm: "2026-04-20T08:00:00",
   },
   {
-    id: "med-006", nome: "Dra. Sofia Teixeira", especialidade: "Pediatria",
-    numeroOrdem: "CDOM-HB-2022-0211", provincia: "Huambo", foto: "",
+    id: "med-006", nome: "Enf.ª Sofia Teixeira", tipo: "ENFERMEIRO" as TipoProfissional, especialidade: "Enfermagem de Urgência" as Especialidade,
+    numeroOrdem: "OE-LDA-2022-0211", numeroSinome: "SINOME-LDA-2022-0211", provincia: "Luanda", foto: "",
     rating: 0, totalAvaliacoes: 0, totalPlantoes: 0, verified: false,
-    saldoCarteira: 0, bio: "Pediatra recém-chegada à cidade.",
+    saldoCarteira: 0, bio: "Enfermeira de urgência recém-chegada à cidade.",
     estadoVerificacao: "PENDENTE", email: "sofia.teixeira@email.com", criadoEm: "2026-04-22T15:30:00",
   },
   {
-    id: "med-007", nome: "Dr. Carlos Mendes", especialidade: "Medicina Geral",
-    numeroOrdem: "CDOM-HB-2020-0099", provincia: "Huambo", foto: "",
+    id: "med-007", nome: "Dr. Carlos Mendes", tipo: "MEDICO" as TipoProfissional, especialidade: "Medicina Geral" as Especialidade,
+    numeroOrdem: "OA-LDA-2020-0099", numeroSinome: "SINOME-LDA-2020-0099", provincia: "Luanda", foto: "",
     rating: 0, totalAvaliacoes: 0, totalPlantoes: 0, verified: false,
     saldoCarteira: 0, bio: "Médico geral.",
     estadoVerificacao: "REJEITADO", email: "carlos.mendes@email.com", criadoEm: "2026-04-10T10:00:00",
@@ -437,13 +453,13 @@ export const adminClinicasMock: AdminClinica[] = [
   { ...clinicasMock[2], estadoVerificacao: "APROVADO", email: "geral@clinicacentral.ao",   nif: "500345678", criadoEm: "2026-02-05T10:00:00" },
   {
     id: "cli-004", nome: "Clínica Nova Vida", morada: "Rua dos Plátanos, Nº 30",
-    cidade: "Bairro Académico", provincia: "Huambo", logo: "",
+    cidade: "Kilamba", provincia: "Luanda", logo: "",
     rating: 0, totalAvaliacoes: 0, verified: false,
     estadoVerificacao: "PENDENTE", email: "novavida@email.com", nif: "500456789", criadoEm: "2026-04-19T14:00:00",
   },
   {
-    id: "cli-005", nome: "Policlínica Bem-Estar", morada: "Av. Norton de Matos, Nº 5",
-    cidade: "Centro", provincia: "Huambo", logo: "",
+    id: "cli-005", nome: "Policlínica Bem-Estar", morada: "Av. Talatona, Nº 5",
+    cidade: "Talatona", provincia: "Luanda", logo: "",
     rating: 0, totalAvaliacoes: 0, verified: false,
     estadoVerificacao: "PENDENTE", email: "bemestar@email.com", nif: "500567890", criadoEm: "2026-04-21T09:30:00",
   },

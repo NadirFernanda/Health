@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Planto — O teu próximo plantão está aqui",
-  description: "Conectamos médicos plantonistas verificados a clínicas em Angola.",
+  title: "MedFreela — Encontra o teu próximo turno",
+  description: "Marketplace de saúde que conecta médicos, enfermeiros e técnicos a clínicas em Luanda, Angola.",
 };
 
 export default function RootLayout({

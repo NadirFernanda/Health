@@ -27,7 +27,7 @@ export default function AdminMedicos() {
     <div className="p-4 space-y-4 pb-10 max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-base font-bold text-gray-900">Gestão de Médicos</h1>
+        <h1 className="text-base font-bold text-gray-900">Gestão de Profissionais</h1>
         <span className="bg-blue-50 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">{lista.length} total</span>
       </div>
 

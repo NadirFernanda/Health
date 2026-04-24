@@ -5,7 +5,7 @@ import { logoutAction } from "@/app/actions/auth";
 
 const navItems = [
   { href: "/admin",            label: "Dashboard", icon: "📊", exact: true },
-  { href: "/admin/medicos",    label: "Médicos",   icon: "👨‍⚕️" },
+  { href: "/admin/medicos",    label: "Profissionais",   icon: "🧑‍⚕️" },
   { href: "/admin/clinicas",   label: "Clínicas",  icon: "🏥" },
   { href: "/admin/plantoes",   label: "Plantões",  icon: "📋" },
   { href: "/admin/transacoes", label: "Finanças",  icon: "💰" },
@@ -18,9 +18,9 @@ export function AdminNav() {
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-[#1A6FBB] rounded-lg flex items-center justify-center font-black text-base">P</div>
+          <div className="w-8 h-8 bg-[#1A6FBB] rounded-lg flex items-center justify-center font-black text-base">M</div>
           <div>
-            <p className="font-bold text-sm leading-tight tracking-wide">PLANTO ADMIN</p>
+            <p className="font-bold text-sm leading-tight tracking-wide">MEDFREELA ADMIN</p>
             <p className="text-white/40 text-xs leading-tight">Painel de Gestão</p>
           </div>
         </div>
