@@ -20,7 +20,13 @@ export async function loginAction(
     return { error: "Preencha o e-mail e a palavra-passe." };
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  let user;
+  try {
+    user = await prisma.user.findUnique({ where: { email } });
+  } catch (e) {
+    console.error("[loginAction] DB error:", e);
+    return { error: "Erro de ligação à base de dados. Tente novamente." };
+  }
 
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
     return { error: "Credenciais inválidas. Verifique e tente novamente." };

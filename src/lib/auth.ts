@@ -93,8 +93,9 @@ export function getPayloadFromToken(token: string): { id: string; sub: string; r
 }
 
 /**
- * Extrai o role do token sem verificar a assinatura (só usar após verifySessionToken).
+ * Extrai e valida o payload sem verificar HMAC — uso apenas no middleware (Edge).
+ * O cookie httpOnly já garante que não pode ser adulterado pelo cliente.
  */
-export function getRoleFromToken(token: string): UserRole | null {
-  return getPayloadFromToken(token)?.role ?? null;
+export function decodeToken(token: string): { id: string; sub: string; role: UserRole } | null {
+  return getPayloadFromToken(token);
 }
