@@ -16,7 +16,13 @@ export default function ClinicaDashboard() {
             <h1 className="text-white font-bold text-xl">{clinicaLogada.nome}</h1>
             <p className="text-blue-200 text-xs mt-0.5">📍 {clinicaLogada.cidade}</p>
           </div>
-          <Link href="/clinica/conta" className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-lg">👤</Link>
+          <div className="flex gap-2">
+            <Link href="/clinica/notificacoes" className="relative w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-lg">
+              🔔
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center">2</span>
+            </Link>
+            <Link href="/clinica/conta" className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-lg">👤</Link>
+          </div>
         </div>
         {clinicaLogada.verified && (
           <span className="inline-flex items-center gap-1 bg-[#27AE60]/30 text-green-200 text-xs font-semibold px-2.5 py-1 rounded-full mt-2">

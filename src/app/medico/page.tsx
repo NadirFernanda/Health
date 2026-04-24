@@ -21,7 +21,10 @@ export default function MedicoDashboard() {
             <h1 className="text-white font-bold text-xl">{medicoLogado.nome}</h1>
           </div>
           <div className="flex gap-2">
-            <button className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-lg">🔔</button>
+            <Link href="/medico/notificacoes" className="relative w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-lg">
+              🔔
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center">3</span>
+            </Link>
             <Link href="/medico/perfil" className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-lg">👤</Link>
           </div>
         </div>

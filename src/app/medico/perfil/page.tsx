@@ -1,15 +1,44 @@
+"use client";
+import { useState, useRef } from "react";
 import { medicoLogado } from "@/lib/mock-data";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
 
+type DocEstado = "APROVADO" | "PENDENTE" | "NAO_ENVIADO";
+
+interface Documento {
+  label: string;
+  estado: DocEstado;
+  ficheiro?: string;
+}
+
 export default function PerfilMedico() {
   const m = medicoLogado;
 
-  const credenciais = [
-    { label: "Cédula da Ordem dos Médicos", estado: "APROVADO" },
-    { label: "Licenciatura em Medicina (UJES)", estado: "APROVADO" },
-    { label: "Bilhete de Identidade", estado: "APROVADO" },
-  ];
+  const [docs, setDocs] = useState<Documento[]>([
+    { label: "Cédula da Ordem dos Médicos", estado: "APROVADO", ficheiro: "cedula_ordem.pdf" },
+    { label: "Bilhete de Identidade", estado: "APROVADO", ficheiro: "bi_joao_silva.pdf" },
+    { label: "Licenciatura em Medicina (UJES)", estado: "APROVADO", ficheiro: "licenciatura_medicina.pdf" },
+    { label: "Comprovativo de SINOME", estado: "PENDENTE", ficheiro: "sinome_2026.pdf" },
+    { label: "Certificado de Especialidade (opcional)", estado: "NAO_ENVIADO" },
+  ]);
+
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const handleUpload = (index: number, file: File | undefined) => {
+    if (!file) return;
+    setDocs((prev) =>
+      prev.map((d, i) =>
+        i === index ? { ...d, ficheiro: file.name, estado: "PENDENTE" } : d
+      )
+    );
+  };
+
+  const estadoConfig: Record<DocEstado, { cls: string; icon: string; label: string }> = {
+    APROVADO:    { cls: "text-success-500", icon: "✅", label: "Verificado" },
+    PENDENTE:    { cls: "text-yellow-500",  icon: "⏳", label: "Em análise" },
+    NAO_ENVIADO: { cls: "text-gray-300",    icon: "📎", label: "Não enviado" },
+  };
 
   const avaliacoes = [
     { stars: 5, texto: "Excelente profissional, pontual e muito atencioso.", clinica: "Clínica Saúde+", data: "Mar 2026" },
@@ -89,17 +118,52 @@ export default function PerfilMedico() {
         </div>
       )}
 
-      {/* Credenciais */}
+      {/* Documentos / Upload */}
       <div className="bg-white mt-2 px-4 py-4 border-b border-gray-100">
-        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Documentos Verificados</h3>
-        <div className="space-y-2">
-          {credenciais.map((c) => (
-            <div key={c.label} className="flex items-center gap-2.5 text-sm">
-              <span className="text-[#27AE60]">✅</span>
-              <span className="text-gray-800">{c.label}</span>
-            </div>
-          ))}
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide">Documentos</h3>
+          <span className="text-xs text-gray-400">
+            {docs.filter((d) => d.estado === "APROVADO").length}/{docs.length} verificados
+          </span>
         </div>
+        <div className="space-y-3">
+          {docs.map((doc, i) => {
+            const cfg = estadoConfig[doc.estado];
+            return (
+              <div key={doc.label} className="flex items-center gap-3">
+                <span className={`text-base shrink-0 ${cfg.cls}`}>{cfg.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-800 truncate">{doc.label}</p>
+                  {doc.ficheiro ? (
+                    <p className="text-xs text-gray-400 font-mono truncate">{doc.ficheiro}</p>
+                  ) : (
+                    <p className="text-xs text-gray-300">Nenhum ficheiro</p>
+                  )}
+                </div>
+                <div className="shrink-0 flex items-center gap-2">
+                  <span className={`text-xs font-semibold ${cfg.cls}`}>{cfg.label}</span>
+                  {/* Inputs escondidos */}
+                  <input
+                    ref={(el) => { inputRefs.current[i] = el; }}
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    className="hidden"
+                    onChange={(e) => handleUpload(i, e.target.files?.[0])}
+                  />
+                  {doc.estado !== "APROVADO" && (
+                    <button
+                      onClick={() => inputRefs.current[i]?.click()}
+                      className="text-xs text-brand-500 font-semibold border border-brand-200 px-2 py-1 rounded-lg hover:bg-brand-50 transition-colors"
+                    >
+                      {doc.estado === "NAO_ENVIADO" ? "Carregar" : "Substituir"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-xs text-gray-400 mt-3">Formatos aceites: PDF, JPG, PNG · Máx. 10 MB por ficheiro</p>
       </div>
 
       {/* Avaliações */}
