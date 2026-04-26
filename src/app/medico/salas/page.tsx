@@ -26,15 +26,15 @@ function SalaCard({ sala }: { sala: Sala }) {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden active:opacity-90 transition-opacity">
         <div className="px-4 pt-4 pb-3 flex items-start justify-between gap-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
-              <Building2 size={20} strokeWidth={1.75} className="text-purple-600" />
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+              <Building2 size={20} strokeWidth={1.75} className="text-[#1A6FBB]" />
             </div>
             <div>
               <p className="font-semibold text-sm text-gray-900">{sala.clinica.nome}</p>
               <p className="flex items-center gap-1 text-xs text-gray-500"><MapPin size={10} strokeWidth={1.75} /> {sala.zona}</p>
             </div>
           </div>
-          <span className="bg-purple-50 text-purple-700 text-xs font-semibold px-2 py-0.5 rounded-full shrink-0">
+          <span className="bg-blue-50 text-[#1A6FBB] text-xs font-semibold px-2 py-0.5 rounded-full shrink-0">
             {tipoLabel[sala.tipo]}
           </span>
         </div>
@@ -73,9 +73,9 @@ export default function BuscarSalas() {
       <TopBar titulo="Salas & Consultórios" back="/medico" />
 
       {/* Banner */}
-      <div className="mx-4 mt-4 bg-gradient-to-r from-purple-600 to-purple-800 rounded-2xl p-4 text-white">
+      <div className="mx-4 mt-4 bg-gradient-to-r from-[#1A6FBB] to-[#0D4F8A] rounded-2xl p-4 text-white">
         <p className="font-bold text-sm">Space-as-a-Service</p>
-        <p className="text-purple-200 text-xs mt-1">Reserve um consultório por hora dentro de uma clínica verificada</p>
+        <p className="text-blue-200 text-xs mt-1">Reserve um consultório por hora dentro de uma clínica verificada</p>
       </div>
 
       {/* Filtro zona */}

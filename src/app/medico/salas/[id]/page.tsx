@@ -240,7 +240,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
       {/* Header */}
       <div className="bg-white px-4 py-5 border-b border-gray-100">
         <div className="flex items-center gap-3">
-          <div className="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center text-2xl font-bold text-purple-700">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-2xl font-bold text-[#1A6FBB]">
             {sala.clinica.nome.charAt(0)}
           </div>
           <div>
@@ -253,7 +253,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
           </div>
         </div>
         <div className="mt-3 flex items-center gap-2">
-          <span className="bg-purple-50 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-full">{tipoLabel[sala.tipo]}</span>
+          <span className="bg-blue-50 text-[#1A6FBB] text-xs font-bold px-2.5 py-1 rounded-full">{tipoLabel[sala.tipo]}</span>
           <span className="bg-success-50 text-success-700 text-xs font-bold px-2.5 py-1 rounded-full inline-flex items-center gap-1">
             <CheckCircle size={12} strokeWidth={2.25} /> Disponível
           </span>
