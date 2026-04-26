@@ -173,6 +173,7 @@ model Profissional {
   avaliacoesRecebidas Avaliacao[]        @relation("AlvoMedicoAvaliacao")
   reservas            ReservaSala[]
   transacoes          TransacaoCarteira[]
+  plantoesPublicados  Plantao[]          @relation("PlantaoPublicadoPorMedico")
 
   @@index([tipo])
   @@index([especialidade])
@@ -213,8 +214,11 @@ model Clinica {
 
 model Plantao {
   id               String           @id @default(cuid())
-  clinicaId        String
-  clinica          Clinica          @relation(fields: [clinicaId], references: [id])
+  clinicaId        String?
+  clinica          Clinica?         @relation(fields: [clinicaId], references: [id])
+  profissionalPublicadorId String?
+  profissionalPublicador   Profissional? @relation("PlantaoPublicadoPorMedico", fields: [profissionalPublicadorId], references: [id])
+  publicadoPorMedico       Boolean  @default(false)
   salaId           String?
   sala             Sala?            @relation(fields: [salaId], references: [id])
   tipoProfissional TipoProfissional @default(MEDICO)

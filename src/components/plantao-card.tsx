@@ -1,7 +1,7 @@
 import { Plantao, formatAOA, formatData, formatHora, calcularDuracao } from "@/lib/mock-data";
 import Link from "next/link";
 import {
-  Check, X, MapPin, Stethoscope, Calendar, Clock, Banknote, Users, BadgeCheck,
+  Check, X, MapPin, Stethoscope, Calendar, Clock, Banknote, Users, BadgeCheck, UserRound,
 } from "lucide-react";
 
 const tipoProfissionalLabel: Record<string, string> = {
@@ -50,24 +50,38 @@ export function PlantaoCard({
   showCandidatarBtn = true,
   showCandidatos = false,
 }: PlantaoCardProps) {
-  const { clinica, tipoProfissional, especialidade, dataInicio, dataFim, valorKwanzas, vagas, vagasPreenchidas, estado, equipamentos } = plantao;
+  const { clinica, publicadoPorMedico, profissionalPublicador, tipoProfissional, especialidade, dataInicio, dataFim, valorKwanzas, vagas, vagasPreenchidas, estado, equipamentos } = plantao as Plantao & { publicadoPorMedico?: boolean; profissionalPublicador?: { nome: string; especialidade: string } | null };
   const eq = equipamentos;
+
+  // Cabeçalho: clínica ou médico-publicador
+  const headerNome = publicadoPorMedico && profissionalPublicador
+    ? profissionalPublicador.nome
+    : clinica?.nome ?? "";
+  const headerSub = publicadoPorMedico && profissionalPublicador
+    ? `Substituto · ${profissionalPublicador.especialidade}`
+    : `${clinica?.cidade ?? ""}, ${clinica?.provincia ?? ""}`;
+  const headerVerified = !publicadoPorMedico && clinica?.verified;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-      {/* Header da clínica */}
+      {/* Header */}
       <div className="px-4 pt-4 pb-3 flex items-start justify-between gap-2">
         <div className="flex items-center gap-3">
           <div>
             <div className="flex items-center gap-1.5">
-              <p className="font-semibold text-sm text-gray-900">{clinica.nome}</p>
-              {clinica.verified && (
+              {publicadoPorMedico && (
+                <span className="inline-flex items-center gap-1 text-xs font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">
+                  <UserRound size={11} strokeWidth={2} /> Substituto
+                </span>
+              )}
+              <p className="font-semibold text-sm text-gray-900">{headerNome}</p>
+              {headerVerified && (
                 <BadgeCheck size={14} className="text-success-500" strokeWidth={2} />
               )}
             </div>
             <p className="text-xs text-gray-500 flex items-center gap-1">
               <MapPin size={11} strokeWidth={1.75} />
-              {clinica.cidade}, {clinica.provincia}
+              {headerSub}
             </p>
           </div>
         </div>

@@ -131,6 +131,16 @@ export default function MedicoDashboard() {
         </div>
       )}
 
+      {/* Acção rápida: publicar substituto */}
+      <div className="px-4 pt-4">
+        <Link href="/medico/publicar-plantao" className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
+          <div>
+            <p className="font-bold text-sm text-amber-800">Tens um plantão que não podes fazer?</p>
+            <p className="text-xs text-amber-600 mt-0.5">Publica a vaga e paga um substituto →</p>
+          </div>
+        </Link>
+      </div>
+
       {/* Plantões disponíveis */}
       <div className="px-4 pt-5">
         <div className="flex items-center justify-between mb-3">

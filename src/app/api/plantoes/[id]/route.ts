@@ -9,6 +9,7 @@ export async function GET(
     where: { id },
     include: {
       clinica: true,
+      profissionalPublicador: true,
       _count: { select: { candidaturas: true } },
     },
   });
@@ -17,7 +18,8 @@ export async function GET(
 
   return Response.json({
     id: p.id,
-    clinica: {
+    publicadoPorMedico: p.publicadoPorMedico,
+    clinica: p.clinica ? {
       id: p.clinica.id,
       nome: p.clinica.nome,
       morada: p.clinica.morada,
@@ -27,7 +29,14 @@ export async function GET(
       rating: p.clinica.rating,
       totalAvaliacoes: p.clinica.totalAvaliacoes,
       verified: p.clinica.verified,
-    },
+    } : null,
+    profissionalPublicador: p.profissionalPublicador ? {
+      id: p.profissionalPublicador.id,
+      nome: p.profissionalPublicador.nome,
+      especialidade: p.profissionalPublicador.especialidade,
+      rating: p.profissionalPublicador.rating,
+      verified: p.profissionalPublicador.verified,
+    } : null,
     tipoProfissional: p.tipoProfissional,
     especialidade: p.especialidade,
     dataInicio: p.dataInicio.toISOString(),
