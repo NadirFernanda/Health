@@ -17,6 +17,7 @@ export async function GET(
     nome: s.nome,
     tipo: s.tipo,
     precoPorHora: s.precoPorHora,
+    precoPorHoraCentavos: s.precoPorHoraCentavos?.toString() ?? null,
     zona: s.zona,
     descricao: s.descricao ?? "",
     disponivel: s.disponivel,

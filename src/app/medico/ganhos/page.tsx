@@ -4,8 +4,9 @@ import { TopBar } from "@/components/nav";
 import { redirect } from "next/navigation";
 import { TrendingUp, ArrowUp } from "lucide-react";
 
-function formatAOA(v: number) {
-  return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
+function formatAOA(centavos: bigint) {
+  const inteiro = centavos / 100n;
+  return new Intl.NumberFormat("pt-AO").format(Number(inteiro)) + " AOA";
 }
 
 export default async function GanhosMedico() {
@@ -22,7 +23,7 @@ export default async function GanhosMedico() {
 
   const pendente = transacoes
     .filter((t) => t.tipo === "CREDITO" && t.estado === "PENDENTE")
-    .reduce((sum, t) => sum + t.valor, 0);
+    .reduce((sum, t) => sum + t.valorCentavos, 0n);
 
   return (
     <div>
@@ -31,8 +32,8 @@ export default async function GanhosMedico() {
       {/* Saldo */}
       <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] px-5 py-6 mx-4 mt-4 rounded-2xl">
         <p className="text-blue-200 text-sm">Saldo disponível</p>
-        <p className="text-white text-4xl font-bold mt-1">{formatAOA(prof.saldoCarteira)}</p>
-        {pendente > 0 && (
+        <p className="text-white text-4xl font-bold mt-1">{formatAOA(prof.saldoCarteiraCentavos)}</p>
+        {pendente > 0n && (
           <p className="text-blue-200 text-xs mt-2">
             🕐 {formatAOA(pendente)} em processamento (liberação em 24h)
           </p>
@@ -63,7 +64,7 @@ export default async function GanhosMedico() {
               </div>
               <div className="text-right shrink-0">
                 <p className={`font-bold text-sm ${t.tipo === "CREDITO" ? "text-[#27AE60]" : "text-gray-600"}`}>
-                  {t.tipo === "CREDITO" ? "+" : "-"}{formatAOA(t.valor)}
+                  {t.tipo === "CREDITO" ? "+" : "-"}{formatAOA(t.valorCentavos)}
                 </p>
                 {t.estado === "PENDENTE" && (
                   <span className="text-xs text-yellow-600 font-medium">Pendente</span>

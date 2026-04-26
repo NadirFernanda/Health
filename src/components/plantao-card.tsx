@@ -4,6 +4,13 @@ import {
   Check, X, MapPin, Stethoscope, Calendar, Clock, Banknote, Users, BadgeCheck,
 } from "lucide-react";
 
+const tipoProfissionalLabel: Record<string, string> = {
+  MEDICO: "Médico",
+  ENFERMEIRO: "Enfermeiro",
+  TECNICO_SAUDE: "Técnico Saúde",
+  OUTRO: "Outro",
+};
+
 function EstadoBadge({ estado }: { estado: Plantao["estado"] }) {
   const map: Record<Plantao["estado"], { label: string; cls: string }> = {
     ABERTO:       { label: "Aberto",        cls: "bg-success-50 text-success-700" },
@@ -43,7 +50,7 @@ export function PlantaoCard({
   showCandidatarBtn = true,
   showCandidatos = false,
 }: PlantaoCardProps) {
-  const { clinica, especialidade, dataInicio, dataFim, valorKwanzas, vagas, vagasPreenchidas, estado, equipamentos } = plantao;
+  const { clinica, tipoProfissional, especialidade, dataInicio, dataFim, valorKwanzas, vagas, vagasPreenchidas, estado, equipamentos } = plantao;
   const eq = equipamentos;
 
   return (
@@ -71,6 +78,11 @@ export function PlantaoCard({
       </div>
 
       <div className="px-4 pb-3 border-t border-gray-50 pt-3 space-y-1.5">
+        {tipoProfissional && (
+          <span className="inline-block text-xs font-semibold bg-blue-50 text-[#1A6FBB] px-2 py-0.5 rounded-full mb-0.5">
+            {tipoProfissionalLabel[tipoProfissional] ?? tipoProfissional}
+          </span>
+        )}
         <div className="flex items-center gap-4 text-sm">
           <span className="flex items-center gap-1.5 text-gray-500">
             <Stethoscope size={13} strokeWidth={1.75} />

@@ -14,7 +14,7 @@ export type Especialidade =
   | "Técnico de Análises Clínicas"
   | "Técnico de Radiologia";
 
-export type TipoProfissional = "MEDICO" | "ENFERMEIRO" | "TECNICO_SAUDE";
+export type TipoProfissional = "MEDICO" | "ENFERMEIRO" | "TECNICO_SAUDE" | "OUTRO";
 
 export interface Medico {
   id: string;
@@ -61,6 +61,7 @@ export interface Clinica {
 export interface Plantao {
   id: string;
   clinica: Clinica;
+  tipoProfissional: TipoProfissional;
   especialidade: Especialidade;
   dataInicio: string;
   dataFim: string;
@@ -83,8 +84,9 @@ export interface Candidatura {
 export interface TransacaoCarteira {
   id: string;
   tipo: "CREDITO" | "DEBITO";
-  valor: number;
+  valorCentavos: bigint;
   descricao: string;
+  referencia?: string;
   data: string;
   estado: "PROCESSADO" | "PENDENTE";
 }
@@ -173,6 +175,7 @@ export const plantoesMock: Plantao[] = [
   {
     id: "pla-001",
     clinica: clinicasMock[0],
+    tipoProfissional: "MEDICO",
     especialidade: "Medicina Geral",
     dataInicio: "2026-04-24T08:00:00",
     dataFim: "2026-04-24T20:00:00",
@@ -188,6 +191,7 @@ export const plantoesMock: Plantao[] = [
   {
     id: "pla-002",
     clinica: clinicasMock[1],
+    tipoProfissional: "MEDICO",
     especialidade: "Medicina Geral",
     dataInicio: "2026-04-26T20:00:00",
     dataFim: "2026-04-27T08:00:00",
@@ -202,6 +206,7 @@ export const plantoesMock: Plantao[] = [
   {
     id: "pla-003",
     clinica: clinicasMock[2],
+    tipoProfissional: "MEDICO",
     especialidade: "Pediatria",
     dataInicio: "2026-04-25T08:00:00",
     dataFim: "2026-04-25T20:00:00",
@@ -216,15 +221,16 @@ export const plantoesMock: Plantao[] = [
   {
     id: "pla-004",
     clinica: clinicasMock[0],
-    especialidade: "Medicina Geral",
+    tipoProfissional: "ENFERMEIRO",
+    especialidade: "Enfermagem Geral",
     dataInicio: "2026-04-28T08:00:00",
     dataFim: "2026-04-28T20:00:00",
-    valorKwanzas: 15000,
+    valorKwanzas: 12000,
     vagas: 1,
     vagasPreenchidas: 0,
     estado: "ABERTO",
     equipamentos: equipamentosCompletos,
-    descricao: "Consulta externa geral. Atendimento adultos.",
+    descricao: "Enfermagem de apoio à consulta externa. Atendimento adultos.",
     candidatos: 2,
   },
 ];
@@ -254,7 +260,7 @@ export const transacoesMock: TransacaoCarteira[] = [
   {
     id: "tx-001",
     tipo: "CREDITO",
-    valor: 15000,
+    valorCentavos: 1500000n,
     descricao: "Plantão — Clínica Horizonte",
     data: "2026-04-22T20:00:00",
     estado: "PROCESSADO",
@@ -262,7 +268,7 @@ export const transacoesMock: TransacaoCarteira[] = [
   {
     id: "tx-002",
     tipo: "CREDITO",
-    valor: 20000,
+    valorCentavos: 2000000n,
     descricao: "Plantão noturno — Clínica Saúde+",
     data: "2026-04-18T08:00:00",
     estado: "PROCESSADO",
@@ -270,15 +276,16 @@ export const transacoesMock: TransacaoCarteira[] = [
   {
     id: "tx-003",
     tipo: "DEBITO",
-    valor: 10000,
+    valorCentavos: 1000000n,
     descricao: "Levantamento — Multicaixa Express",
+    referencia: "MCX-2026-0042",
     data: "2026-04-15T11:00:00",
     estado: "PROCESSADO",
   },
   {
     id: "tx-004",
     tipo: "CREDITO",
-    valor: 15000,
+    valorCentavos: 1500000n,
     descricao: "Plantão — Clínica Central",
     data: "2026-04-10T20:00:00",
     estado: "PROCESSADO",
@@ -286,7 +293,7 @@ export const transacoesMock: TransacaoCarteira[] = [
   {
     id: "tx-005",
     tipo: "CREDITO",
-    valor: 15000,
+    valorCentavos: 1500000n,
     descricao: "Plantão — Clínica Horizonte (em processamento)",
     data: "2026-04-23T00:00:00",
     estado: "PENDENTE",
@@ -297,6 +304,7 @@ export const plantoesDaClinica: Plantao[] = [
   {
     id: "pla-cli-001",
     clinica: clinicaLogada,
+    tipoProfissional: "MEDICO",
     especialidade: "Medicina Geral",
     dataInicio: "2026-04-24T08:00:00",
     dataFim: "2026-04-24T20:00:00",
@@ -311,15 +319,16 @@ export const plantoesDaClinica: Plantao[] = [
   {
     id: "pla-cli-002",
     clinica: clinicaLogada,
-    especialidade: "Medicina Geral",
+    tipoProfissional: "ENFERMEIRO",
+    especialidade: "Enfermagem Geral",
     dataInicio: "2026-04-26T20:00:00",
     dataFim: "2026-04-27T08:00:00",
-    valorKwanzas: 20000,
+    valorKwanzas: 12000,
     vagas: 1,
     vagasPreenchidas: 0,
     estado: "ABERTO",
     equipamentos: { ...equipamentosCompletos, computador: false },
-    descricao: "Plantão noturno.",
+    descricao: "Plantão noturno de enfermagem.",
     candidatos: 1,
   },
 ];
@@ -469,11 +478,11 @@ export const adminClinicasMock: AdminClinica[] = [
 
 export const allTransacoesMock = [
   ...transacoesMock,
-  { id: "tx-006", tipo: "CREDITO" as const, valor: 18000, descricao: "Plantão Pediatria — Clínica Central",          data: "2026-04-08T20:00:00", estado: "PROCESSADO" as const },
-  { id: "tx-007", tipo: "CREDITO" as const, valor: 20000, descricao: "Plantão noturno — Clínica Horizonte",          data: "2026-04-05T08:00:00", estado: "PROCESSADO" as const },
-  { id: "tx-008", tipo: "CREDITO" as const, valor: 15000, descricao: "Plantão — Clínica Saúde+",                     data: "2026-04-01T20:00:00", estado: "PROCESSADO" as const },
-  { id: "tx-009", tipo: "DEBITO"  as const, valor: 25000, descricao: "Levantamento — Multicaixa Express",            data: "2026-03-28T11:00:00", estado: "PROCESSADO" as const },
-  { id: "tx-010", tipo: "CREDITO" as const, valor: 15000, descricao: "Plantão — Dra. Ana Ferreira / Cl. Horizonte", data: "2026-03-25T20:00:00", estado: "PROCESSADO" as const },
+  { id: "tx-006", tipo: "CREDITO" as const, valorCentavos: 1800000n, descricao: "Plantão Pediatria — Clínica Central",          data: "2026-04-08T20:00:00", estado: "PROCESSADO" as const },
+  { id: "tx-007", tipo: "CREDITO" as const, valorCentavos: 2000000n, descricao: "Plantão noturno — Clínica Horizonte",          data: "2026-04-05T08:00:00", estado: "PROCESSADO" as const },
+  { id: "tx-008", tipo: "CREDITO" as const, valorCentavos: 1500000n, descricao: "Plantão — Clínica Saúde+",                     data: "2026-04-01T20:00:00", estado: "PROCESSADO" as const },
+  { id: "tx-009", tipo: "DEBITO"  as const, valorCentavos: 2500000n, descricao: "Levantamento — Multicaixa Express",            data: "2026-03-28T11:00:00", estado: "PROCESSADO" as const },
+  { id: "tx-010", tipo: "CREDITO" as const, valorCentavos: 1500000n, descricao: "Plantão — Dra. Ana Ferreira / Cl. Horizonte", data: "2026-03-25T20:00:00", estado: "PROCESSADO" as const },
 ];
 
 export const adminStats = {

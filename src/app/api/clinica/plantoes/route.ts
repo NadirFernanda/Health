@@ -3,7 +3,8 @@ import { requireSession, getClinicaFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 
 function plantaoToJson(p: {
-  id: string; especialidade: string; dataInicio: Date; dataFim: Date; valorKwanzas: number;
+  id: string; tipoProfissional: string; especialidade: string; dataInicio: Date; dataFim: Date; valorKwanzas: number;
+  salaId: string | null;
   vagas: number; vagasPreenchidas: number; estado: string; descricao: string | null;
   maca: boolean; estetoscopio: boolean; tensiometro: boolean; termometro: boolean; computador: boolean;
   materiaisBasicos: boolean; nebulizador: boolean; oximetro: boolean; glucometro: boolean; desfibrilador: boolean;
@@ -11,7 +12,9 @@ function plantaoToJson(p: {
 }) {
   return {
     id: p.id,
+    tipoProfissional: p.tipoProfissional,
     especialidade: p.especialidade,
+    salaId: p.salaId,
     dataInicio: p.dataInicio.toISOString(),
     dataFim: p.dataFim.toISOString(),
     valorKwanzas: p.valorKwanzas,
@@ -50,7 +53,7 @@ export async function POST(request: NextRequest) {
   if (!clinica) return Response.json({ error: "Clínica não encontrada" }, { status: 404 });
 
   const body = await request.json();
-  const { especialidade, dataInicio, dataFim, valorKwanzas, vagas, descricao, equipamentos } = body;
+  const { tipoProfissional, especialidade, dataInicio, dataFim, valorKwanzas, vagas, descricao, salaId, equipamentos } = body;
 
   if (!especialidade || !dataInicio || !dataFim || !valorKwanzas || !vagas) {
     return Response.json({ error: "Campos obrigatórios em falta" }, { status: 400 });
@@ -59,12 +62,15 @@ export async function POST(request: NextRequest) {
   const plantao = await prisma.plantao.create({
     data: {
       clinicaId: clinica.id,
+      tipoProfissional: tipoProfissional ?? "MEDICO",
       especialidade,
       dataInicio: new Date(dataInicio),
       dataFim: new Date(dataFim),
       valorKwanzas: parseInt(valorKwanzas),
+      valorCentavos: BigInt(parseInt(valorKwanzas)) * 100n,
       vagas: parseInt(vagas),
       descricao,
+      salaId: salaId ?? null,
       ...(equipamentos ?? {}),
     },
   });

@@ -10,11 +10,17 @@ export async function GET() {
     id: clinica.id,
     nome: clinica.nome,
     morada: clinica.morada ?? "",
+    bairro: clinica.bairro ?? "",
     cidade: clinica.cidade ?? "",
     provincia: clinica.provincia,
+    zonaLuanda: clinica.zonaLuanda ?? "",
+    contacto: clinica.contacto ?? "",
+    website: clinica.website ?? "",
+    descricao: clinica.descricao ?? "",
     logo: clinica.logo ?? "",
     rating: clinica.rating,
     totalAvaliacoes: clinica.totalAvaliacoes,
     verified: clinica.verified,
+    criadoEm: clinica.criadoEm.toISOString(),
   });
 }

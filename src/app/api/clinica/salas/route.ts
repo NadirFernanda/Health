@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
       nome,
       tipo,
       precoPorHora: parseInt(precoPorHora),
+      precoPorHoraCentavos: BigInt(parseInt(precoPorHora)) * 100n,
       zona,
       descricao,
       ...(equipamentos ?? {}),

@@ -6,11 +6,18 @@ import { EmptyState } from "@/components/empty-state";
 import { Search } from "lucide-react";
 
 type PlantaoAPI = {
-  id: string; especialidade: string; dataInicio: string; dataFim: string;
+  id: string; tipoProfissional: string; especialidade: string; dataInicio: string; dataFim: string;
   valorKwanzas: number; vagas: number; vagasPreenchidas: number; estado: string;
   descricao: string; clinica: { id: string; nome: string; morada: string; cidade: string; provincia: string; logo: string; rating: number; totalAvaliacoes: number; verified: boolean };
   equipamentos: Record<string, boolean>;
 };
+
+const tiposProfissional = [
+  { value: "Todos", label: "Todos" },
+  { value: "MEDICO", label: "Médico" },
+  { value: "ENFERMEIRO", label: "Enfermeiro" },
+  { value: "TECNICO_SAUDE", label: "Técnico Saúde" },
+];
 
 const especialidades = [
   "Medicina Geral", "Pediatria", "Ginecologia", "Cardiologia",
@@ -24,6 +31,7 @@ const zonas = ["Centralidade Horizonte", "Talatona", "Miramar", "Alvalade", "Kil
 export default function BuscarPlantoes() {
   const [plantoes, setPlantoes] = useState<PlantaoAPI[]>([]);
   const [filtroEsp, setFiltroEsp] = useState<string>("Todas");
+  const [filtroTipo, setFiltroTipo] = useState<string>("Todos");
   const [filtroValor, setFiltroValor] = useState<string>("todos");
   const [filtroZona, setFiltroZona] = useState<string>("Todas");
   const [disponivelAgora, setDisponivelAgora] = useState(false);
@@ -31,12 +39,13 @@ export default function BuscarPlantoes() {
   useEffect(() => {
     const params = new URLSearchParams();
     if (filtroEsp !== "Todas") params.set("especialidade", filtroEsp);
+    if (filtroTipo !== "Todos") params.set("tipoProfissional", filtroTipo);
     if (filtroZona !== "Todas") params.set("zona", filtroZona);
     if (disponivelAgora) params.set("disponivelAgora", "true");
     fetch(`/api/plantoes?${params}`).then((r) => r.json()).then((d) => {
       if (Array.isArray(d)) setPlantoes(d);
     });
-  }, [filtroEsp, filtroZona, disponivelAgora]);
+  }, [filtroEsp, filtroTipo, filtroZona, disponivelAgora]);
 
   const agora = new Date();
   const plantoesFiltrados = plantoes.filter((p) => {
@@ -66,6 +75,26 @@ export default function BuscarPlantoes() {
         >
           <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${disponivelAgora ? "left-6" : "left-0.5"}`} />
         </button>
+      </div>
+
+      {/* Filtro tipo profissional */}
+      <div className="px-4 pt-4">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Tipo de Profissional</p>
+        <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+          {tiposProfissional.map((t) => (
+            <button
+              key={t.value}
+              onClick={() => setFiltroTipo(t.value)}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                filtroTipo === t.value
+                  ? "bg-[#1A6FBB] text-white border-[#1A6FBB]"
+                  : "bg-white text-gray-600 border-gray-200"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Filtro zona */}

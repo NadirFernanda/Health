@@ -13,8 +13,11 @@ export async function GET() {
     nome: prof.nome,
     tipo: prof.tipo,
     especialidade: prof.especialidade,
+    subEspecialidade: prof.subEspecialidade ?? "",
+    anosExperiencia: prof.anosExperiencia ?? 0,
     numeroOrdem: prof.numeroOrdem ?? "",
     numeroSinome: prof.numeroSinome ?? "",
+    numeroOma: prof.numeroOma ?? "",
     provincia: prof.provincia,
     foto: prof.foto ?? "",
     bio: prof.bio ?? "",
@@ -23,6 +26,7 @@ export async function GET() {
     totalPlantoes: prof.totalPlantoes,
     verified: prof.verified,
     saldoCarteira: prof.saldoCarteira,
+    saldoCentavos: prof.saldoCarteiraCentavos.toString(),
     disponivelAgora: prof.disponivelAgora,
   });
 }
@@ -39,6 +43,8 @@ export async function PATCH(request: NextRequest) {
     data: {
       ...(typeof body.disponivelAgora === "boolean" && { disponivelAgora: body.disponivelAgora }),
       ...(body.bio !== undefined && { bio: body.bio }),
+      ...(body.subEspecialidade !== undefined && { subEspecialidade: body.subEspecialidade }),
+      ...(body.anosExperiencia !== undefined && { anosExperiencia: parseInt(body.anosExperiencia) }),
     },
   });
 

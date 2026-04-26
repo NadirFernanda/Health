@@ -23,6 +23,7 @@ export async function GET() {
       horaInicio: r.horaInicio,
       duracaoHoras: r.duracaoHoras,
       valorTotal: r.valorTotal,
+      valorTotalCentavos: r.valorTotalCentavos?.toString() ?? null,
       criadoEm: r.criadoEm.toISOString(),
       sala: {
         id: r.sala.id,
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
   }
 
   const valorTotal = sala.precoPorHora * duracaoHoras;
+  const valorTotalCentavos = BigInt(sala.precoPorHora) * BigInt(duracaoHoras) * 100n;
   const reserva = await prisma.reservaSala.create({
     data: {
       salaId,
@@ -64,8 +66,9 @@ export async function POST(request: NextRequest) {
       horaInicio,
       duracaoHoras,
       valorTotal,
+      valorTotalCentavos,
     },
   });
 
-  return Response.json({ id: reserva.id, codigoQr: reserva.codigoQr, valorTotal }, { status: 201 });
+  return Response.json({ id: reserva.id, codigoQr: reserva.codigoQr, valorTotal, valorTotalCentavos: valorTotalCentavos.toString() }, { status: 201 });
 }

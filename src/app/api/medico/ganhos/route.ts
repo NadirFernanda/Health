@@ -14,12 +14,14 @@ export async function GET() {
 
   return Response.json({
     saldo: prof.saldoCarteira,
+    saldoCentavos: prof.saldoCarteiraCentavos.toString(),
     totalPlantoes: prof.totalPlantoes,
     transacoes: transacoes.map((t) => ({
       id: t.id,
       tipo: t.tipo,
-      valor: t.valor,
+      valorCentavos: t.valorCentavos.toString(),
       descricao: t.descricao,
+      referencia: t.referencia ?? null,
       data: t.criadoEm.toISOString(),
       estado: t.estado,
     })),
