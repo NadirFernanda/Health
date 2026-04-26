@@ -24,6 +24,7 @@ enum TipoProfissional {
   MEDICO
   ENFERMEIRO
   TECNICO_SAUDE
+  OUTRO
 }
 
 enum EstadoPlantao {
@@ -147,7 +148,7 @@ model Profissional {
   tipo                TipoProfissional   @default(MEDICO)
   especialidade       String
   numeroOrdem         String?
-  numeroSinome        String?
+  numeroSinome        String?            @unique
   numeroOma           String?
   provincia           String             @default("Luanda")
   cidade              String?
@@ -172,6 +173,11 @@ model Profissional {
   avaliacoesRecebidas Avaliacao[]        @relation("AlvoMedicoAvaliacao")
   reservas            ReservaSala[]
   transacoes          TransacaoCarteira[]
+
+  @@index([tipo])
+  @@index([especialidade])
+  @@index([verified])
+  @@index([disponivelAgora])
 }
 
 model Clinica {
@@ -194,25 +200,32 @@ model Clinica {
   rating          Float     @default(0)
   totalAvaliacoes Int       @default(0)
   verified        Boolean   @default(false)
+  criadoEm        DateTime  @default(now())
   updatedEm       DateTime  @updatedAt
 
   plantoes            Plantao[]
   salas               Sala[]
   avaliacoesRecebidas Avaliacao[] @relation("AlvoClinicaAvaliacao")
+
+  @@index([zonaLuanda])
+  @@index([verified])
 }
 
 model Plantao {
-  id               String        @id @default(cuid())
+  id               String           @id @default(cuid())
   clinicaId        String
-  clinica          Clinica       @relation(fields: [clinicaId], references: [id])
+  clinica          Clinica          @relation(fields: [clinicaId], references: [id])
+  salaId           String?
+  sala             Sala?            @relation(fields: [salaId], references: [id])
+  tipoProfissional TipoProfissional @default(MEDICO)
   especialidade    String
   dataInicio       DateTime
   dataFim          DateTime
   valorKwanzas     Int
   valorCentavos    BigInt?
   vagas            Int
-  vagasPreenchidas Int           @default(0)
-  estado           EstadoPlantao @default(ABERTO)
+  vagasPreenchidas Int              @default(0)
+  estado           EstadoPlantao   @default(ABERTO)
   descricao        String?
 
   // Equipamentos
@@ -232,6 +245,12 @@ model Plantao {
   avaliacoes   Avaliacao[]
   criadoEm    DateTime      @default(now())
   atualizadoEm DateTime     @updatedAt
+
+  @@index([clinicaId])
+  @@index([especialidade])
+  @@index([tipoProfissional])
+  @@index([dataInicio])
+  @@index([estado])
 }
 
 model Candidatura {
@@ -247,6 +266,9 @@ model Candidatura {
   pagamentos    Pagamento[]
 
   @@unique([plantaoId, profissionalId])
+  @@index([plantaoId])
+  @@index([profissionalId])
+  @@index([estado])
 }
 
 model Sala {
@@ -279,11 +301,16 @@ model Sala {
   glucometro       Boolean @default(false)
   desfibrilador    Boolean @default(false)
 
-  reservas   ReservaSala[]
+  reservas         ReservaSala[]
   disponibilidades DisponibilidadeSala[]
-  avaliacoes Avaliacao[]  @relation("AlvoSalaAvaliacao")
-  criadoEm  DateTime     @default(now())
-  atualizadoEm DateTime  @updatedAt
+  avaliacoes       Avaliacao[]  @relation("AlvoSalaAvaliacao")
+  plantoes         Plantao[]
+  criadoEm         DateTime     @default(now())
+  atualizadoEm     DateTime     @updatedAt
+
+  @@index([clinicaId])
+  @@index([tipo])
+  @@index([ativo])
 }
 
 model ReservaSala {
@@ -308,6 +335,10 @@ model ReservaSala {
   criadoEm      DateTime      @default(now())
   atualizadoEm  DateTime      @updatedAt
   pagamentos    Pagamento[]
+
+  @@index([salaId])
+  @@index([profissionalId])
+  @@index([estado])
 }
 
 model Avaliacao {
@@ -329,6 +360,11 @@ model Avaliacao {
   estrelas      Int
   comentario    String?
   criadoEm     DateTime      @default(now())
+
+  @@index([autorId])
+  @@index([alvoClinicaId])
+  @@index([alvoMedicoId])
+  @@index([plantaoId])
 }
 
 model Credencial {
@@ -347,6 +383,9 @@ model Credencial {
   verificadoEm     DateTime?
   criadoEm         DateTime         @default(now())
   atualizadoEm     DateTime         @updatedAt
+
+  @@index([profissionalId])
+  @@index([estado])
 }
 
 model DisponibilidadeSala {
@@ -405,10 +444,15 @@ model TransacaoCarteira {
   profissionalId String
   profissional   Profissional    @relation(fields: [profissionalId], references: [id])
   tipo           TipoTransacao
-  valor          Int
+  valorCentavos  BigInt
   descricao      String
+  referencia     String?
   estado         EstadoTransacao @default(PROCESSADO)
   criadoEm      DateTime        @default(now())
+
+  @@index([profissionalId])
+  @@index([tipo])
+  @@index([criadoEm])
 }
 
 model Notificacao {
@@ -421,5 +465,8 @@ model Notificacao {
   href     String?
   lida     Boolean  @default(false)
   criadoEm DateTime @default(now())
+
+  @@index([userId])
+  @@index([lida])
 }
 

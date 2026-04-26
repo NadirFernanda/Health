@@ -28,6 +28,7 @@ export async function GET(
       totalAvaliacoes: p.clinica.totalAvaliacoes,
       verified: p.clinica.verified,
     },
+    tipoProfissional: p.tipoProfissional,
     especialidade: p.especialidade,
     dataInicio: p.dataInicio.toISOString(),
     dataFim: p.dataFim.toISOString(),

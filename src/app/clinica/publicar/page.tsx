@@ -9,6 +9,13 @@ const especialidades = [
   "Cirurgia", "Ortopedia", "Dermatologia", "Psiquiatria",
 ];
 
+const tiposProfissional = [
+  { value: "MEDICO", label: "Médico" },
+  { value: "ENFERMEIRO", label: "Enfermeiro" },
+  { value: "TECNICO_SAUDE", label: "Técnico de Saúde" },
+  { value: "OUTRO", label: "Outro" },
+];
+
 const equipamentosOpcoes = [
   { key: "maca", label: "Maca de exame" },
   { key: "estetoscopio", label: "Estetoscópio" },
@@ -28,6 +35,7 @@ export default function PublicarPlantao() {
   const [publicado, setPublicado] = useState(false);
 
   const [form, setForm] = useState({
+    tipoProfissional: "MEDICO",
     especialidade: "",
     dataInicio: "",
     horaInicio: "08:00",
@@ -88,6 +96,19 @@ export default function PublicarPlantao() {
       {step === 1 && (
         <div className="px-4 pt-5 space-y-4">
           <h2 className="font-bold text-gray-900">Informações do Plantão</h2>
+
+          <div>
+            <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Tipo de Profissional *</label>
+            <select
+              value={form.tipoProfissional}
+              onChange={(e) => setForm({ ...form, tipoProfissional: e.target.value })}
+              className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm bg-white focus:outline-none focus:border-[#1A6FBB]"
+            >
+              {tiposProfissional.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
 
           <div>
             <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Especialidade *</label>
@@ -198,6 +219,7 @@ export default function PublicarPlantao() {
           <h2 className="font-bold text-gray-900">Pré-visualização</h2>
           <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2 text-sm">
             <p className="font-bold text-gray-900 text-base">{form.especialidade}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide">{tiposProfissional.find(t => t.value === form.tipoProfissional)?.label}</p>
             <p className="text-gray-600 inline-flex items-center gap-1"><Calendar size={14} strokeWidth={1.75} /> {form.dataInicio} · {form.horaInicio} – {form.horaFim}</p>
             <p className="text-[#1A6FBB] font-bold text-lg">{parseInt(form.valor || "0").toLocaleString()} AOA</p>
             <p className="text-gray-500 inline-flex items-center gap-1"><Users size={14} strokeWidth={1.75} /> {form.vagas} vaga(s)</p>
