@@ -11,6 +11,7 @@ export default function SalasDaClinica() {
     <div>
       <TopBar
         titulo="Minhas Salas"
+        back="/clinica"
         actions={
           <Link
             href="/clinica/salas/nova"

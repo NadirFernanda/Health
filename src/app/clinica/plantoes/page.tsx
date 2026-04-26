@@ -24,7 +24,7 @@ export default async function PlantoesDaClinica() {
 
   return (
     <div>
-      <TopBar titulo="Os Meus Plantões" />
+      <TopBar titulo="Os Meus Plantões" back="/clinica" />
       <div className="px-4 pt-5 space-y-3">
         {plantoes.length === 0 && (
           <div className="text-center py-16 text-gray-400">

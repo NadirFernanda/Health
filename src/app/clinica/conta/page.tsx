@@ -14,7 +14,7 @@ export default function ContaClinica() {
 
   return (
     <div>
-      <TopBar titulo="A minha Conta" />
+      <TopBar titulo="A minha Conta" back="/clinica" />
 
       {/* Header */}
       <div className="bg-white px-4 py-6 flex flex-col items-center border-b border-gray-100">

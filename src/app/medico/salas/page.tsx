@@ -70,7 +70,7 @@ export default function BuscarSalas() {
 
   return (
     <div>
-      <TopBar titulo="Salas & Consultórios" />
+      <TopBar titulo="Salas & Consultórios" back="/medico" />
 
       {/* Banner */}
       <div className="mx-4 mt-4 bg-gradient-to-r from-purple-600 to-purple-800 rounded-2xl p-4 text-white">

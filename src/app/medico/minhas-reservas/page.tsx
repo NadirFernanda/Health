@@ -42,7 +42,7 @@ export default function MinhasReservas() {
 
   return (
     <div>
-      <TopBar titulo="Minhas Reservas" />
+      <TopBar titulo="Minhas Reservas" back="/medico" />
 
       {/* Filtros */}
       <div className="px-4 pt-4">

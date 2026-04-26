@@ -14,7 +14,7 @@ export default function FaturacaoClinica() {
 
   return (
     <div>
-      <TopBar titulo="Faturação" />
+      <TopBar titulo="Faturação" back="/clinica" />
 
       {/* Resumo */}
       <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] mx-4 mt-4 rounded-2xl px-5 py-5">

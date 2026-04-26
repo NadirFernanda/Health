@@ -49,7 +49,7 @@ export default function PerfilMedico() {
 
   return (
     <div>
-      <TopBar titulo="O meu Perfil" />
+      <TopBar titulo="O meu Perfil" back="/medico" />
 
       {/* Avatar e nome */}
       <div className="bg-white px-4 py-6 flex flex-col items-center border-b border-gray-100">

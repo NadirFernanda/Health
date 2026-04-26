@@ -27,7 +27,7 @@ export default async function GanhosMedico() {
 
   return (
     <div>
-      <TopBar titulo="Meus Ganhos" />
+      <TopBar titulo="Meus Ganhos" back="/medico" />
 
       {/* Saldo */}
       <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] px-5 py-6 mx-4 mt-4 rounded-2xl">

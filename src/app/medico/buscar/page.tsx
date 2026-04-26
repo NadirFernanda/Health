@@ -61,7 +61,7 @@ export default function BuscarPlantoes() {
 
   return (
     <div>
-      <TopBar titulo="Buscar Plantões" />
+      <TopBar titulo="Buscar Plantões" back="/medico" />
 
       {/* Toggle Disponível Agora */}
       <div className="mx-4 mt-4 flex items-center justify-between bg-white border border-gray-100 rounded-2xl px-4 py-3">
