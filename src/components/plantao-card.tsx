@@ -58,9 +58,6 @@ export function PlantaoCard({
       {/* Header da clínica */}
       <div className="px-4 pt-4 pb-3 flex items-start justify-between gap-2">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center text-brand-500 font-bold text-sm shrink-0">
-            {clinica.nome.charAt(0)}
-          </div>
           <div>
             <div className="flex items-center gap-1.5">
               <p className="font-semibold text-sm text-gray-900">{clinica.nome}</p>
