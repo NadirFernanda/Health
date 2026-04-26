@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       estado: "ABERTO",
       ...(especialidade && { especialidade }),
       ...(tipoProfissional && { tipoProfissional: tipoProfissional as import("@/generated/prisma").TipoProfissional }),
-      ...(zona && { clinica: { cidade: { contains: zona } } }),
+      ...(zona && { clinicaId: { not: null }, clinica: { cidade: { contains: zona } } }),
       ...(valorMax && { valorKwanzas: { lte: parseInt(valorMax) } }),
       ...(disponivelAgora && {
         dataInicio: {
