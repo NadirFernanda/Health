@@ -6,7 +6,7 @@ import { Bell, User, BadgeCheck } from "lucide-react";
 
 type Perfil = { nome: string; verified: boolean; disponivelAgora: boolean; saldoCarteira: number };
 type PlantaoAPI = {
-  id: string; especialidade: string; dataInicio: string; dataFim: string;
+  id: string; tipoProfissional: string; especialidade: string; dataInicio: string; dataFim: string;
   valorKwanzas: number; vagas: number; vagasPreenchidas: number; estado: string;
   descricao: string; clinica: { id: string; nome: string; morada: string; cidade: string; provincia: string; logo: string; rating: number; totalAvaliacoes: number; verified: boolean };
   equipamentos: Record<string, boolean>;
@@ -26,26 +26,26 @@ export default function MedicoDashboard() {
   const [plantoesMes, setPlantoesMes] = useState(0);
 
   useEffect(() => {
-    fetch("/api/medico/perfil").then((r) => r.json()).then((d) => {
-      if (d.nome) { setPerfil(d); setDisponivel(d.disponivelAgora ?? false); }
-    });
-    fetch("/api/plantoes").then((r) => r.json()).then((d) => {
+    fetch("/api/medico/perfil").then((r) => r.ok ? r.json() : null).then((d) => {
+      if (d?.nome) { setPerfil(d); setDisponivel(d.disponivelAgora ?? false); }
+    }).catch(() => {});
+    fetch("/api/plantoes").then((r) => r.ok ? r.json() : []).then((d) => {
       if (Array.isArray(d)) setPlantoes(d.filter((p: PlantaoAPI) => p.estado === "ABERTO").slice(0, 5));
-    });
-    fetch("/api/medico/candidaturas").then((r) => r.json()).then((d) => {
+    }).catch(() => {});
+    fetch("/api/medico/candidaturas").then((r) => r.ok ? r.json() : []).then((d) => {
       if (Array.isArray(d)) {
         setCandidaturas(d.slice(0, 5));
         setPlantoesMes(d.filter((c: Candidatura) => c.estado === "ACEITE").length);
       }
-    });
-    fetch("/api/medico/ganhos").then((r) => r.json()).then((d) => {
-      if (d.transacoes) {
+    }).catch(() => {});
+    fetch("/api/medico/ganhos").then((r) => r.ok ? r.json() : null).then((d) => {
+      if (d?.transacoes) {
         const total = d.transacoes
           .filter((t: { tipo: string; estado: string }) => t.tipo === "CREDITO" && t.estado === "PROCESSADO")
-          .reduce((s: number, t: { valor: number }) => s + t.valor, 0);
+          .reduce((s: number, t: { valorCentavos: string }) => s + Math.round(parseInt(t.valorCentavos) / 100), 0);
         setGanhosMes(total);
       }
-    });
+    }).catch(() => {});
   }, []);
 
   const toggleDisponivel = async () => {

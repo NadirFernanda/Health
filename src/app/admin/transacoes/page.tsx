@@ -4,13 +4,13 @@ import { TrendingUp, ArrowUp } from "lucide-react";
 export default function AdminTransacoes() {
   const totalCredito = allTransacoesMock
     .filter((t) => t.tipo === "CREDITO" && t.estado === "PROCESSADO")
-    .reduce((s, t) => s + t.valor, 0);
+    .reduce((s, t) => s + Number(t.valorCentavos / 100n), 0);
   const totalDebito = allTransacoesMock
     .filter((t) => t.tipo === "DEBITO")
-    .reduce((s, t) => s + t.valor, 0);
+    .reduce((s, t) => s + Number(t.valorCentavos / 100n), 0);
   const pendente = allTransacoesMock
     .filter((t) => t.estado === "PENDENTE")
-    .reduce((s, t) => s + t.valor, 0);
+    .reduce((s, t) => s + Number(t.valorCentavos / 100n), 0);
   const comissaoEstimada = Math.round(totalCredito * 0.1);
 
   return (
@@ -91,10 +91,10 @@ export default function AdminTransacoes() {
                 </div>
                 <div className="text-right shrink-0">
                   <p className={`font-bold text-sm ${t.tipo === "CREDITO" ? "text-[#27AE60]" : "text-gray-600"}`}>
-                    {t.tipo === "CREDITO" ? "+" : "−"}{formatAOA(t.valor)}
+                    {t.tipo === "CREDITO" ? "+" : "−"}{formatAOA(Number(t.valorCentavos / 100n))}
                   </p>
                   {t.tipo === "CREDITO" && (
-                    <p className="text-xs text-purple-500 mt-0.5">comissão: {formatAOA(Math.round(t.valor * 0.1))}</p>
+                    <p className="text-xs text-purple-500 mt-0.5">comissão: {formatAOA(Math.round(Number(t.valorCentavos / 100n) * 0.1))}</p>
                   )}
                 </div>
               </div>

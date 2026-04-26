@@ -153,7 +153,7 @@ export default function AdminDashboard() {
                 </p>
               </div>
               <p className={`text-xs font-bold shrink-0 ${t.tipo === "CREDITO" ? "text-[#27AE60]" : "text-gray-600"}`}>
-                {t.tipo === "CREDITO" ? "+" : "-"}{formatAOA(t.valor)}
+                {t.tipo === "CREDITO" ? "+" : "-"}{formatAOA(Number(t.valorCentavos / 100n))}
               </p>
             </div>
           ))}
