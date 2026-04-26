@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { getSession } from "@/lib/auth";
+import { getAuthSession } from "@/lib/api-auth";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -67,12 +67,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getSession();
+  const session = await getAuthSession();
   if (!session || session.role !== "CLINICA") {
     return Response.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  const clinica = await prisma.clinica.findUnique({ where: { userId: session.userId } });
+  const clinica = await prisma.clinica.findUnique({ where: { userId: session.id } });
   if (!clinica) return Response.json({ error: "Clínica não encontrada" }, { status: 404 });
 
   const body = await request.json();
