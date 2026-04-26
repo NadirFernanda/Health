@@ -4,6 +4,7 @@ import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
 import { useState, use } from "react";
 import { notFound } from "next/navigation";
+import { CheckCircle, XCircle, Building2, MapPin, Clock, Star, Landmark, Smartphone, BadgeCheck, Check, AlertTriangle, ChevronRight } from "lucide-react";
 
 const tipoLabel: Record<TipoSala, string> = {
   CONSULTORIO: "Consultório",
@@ -49,7 +50,9 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
   if (step === "confirmado") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#f7f8fa] px-6 text-center">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4 text-4xl">✅</div>
+        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
+          <CheckCircle size={40} strokeWidth={1.5} className="text-green-500" />
+        </div>
         <h2 className="text-xl font-bold text-gray-900">Reserva Confirmada!</h2>
         <p className="text-gray-500 mt-2 text-sm leading-6">
           A clínica foi notificada. Apresente o código no balcão.
@@ -67,10 +70,10 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
           <p className="text-xs text-gray-400 mt-1 text-center">Código de acesso</p>
         </div>
         <div className="mt-6 bg-gray-50 rounded-2xl px-4 py-3 text-sm text-gray-600 text-left w-full max-w-xs">
-          <p>🏥 {sala.clinica.nome}</p>
-          <p>📍 {sala.zona}</p>
-          <p>🗓 {data} às {horaInicio}</p>
-          <p>⏱ {duracao}h · <span className="font-bold text-brand-600">{formatAOA(valorTotal)}</span></p>
+          <p className="flex items-center gap-2"><Building2 size={14} strokeWidth={1.75} className="text-gray-400" /> {sala.clinica.nome}</p>
+          <p className="flex items-center gap-2"><MapPin size={14} strokeWidth={1.75} className="text-gray-400" /> {sala.zona}</p>
+          <p className="flex items-center gap-2"><Clock size={14} strokeWidth={1.75} className="text-gray-400" /> {data} às {horaInicio}</p>
+          <p className="flex items-center gap-2"><Clock size={14} strokeWidth={1.75} className="text-gray-400" /> {duracao}h · <span className="font-bold text-brand-600">{formatAOA(valorTotal)}</span></p>
         </div>
         <button
           onClick={() => router.push("/medico/minhas-reservas")}
@@ -92,10 +95,10 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
         <div className="px-4 py-5 space-y-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2 text-sm text-gray-700">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Resumo da Reserva</p>
-            <p>🏥 {sala.clinica.nome} — {sala.nome}</p>
-            <p>📍 {sala.zona}</p>
-            <p>🗓 {data} às {horaInicio}</p>
-            <p>⏱ {duracao} hora(s)</p>
+            <p className="flex items-center gap-2"><Building2 size={14} strokeWidth={1.75} className="text-gray-400" /> {sala.clinica.nome} — {sala.nome}</p>
+            <p className="flex items-center gap-2"><MapPin size={14} strokeWidth={1.75} className="text-gray-400" /> {sala.zona}</p>
+            <p className="flex items-center gap-2"><Clock size={14} strokeWidth={1.75} className="text-gray-400" /> {data} às {horaInicio}</p>
+            <p className="flex items-center gap-2"><Clock size={14} strokeWidth={1.75} className="text-gray-400" /> {duracao} hora(s)</p>
             <div className="pt-2 border-t border-gray-100 flex justify-between font-bold text-base">
               <span>Total</span>
               <span className="text-brand-600">{formatAOA(valorTotal)}</span>
@@ -107,8 +110,8 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
           <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">Método de Pagamento</p>
             {([
-              { key: "MULTICAIXA_EXPRESS", label: "Multicaixa Express", icon: "📱", desc: "Pagamento imediato via app ou USSD" },
-              { key: "TRANSFERENCIA_BANCARIA", label: "Transferência Bancária", icon: "🏦", desc: "NIB: 0040-0000-12345-67890 10 1 · BAI" },
+              { key: "MULTICAIXA_EXPRESS",   label: "Multicaixa Express",    icon: <Smartphone size={20} strokeWidth={1.75} />,  desc: "Pagamento imediato via app ou USSD" },
+              { key: "TRANSFERENCIA_BANCARIA", label: "Transferência Bancária", icon: <Landmark size={20} strokeWidth={1.75} />, desc: "NIB: 0040-0000-12345-67890 10 1 · BAI" },
             ] as const).map((m) => (
               <button
                 key={m.key}
@@ -122,14 +125,14 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
                   <p className="font-semibold text-sm text-gray-900">{m.label}</p>
                   <p className="text-xs text-gray-500 mt-0.5">{m.desc}</p>
                 </div>
-                {metodo === m.key && <span className="ml-auto text-brand-500 font-bold">✓</span>}
+                {metodo === m.key && <Check size={16} strokeWidth={2.5} className="ml-auto text-brand-500" />}
               </button>
             ))}
           </div>
 
           {metodo === "MULTICAIXA_EXPRESS" && (
             <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
-              <p className="text-sm font-semibold text-brand-700">📱 Referência Multicaixa</p>
+              <p className="flex items-center gap-1 text-sm font-semibold text-brand-700"><Smartphone size={14} strokeWidth={2} /> Referência Multicaixa</p>
               <p className="text-xs text-brand-600 mt-1">Entidade: <strong>30299</strong> · Referência: <strong>987 654 321</strong></p>
               <p className="text-xs text-blue-500 mt-1">Valor: {formatAOA(valorTotal)} · Válida 30 minutos</p>
             </div>
@@ -137,12 +140,12 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
 
           <button
             onClick={() => setStep("confirmado")}
-            className="w-full bg-success-500 hover:bg-success-700 text-white font-bold py-4 rounded-2xl text-base transition-colors"
+            className="w-full bg-success-500 hover:bg-success-700 text-white font-bold py-4 rounded-2xl text-base transition-colors flex items-center justify-center gap-2"
           >
-            ✅ CONFIRMAR PAGAMENTO
+            <CheckCircle size={18} strokeWidth={2} /> CONFIRMAR PAGAMENTO
           </button>
-          <button onClick={() => setStep("horario")} className="w-full text-gray-400 text-sm py-2">
-            ← Voltar
+          <button onClick={() => setStep("horario")} className="w-full text-gray-400 text-sm py-2 flex items-center justify-center gap-1">
+            Voltar
           </button>
         </div>
       </div>
@@ -220,9 +223,9 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
           <button
             disabled={!data || !horaInicio}
             onClick={() => setStep("pagamento")}
-            className="w-full bg-brand-500 disabled:bg-gray-300 text-white font-bold py-4 rounded-2xl text-base transition-colors"
+            className="w-full bg-brand-500 disabled:bg-gray-300 text-white font-bold py-4 rounded-2xl text-base transition-colors flex items-center justify-center gap-1"
           >
-            Continuar para Pagamento →
+            Continuar para Pagamento <ChevronRight size={16} strokeWidth={2} />
           </button>
         </div>
       </div>
@@ -243,15 +246,17 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
           <div>
             <div className="flex items-center gap-1.5">
               <h2 className="font-bold text-gray-900 text-base">{sala.clinica.nome}</h2>
-              {sala.clinica.verified && <span className="text-success-500 text-sm font-bold">✓</span>}
+              {sala.clinica.verified && <BadgeCheck size={15} strokeWidth={2} className="text-success-500" />}
             </div>
-            <p className="text-gray-500 text-sm">📍 {sala.zona}</p>
-            <p className="text-yellow-500 text-xs mt-0.5">⭐ {sala.avaliacaoMedia} ({sala.totalAvaliacoes} avaliações)</p>
+            <p className="flex items-center gap-1 text-gray-500 text-sm"><MapPin size={12} strokeWidth={1.75} /> {sala.zona}</p>
+            <p className="flex items-center gap-1 text-yellow-500 text-xs mt-0.5"><Star size={11} strokeWidth={1.75} fill="currentColor" /> {sala.avaliacaoMedia} ({sala.totalAvaliacoes} avaliações)</p>
           </div>
         </div>
         <div className="mt-3 flex items-center gap-2">
           <span className="bg-purple-50 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-full">{tipoLabel[sala.tipo]}</span>
-          <span className="bg-success-50 text-success-700 text-xs font-bold px-2.5 py-1 rounded-full">● Disponível</span>
+          <span className="bg-success-50 text-success-700 text-xs font-bold px-2.5 py-1 rounded-full inline-flex items-center gap-1">
+            <CheckCircle size={12} strokeWidth={2.25} /> Disponível
+          </span>
         </div>
       </div>
 
@@ -267,7 +272,9 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
         <div className="space-y-2">
           {equipList.map((e) => (
             <div key={e.label} className="flex items-center gap-2.5 text-sm">
-              <span className={e.ok ? "text-success-500" : "text-red-400"}>{e.ok ? "✅" : "❌"}</span>
+              <span className={e.ok ? "text-success-500" : "text-red-400"}>
+                {e.ok ? <CheckCircle size={16} strokeWidth={2} /> : <XCircle size={16} strokeWidth={2} />}
+              </span>
               <span className={e.ok ? "text-gray-800" : "text-gray-300 line-through"}>{e.label}</span>
             </div>
           ))}
@@ -284,9 +291,9 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
       <div className="bg-white mt-2 px-4 py-4 border-b border-gray-100">
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Política de Cancelamento</h3>
         <div className="space-y-1.5 text-xs text-gray-600">
-          <p>✓ Cancelamento com &gt; 24h: reembolso 100%</p>
-          <p>⚠️ Cancelamento com &lt; 24h: sem reembolso</p>
-          <p>✓ A clínica pode cancelar mediante aviso de 4h</p>
+          <p className="flex items-center gap-1"><Check size={13} strokeWidth={2} className="text-gray-500" /> Cancelamento com &gt; 24h: reembolso 100%</p>
+          <p className="flex items-center gap-1"><AlertTriangle size={13} strokeWidth={2} className="text-yellow-500" /> Cancelamento com &lt; 24h: sem reembolso</p>
+          <p className="flex items-center gap-1"><Check size={13} strokeWidth={2} className="text-gray-500" /> A clínica pode cancelar mediante aviso de 4h</p>
         </div>
       </div>
 

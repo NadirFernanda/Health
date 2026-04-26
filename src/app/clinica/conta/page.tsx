@@ -1,6 +1,7 @@
 import { clinicaLogada } from "@/lib/mock-data";
 import { TopBar } from "@/components/nav";
-import Link from "next/link";
+import { logoutAction } from "@/app/actions/auth";
+import { BadgeCheck, Star, Building2, MapPin, Map, CheckCircle } from "lucide-react";
 
 export default function ContaClinica() {
   const c = clinicaLogada;
@@ -23,11 +24,11 @@ export default function ContaClinica() {
         <h1 className="text-xl font-bold text-gray-900 text-center">{c.nome}</h1>
         {c.verified && (
           <span className="mt-1.5 inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
-            ✓ CLÍNICA VERIFICADA
+            <BadgeCheck size={13} strokeWidth={2} /> CLÍNICA VERIFICADA
           </span>
         )}
         <div className="flex items-center gap-1 mt-2">
-          <span className="text-yellow-400">⭐</span>
+          <Star size={14} strokeWidth={1.75} className="text-yellow-400 fill-yellow-400" />
           <span className="text-sm font-semibold text-gray-800">{c.rating}</span>
           <span className="text-gray-400 text-xs">({c.totalAvaliacoes} avaliações)</span>
         </div>
@@ -37,9 +38,9 @@ export default function ContaClinica() {
       <div className="bg-white mt-2 px-4 py-4 border-b border-gray-100">
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Informações</h3>
         <div className="space-y-2 text-sm text-gray-700">
-          <p>🏥 {c.nome}</p>
-          <p>📍 {c.morada}, {c.cidade}</p>
-          <p>🗺️ {c.provincia}, Angola</p>
+          <p className="flex items-center gap-2"><Building2 size={15} strokeWidth={1.75} className="text-gray-400 shrink-0" /> {c.nome}</p>
+          <p className="flex items-center gap-2"><MapPin size={15} strokeWidth={1.75} className="text-gray-400 shrink-0" /> {c.morada}, {c.cidade}</p>
+          <p className="flex items-center gap-2"><Map size={15} strokeWidth={1.75} className="text-gray-400 shrink-0" /> {c.provincia}, Angola</p>
         </div>
       </div>
 
@@ -49,7 +50,7 @@ export default function ContaClinica() {
         <div className="space-y-2">
           {docs.map((d) => (
             <div key={d.label} className="flex items-center gap-2.5 text-sm">
-              <span className="text-[#27AE60]">✅</span>
+              <CheckCircle size={15} strokeWidth={2} className="text-[#27AE60]" />
               <span className="text-gray-800">{d.label}</span>
             </div>
           ))}
@@ -75,9 +76,11 @@ export default function ContaClinica() {
         <button className="w-full border border-[#1A6FBB] text-[#1A6FBB] font-semibold py-3 rounded-2xl text-sm">
           Editar Perfil da Clínica
         </button>
-        <Link href="/" className="block w-full text-center text-red-500 font-semibold py-3 text-sm">
-          Terminar Sessão
-        </Link>
+        <form action={logoutAction}>
+          <button type="submit" className="w-full text-center text-red-500 font-semibold py-3 text-sm">
+            Terminar Sessão
+          </button>
+        </form>
       </div>
     </div>
   );

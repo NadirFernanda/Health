@@ -2,13 +2,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/app/actions/auth";
+import {
+  BarChart2, Stethoscope, Building2, ClipboardList, Wallet,
+  ChevronLeft, type LucideIcon,
+} from "lucide-react";
 
-const navItems = [
-  { href: "/admin",            label: "Dashboard", icon: "📊", exact: true },
-  { href: "/admin/medicos",    label: "Profissionais",   icon: "🧑‍⚕️" },
-  { href: "/admin/clinicas",   label: "Clínicas",  icon: "🏥" },
-  { href: "/admin/plantoes",   label: "Plantões",  icon: "📋" },
-  { href: "/admin/transacoes", label: "Finanças",  icon: "💰" },
+const navItems: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] = [
+  { href: "/admin",            label: "Dashboard",    icon: BarChart2,     exact: true },
+  { href: "/admin/medicos",    label: "Profissionais", icon: Stethoscope },
+  { href: "/admin/clinicas",   label: "Clínicas",     icon: Building2 },
+  { href: "/admin/plantoes",   label: "Plantões",     icon: ClipboardList },
+  { href: "/admin/transacoes", label: "Finanças",     icon: Wallet },
 ];
 
 export function AdminNav() {
@@ -29,7 +33,8 @@ export function AdminNav() {
             href="/"
             className="flex items-center gap-1 text-white/50 hover:text-white/80 text-xs transition-colors border border-white/10 px-2.5 py-1 rounded-lg"
           >
-            ← App
+            <ChevronLeft size={13} strokeWidth={2} />
+            App
           </Link>
           <form action={logoutAction}>
             <button
@@ -48,6 +53,7 @@ export function AdminNav() {
           const active = item.exact
             ? pathname === item.href
             : pathname.startsWith(item.href);
+          const Icon = item.icon;
           return (
             <Link
               key={item.href}
@@ -58,7 +64,7 @@ export function AdminNav() {
                   : "border-transparent text-white/50 hover:text-white/75"
               }`}
             >
-              <span>{item.icon}</span>
+              <Icon size={14} strokeWidth={1.75} />
               <span>{item.label}</span>
             </Link>
           );

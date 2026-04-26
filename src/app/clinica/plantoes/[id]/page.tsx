@@ -2,6 +2,7 @@ import { candidatosMock, plantoesDaClinica, formatAOA, formatData, formatHora } 
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Calendar, BadgeCheck, Star } from "lucide-react";
 
 export default async function DetalhePlantaoClinica({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -16,7 +17,7 @@ export default async function DetalhePlantaoClinica({ params }: { params: Promis
       <div className="bg-white px-4 py-4 border-b border-gray-100">
         <p className="font-bold text-gray-900">{plantao.especialidade}</p>
         <p className="text-sm text-gray-500 mt-0.5">
-          📅 {formatData(plantao.dataInicio)} · {formatHora(plantao.dataInicio)} – {formatHora(plantao.dataFim)}
+          <Calendar size={13} strokeWidth={1.75} className="inline mr-1" />{formatData(plantao.dataInicio)} · {formatHora(plantao.dataInicio)} – {formatHora(plantao.dataFim)}
         </p>
         <p className="text-[#1A6FBB] font-bold mt-1">{formatAOA(plantao.valorKwanzas)}</p>
         <span className="inline-block mt-1.5 bg-green-50 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full">
@@ -37,11 +38,11 @@ export default async function DetalhePlantaoClinica({ params }: { params: Promis
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
                     <p className="font-bold text-gray-900 text-sm truncate">{m.nome}</p>
-                    {m.verified && <span className="text-[#27AE60] text-xs font-bold shrink-0">✓</span>}
+                    {m.verified && <BadgeCheck size={13} strokeWidth={2} className="text-[#27AE60] shrink-0" />}
                   </div>
                   <p className="text-xs text-gray-500">{m.especialidade}</p>
                   <div className="flex items-center gap-3 mt-1">
-                    <span className="text-yellow-500 text-xs">⭐ {m.rating}</span>
+                    <span className="text-yellow-500 text-xs inline-flex items-center gap-1"><Star size={11} strokeWidth={1.75} fill="currentColor" /> {m.rating}</span>
                     <span className="text-gray-400 text-xs">·</span>
                     <span className="text-gray-400 text-xs">{m.totalPlantoes} plantões</span>
                   </div>

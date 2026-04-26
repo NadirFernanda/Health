@@ -2,27 +2,32 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  Home, Search, Building2, Wallet, User,
+  ClipboardList, CreditCard, ChevronLeft,
+  type LucideIcon,
+} from "lucide-react";
 
 interface NavItem {
   href: string;
   label: string;
-  icon: string;
+  icon: LucideIcon;
 }
 
 const medicoNav: NavItem[] = [
-  { href: "/medico", label: "Início", icon: "🏠" },
-  { href: "/medico/buscar", label: "Buscar", icon: "🔍" },
-  { href: "/medico/salas", label: "Salas", icon: "🏥" },
-  { href: "/medico/ganhos", label: "Ganhos", icon: "💰" },
-  { href: "/medico/perfil", label: "Perfil", icon: "👤" },
+  { href: "/medico",         label: "Início",   icon: Home },
+  { href: "/medico/buscar",  label: "Buscar",   icon: Search },
+  { href: "/medico/salas",   label: "Salas",    icon: Building2 },
+  { href: "/medico/ganhos",  label: "Ganhos",   icon: Wallet },
+  { href: "/medico/perfil",  label: "Perfil",   icon: User },
 ];
 
 const clinicaNav: NavItem[] = [
-  { href: "/clinica", label: "Início", icon: "🏠" },
-  { href: "/clinica/plantoes", label: "Plantões", icon: "📋" },
-  { href: "/clinica/salas", label: "Salas", icon: "🏥" },
-  { href: "/clinica/faturacao", label: "Faturação", icon: "💳" },
-  { href: "/clinica/conta", label: "Conta", icon: "👤" },
+  { href: "/clinica",            label: "Início",    icon: Home },
+  { href: "/clinica/plantoes",   label: "Plantões",  icon: ClipboardList },
+  { href: "/clinica/salas",      label: "Salas",     icon: Building2 },
+  { href: "/clinica/faturacao",  label: "Faturação", icon: CreditCard },
+  { href: "/clinica/conta",      label: "Conta",     icon: User },
 ];
 
 export function BottomNav({ role }: { role: "medico" | "clinica" }) {
@@ -34,16 +39,17 @@ export function BottomNav({ role }: { role: "medico" | "clinica" }) {
       <div className="flex justify-around items-center py-2">
         {navItems.map((item) => {
           const active = pathname === item.href || pathname.startsWith(item.href + "/");
+          const Icon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
               className={`flex flex-col items-center gap-0.5 px-4 py-1 rounded-xl transition-colors ${
-                active ? "text-brand-500" : "text-gray-400"
+                active ? "text-[#1A6FBB]" : "text-gray-400"
               }`}
             >
-              <span className="text-xl">{item.icon}</span>
-              <span className={`text-xs font-medium ${active ? "text-brand-500" : "text-gray-400"}`}>
+              <Icon size={22} strokeWidth={active ? 2 : 1.75} />
+              <span className={`text-xs font-medium ${active ? "text-[#1A6FBB]" : "text-gray-400"}`}>
                 {item.label}
               </span>
             </Link>
@@ -66,8 +72,8 @@ export function TopBar({
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3">
       {back && (
-        <Link href={back} className="text-gray-500 hover:text-brand-500 transition-colors">
-          ← 
+        <Link href={back} className="text-gray-500 hover:text-[#1A6FBB] transition-colors">
+          <ChevronLeft size={20} strokeWidth={2} />
         </Link>
       )}
       {titulo && <h1 className="text-base font-semibold text-gray-900 flex-1">{titulo}</h1>}

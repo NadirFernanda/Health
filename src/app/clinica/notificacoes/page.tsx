@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
+import { UserRoundCheck, CalendarClock, Building2, Star, CreditCard, CheckCircle, Bell, type LucideIcon } from "lucide-react";
 
 type TipoNotif =
   | "CANDIDATURA_RECEBIDA"
@@ -61,7 +62,7 @@ const notificacoesMock: Notificacao[] = [
   {
     id: "nc-005",
     tipo: "AVALIACAO_RECEBIDA",
-    titulo: "Avaliação da Clínica ⭐⭐⭐⭐",
+    titulo: "Avaliação da Clínica (4 estrelas)",
     corpo: "Dr. João Silva avaliou a experiência na vossa clínica com 4 estrelas: «Bom ambiente, organização a melhorar.»",
     href: "/clinica",
     lida: true,
@@ -77,13 +78,13 @@ const notificacoesMock: Notificacao[] = [
   },
 ];
 
-const iconeMap: Record<TipoNotif, string> = {
-  CANDIDATURA_RECEBIDA: "👨‍⚕️",
-  TURNO_HOJE: "🗓",
-  RESERVA_SALA: "🏥",
-  AVALIACAO_RECEBIDA: "⭐",
-  PAGAMENTO_PENDENTE: "💳",
-  PROFISSIONAL_VERIFICADO: "✅",
+const iconeMap: Record<TipoNotif, LucideIcon> = {
+  CANDIDATURA_RECEBIDA: UserRoundCheck,
+  TURNO_HOJE: CalendarClock,
+  RESERVA_SALA: Building2,
+  AVALIACAO_RECEBIDA: Star,
+  PAGAMENTO_PENDENTE: CreditCard,
+  PROFISSIONAL_VERIFICADO: CheckCircle,
 };
 
 const corMap: Record<TipoNotif, string> = {
@@ -136,7 +137,7 @@ export default function NotificacoesClinica() {
       <div className="px-4 pt-3 pb-8 space-y-2">
         {lista.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
-            <p className="text-4xl mb-3">🔔</p>
+            <Bell size={40} strokeWidth={1.25} className="mx-auto mb-3 text-gray-300" />
             <p className="text-sm">Sem notificações por enquanto.</p>
           </div>
         ) : (
@@ -148,8 +149,11 @@ export default function NotificacoesClinica() {
                 n.lida ? "bg-white border-gray-100" : `${corMap[n.tipo]} border-transparent shadow-sm`
               }`}
             >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${n.lida ? "bg-gray-100" : "bg-white/70"}`}>
-                {iconeMap[n.tipo]}
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${n.lida ? "bg-gray-100" : "bg-white/70"}`}>
+                {(() => {
+                  const Icon = iconeMap[n.tipo];
+                  return <Icon size={20} strokeWidth={1.75} />;
+                })()}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">

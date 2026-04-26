@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
+import { Sparkles, Info, ChevronRight, ChevronLeft, CheckSquare, Square, Calendar, Users, Check } from "lucide-react";
 
 const especialidades = [
   "Medicina Geral", "Pediatria", "Ginecologia", "Cardiologia",
@@ -50,7 +51,7 @@ export default function PublicarPlantao() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#f7f8fa] px-6 text-center">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
-          <span className="text-4xl">🎉</span>
+          <Sparkles size={40} strokeWidth={1.5} className="text-green-500" />
         </div>
         <h2 className="text-xl font-bold text-gray-900">Plantão publicado!</h2>
         <p className="text-gray-500 mt-2 text-sm leading-6">
@@ -152,9 +153,9 @@ export default function PublicarPlantao() {
           <button
             onClick={() => setStep(2)}
             disabled={!form.especialidade || !form.dataInicio || !form.valor}
-            className="w-full bg-[#1A6FBB] disabled:opacity-40 text-white font-bold py-4 rounded-2xl mt-2"
+            className="w-full bg-[#1A6FBB] disabled:opacity-40 text-white font-bold py-4 rounded-2xl mt-2 inline-flex items-center justify-center gap-1"
           >
-            PRÓXIMO →
+            PRÓXIMO <ChevronRight size={16} strokeWidth={2} />
           </button>
         </div>
       )}
@@ -175,17 +176,17 @@ export default function PublicarPlantao() {
                     : "bg-white border-gray-200 text-gray-500"
                 }`}
               >
-                <span className="text-lg">{equipamentos[e.key] ? "✅" : "⬜"}</span>
+                <span className="text-lg">{equipamentos[e.key] ? <CheckSquare size={18} strokeWidth={2} /> : <Square size={18} strokeWidth={2} />}</span>
                 <span className="text-sm font-medium">{e.label}</span>
               </button>
             ))}
           </div>
           <div className="flex gap-2 pt-2">
-            <button onClick={() => setStep(1)} className="flex-1 border border-gray-200 text-gray-600 font-semibold py-3.5 rounded-2xl text-sm">
-              ← Voltar
+            <button onClick={() => setStep(1)} className="flex-1 border border-gray-200 text-gray-600 font-semibold py-3.5 rounded-2xl text-sm inline-flex items-center justify-center gap-1">
+              <ChevronLeft size={16} strokeWidth={2} /> Voltar
             </button>
-            <button onClick={() => setStep(3)} className="flex-1 bg-[#1A6FBB] text-white font-bold py-3.5 rounded-2xl text-sm">
-              PRÓXIMO →
+            <button onClick={() => setStep(3)} className="flex-1 bg-[#1A6FBB] text-white font-bold py-3.5 rounded-2xl text-sm inline-flex items-center justify-center gap-1">
+              PRÓXIMO <ChevronRight size={16} strokeWidth={2} />
             </button>
           </div>
         </div>
@@ -197,28 +198,28 @@ export default function PublicarPlantao() {
           <h2 className="font-bold text-gray-900">Pré-visualização</h2>
           <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2 text-sm">
             <p className="font-bold text-gray-900 text-base">{form.especialidade}</p>
-            <p className="text-gray-600">📅 {form.dataInicio} · {form.horaInicio} – {form.horaFim}</p>
+            <p className="text-gray-600 inline-flex items-center gap-1"><Calendar size={14} strokeWidth={1.75} /> {form.dataInicio} · {form.horaInicio} – {form.horaFim}</p>
             <p className="text-[#1A6FBB] font-bold text-lg">{parseInt(form.valor || "0").toLocaleString()} AOA</p>
-            <p className="text-gray-500">👥 {form.vagas} vaga(s)</p>
+            <p className="text-gray-500 inline-flex items-center gap-1"><Users size={14} strokeWidth={1.75} /> {form.vagas} vaga(s)</p>
             <div className="border-t border-gray-100 pt-3">
               <p className="text-xs text-gray-400 mb-2 font-semibold">EQUIPAMENTOS</p>
               <div className="flex flex-wrap gap-1.5">
                 {equipamentosOpcoes
                   .filter((e) => equipamentos[e.key])
                   .map((e) => (
-                    <span key={e.key} className="bg-green-50 text-green-700 text-xs px-2 py-0.5 rounded-full">✓ {e.label}</span>
+                    <span key={e.key} className="bg-green-50 text-green-700 text-xs px-2 py-0.5 rounded-full inline-flex items-center gap-1"><Check size={12} strokeWidth={2} /> {e.label}</span>
                   ))}
               </div>
             </div>
           </div>
 
-          <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700">
-            💡 A plataforma retém <strong>10% de comissão</strong> sobre o valor do plantão. Será cobrado <strong>{Math.round(parseInt(form.valor || "0") * 1.1).toLocaleString()} AOA</strong> no total.
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700 flex items-start gap-2">
+            <Info size={14} strokeWidth={2} className="shrink-0 mt-0.5" /> A plataforma retém <strong>10% de comissão</strong> sobre o valor do plantão. Será cobrado <strong>{Math.round(parseInt(form.valor || "0") * 1.1).toLocaleString()} AOA</strong> no total.
           </div>
 
           <div className="flex gap-2">
-            <button onClick={() => setStep(2)} className="flex-1 border border-gray-200 text-gray-600 font-semibold py-3.5 rounded-2xl text-sm">
-              ← Voltar
+            <button onClick={() => setStep(2)} className="flex-1 border border-gray-200 text-gray-600 font-semibold py-3.5 rounded-2xl text-sm inline-flex items-center justify-center gap-1">
+              <ChevronLeft size={16} strokeWidth={2} /> Voltar
             </button>
             <button onClick={() => setPublicado(true)} className="flex-1 bg-[#27AE60] text-white font-bold py-3.5 rounded-2xl text-sm">
               PUBLICAR

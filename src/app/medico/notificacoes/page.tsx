@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
+import { CheckCircle, XCircle, CalendarClock, Building2, Star, Unlock, Wallet, Bell, type LucideIcon } from "lucide-react";
 
 type TipoNotif =
   | "CANDIDATURA_ACEITE"
@@ -26,7 +27,7 @@ const notificacoesMock: Notificacao[] = [
   {
     id: "n-001",
     tipo: "CANDIDATURA_ACEITE",
-    titulo: "Candidatura Aceite! 🎉",
+    titulo: "Candidatura Aceite!",
     corpo: "A Clínica Horizonte aceitou a sua candidatura para o turno de Medicina Geral dia 26/04.",
     href: "/medico/plantoes/plt-001",
     lida: false,
@@ -62,7 +63,7 @@ const notificacoesMock: Notificacao[] = [
   {
     id: "n-005",
     tipo: "AVALIACAO_RECEBIDA",
-    titulo: "Nova Avaliação ⭐⭐⭐⭐⭐",
+    titulo: "Nova Avaliação (5 estrelas)",
     corpo: "A Clínica Horizonte avaliou o seu desempenho com 5 estrelas: «Excelente profissional, pontual e muito atencioso.»",
     href: "/medico/perfil",
     lida: true,
@@ -79,7 +80,7 @@ const notificacoesMock: Notificacao[] = [
   {
     id: "n-007",
     tipo: "VERIFICACAO_CONCLUIDA",
-    titulo: "Perfil Verificado ✓",
+    titulo: "Perfil Verificado",
     corpo: "A sua Verificação Express foi concluída com sucesso. Já pode candidatar-se a todos os plantões disponíveis.",
     href: "/medico/perfil",
     lida: true,
@@ -87,14 +88,14 @@ const notificacoesMock: Notificacao[] = [
   },
 ];
 
-const iconeMap: Record<TipoNotif, string> = {
-  CANDIDATURA_ACEITE: "✅",
-  CANDIDATURA_RECUSADA: "❌",
-  TURNO_AMANHA: "🗓",
-  RESERVA_CONFIRMADA: "🏥",
-  AVALIACAO_RECEBIDA: "⭐",
-  VERIFICACAO_CONCLUIDA: "🔓",
-  PAGAMENTO_PROCESSADO: "💰",
+const iconeMap: Record<TipoNotif, LucideIcon> = {
+  CANDIDATURA_ACEITE: CheckCircle,
+  CANDIDATURA_RECUSADA: XCircle,
+  TURNO_AMANHA: CalendarClock,
+  RESERVA_CONFIRMADA: Building2,
+  AVALIACAO_RECEBIDA: Star,
+  VERIFICACAO_CONCLUIDA: Unlock,
+  PAGAMENTO_PROCESSADO: Wallet,
 };
 
 const corMap: Record<TipoNotif, string> = {
@@ -148,7 +149,7 @@ export default function Notificacoes() {
       <div className="px-4 pt-3 pb-8 space-y-2">
         {lista.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
-            <p className="text-4xl mb-3">🔔</p>
+            <Bell size={40} strokeWidth={1.25} className="mx-auto mb-3 text-gray-300" />
             <p className="text-sm">Sem notificações por enquanto.</p>
           </div>
         ) : (
@@ -161,8 +162,8 @@ export default function Notificacoes() {
               }`}
             >
               {/* Ícone */}
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${n.lida ? "bg-gray-100" : "bg-white/70"}`}>
-                {iconeMap[n.tipo]}
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${n.lida ? "bg-gray-100" : "bg-white/70"}`}>
+                {(() => { const Icon = iconeMap[n.tipo]; return <Icon size={20} strokeWidth={1.75} />; })()}
               </div>
 
               {/* Conteúdo */}

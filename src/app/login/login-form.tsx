@@ -3,6 +3,7 @@
 import { use, useActionState, useState } from "react";
 import { loginAction, LoginState } from "@/app/actions/auth";
 import Link from "next/link";
+import { Eye, EyeOff, AlertTriangle, ChevronRight } from "lucide-react";
 
 export default function LoginForm({
   searchParams,
@@ -64,7 +65,7 @@ export default function LoginForm({
             className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors text-base"
             aria-label={showPassword ? "Ocultar palavra-passe" : "Mostrar palavra-passe"}
           >
-            {showPassword ? "🙈" : "👁️"}
+            {showPassword ? <EyeOff size={16} strokeWidth={1.75} /> : <Eye size={16} strokeWidth={1.75} />}
           </button>
         </div>
         <div className="text-right mt-1">
@@ -77,7 +78,7 @@ export default function LoginForm({
       {/* Erro */}
       {state?.error && (
         <div className="bg-red-500/15 border border-red-500/30 rounded-xl px-4 py-3 text-sm text-red-300 text-center flex items-center gap-2 justify-center">
-          <span>⚠️</span>
+          <AlertTriangle size={15} strokeWidth={2} />
           <span>{state.error}</span>
         </div>
       )}
@@ -94,7 +95,7 @@ export default function LoginForm({
             A autenticar...
           </>
         ) : (
-          "Entrar na plataforma →"
+          <span className="inline-flex items-center gap-1">Entrar na plataforma <ChevronRight size={15} strokeWidth={2} /></span>
         )}
       </button>
     </form>

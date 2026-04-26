@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Mail, ChevronLeft, KeyRound } from "lucide-react";
 
 export default function RecuperarPassword() {
   const [email, setEmail] = useState("");
@@ -23,7 +24,9 @@ export default function RecuperarPassword() {
   if (enviado) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#f7f8fa] px-6 text-center">
-        <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-4xl">📧</div>
+        <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+          <Mail size={40} strokeWidth={1.5} className="text-blue-500" />
+        </div>
         <h2 className="text-xl font-bold text-gray-900">Email enviado!</h2>
         <p className="text-gray-500 mt-2 text-sm leading-6 max-w-xs">
           Verifique a sua caixa de entrada em <strong className="text-gray-700">{email}</strong>.<br />
@@ -44,7 +47,7 @@ export default function RecuperarPassword() {
           Reenviar email
         </button>
         <Link href="/login" className="mt-4 text-gray-400 text-sm">
-          ← Voltar ao login
+          <span className="inline-flex items-center gap-1"><ChevronLeft size={14} strokeWidth={2} /> Voltar ao login</span>
         </Link>
       </div>
     );
@@ -54,14 +57,16 @@ export default function RecuperarPassword() {
     <div className="min-h-screen flex flex-col bg-[#f7f8fa]">
       {/* Header */}
       <div className="bg-white border-b border-gray-100 px-5 py-4 flex items-center gap-3">
-        <button onClick={() => router.push("/login")} className="text-gray-500 text-lg">←</button>
+        <button onClick={() => router.push("/login")} className="text-gray-500 text-lg"><ChevronLeft size={18} strokeWidth={2} /></button>
         <h1 className="font-bold text-gray-900">Recuperar Password</h1>
       </div>
 
       <div className="flex-1 px-5 pt-10 max-w-sm mx-auto w-full">
         {/* Ícone */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center text-3xl mx-auto mb-3">🔑</div>
+          <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-3">
+            <KeyRound size={30} strokeWidth={1.75} className="text-brand-500" />
+          </div>
           <p className="text-sm text-gray-500 leading-6">
             Insira o seu email para receber um link de recuperação de password.
           </p>

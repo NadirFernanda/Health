@@ -1,4 +1,5 @@
 import { allTransacoesMock, adminStats, formatAOA } from "@/lib/mock-data";
+import { TrendingUp, ArrowUp } from "lucide-react";
 
 export default function AdminTransacoes() {
   const totalCredito = allTransacoesMock
@@ -43,7 +44,7 @@ export default function AdminTransacoes() {
 
       {/* Info comissão */}
       <div className="bg-purple-50 border border-purple-100 rounded-2xl p-4">
-        <p className="text-sm font-bold text-purple-800 mb-2">📊 Modelo de Receita</p>
+        <p className="text-sm font-bold text-purple-800 mb-2">Modelo de Receita</p>
         <div className="space-y-1.5 text-xs text-purple-700">
           <div className="flex justify-between">
             <span>Comissão estimada (histórico visível)</span>
@@ -70,10 +71,12 @@ export default function AdminTransacoes() {
             .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
             .map((t) => (
               <div key={t.id} className="bg-white rounded-2xl border border-gray-100 px-4 py-3 flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 ${
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                   t.tipo === "CREDITO" ? "bg-green-50" : "bg-gray-100"
                 }`}>
-                  {t.tipo === "CREDITO" ? "💚" : "↑"}
+                  {t.tipo === "CREDITO"
+                    ? <TrendingUp size={18} strokeWidth={1.75} className="text-green-600" />
+                    : <ArrowUp size={18} strokeWidth={1.75} className="text-gray-500" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-800 truncate">{t.descricao}</p>

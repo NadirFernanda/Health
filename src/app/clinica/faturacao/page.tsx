@@ -1,5 +1,6 @@
 import { formatAOA } from "@/lib/mock-data";
 import { TopBar } from "@/components/nav";
+import { Info } from "lucide-react";
 
 const transacoes = [
   { id: "tf-001", descricao: "Plantão — Dr. João Silva", data: "2026-04-22", valor: 15000, comissao: 1500 },
@@ -37,8 +38,8 @@ export default function FaturacaoClinica() {
       </div>
 
       {/* Info comissão */}
-      <div className="mx-4 mt-3 bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700">
-        💡 A Planto cobra <strong>10% de comissão</strong> sobre cada plantão. O valor é debitado automaticamente no momento da confirmação.
+      <div className="mx-4 mt-3 bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700 flex items-start gap-2">
+        <Info size={14} strokeWidth={2} className="shrink-0 mt-0.5" /> A Planto cobra <strong>10% de comissão</strong> sobre cada plantão. O valor é debitado automaticamente no momento da confirmação.
       </div>
 
       {/* Histórico */}

@@ -1,14 +1,15 @@
 "use client";
 import { adminMedicosMock, AdminMedico, EstadoVerificacao } from "@/lib/mock-data";
 import { useState } from "react";
+import { Check, X, Star, ClipboardList, MessageCircle, Clock, Ban, RotateCcw } from "lucide-react";
 
 type Filtro = "TODOS" | "PENDENTE" | "APROVADO" | "REJEITADO" | "SUSPENSO";
 
 const badgeMap: Record<EstadoVerificacao, { cls: string; label: string }> = {
-  APROVADO:  { cls: "bg-green-100 text-green-700",  label: "✓ Verificado" },
-  PENDENTE:  { cls: "bg-yellow-100 text-yellow-700", label: "⏳ Pendente"  },
-  REJEITADO: { cls: "bg-red-100 text-red-600",       label: "✗ Rejeitado"  },
-  SUSPENSO:  { cls: "bg-gray-100 text-gray-500",     label: "⊘ Suspenso"   },
+  APROVADO:  { cls: "bg-green-100 text-green-700",  label: "Verificado" },
+  PENDENTE:  { cls: "bg-yellow-100 text-yellow-700", label: "Pendente"  },
+  REJEITADO: { cls: "bg-red-100 text-red-600",       label: "Rejeitado"  },
+  SUSPENSO:  { cls: "bg-gray-100 text-gray-500",     label: "Suspenso"   },
 };
 
 export default function AdminMedicos() {
@@ -74,9 +75,9 @@ export default function AdminMedicos() {
             {/* Estatísticas (se já fez plantões) */}
             {m.totalPlantoes > 0 && (
               <div className="flex gap-4 mt-3 pt-2.5 border-t border-gray-50">
-                <span className="text-xs text-gray-500">⭐ {m.rating}</span>
-                <span className="text-xs text-gray-500">📋 {m.totalPlantoes} plantões</span>
-                <span className="text-xs text-gray-500">💬 {m.totalAvaliacoes} avaliações</span>
+                <span className="flex items-center gap-1 text-xs text-gray-500"><Star size={11} strokeWidth={1.75} /> {m.rating}</span>
+                <span className="flex items-center gap-1 text-xs text-gray-500"><ClipboardList size={11} strokeWidth={1.75} /> {m.totalPlantoes} plantões</span>
+                <span className="flex items-center gap-1 text-xs text-gray-500"><MessageCircle size={11} strokeWidth={1.75} /> {m.totalAvaliacoes} avaliações</span>
               </div>
             )}
 
@@ -85,32 +86,32 @@ export default function AdminMedicos() {
               <div className="flex gap-2 mt-3">
                 <button
                   onClick={() => update(m.id, "APROVADO")}
-                  className="flex-1 bg-[#27AE60] hover:bg-[#1A7A42] text-white text-xs font-bold py-2.5 rounded-xl transition-colors"
+                  className="flex-1 bg-[#27AE60] hover:bg-[#1A7A42] text-white text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1"
                 >
-                  ✓ APROVAR
+                  <Check size={13} strokeWidth={2.5} /> APROVAR
                 </button>
                 <button
                   onClick={() => update(m.id, "REJEITADO")}
-                  className="flex-1 border border-red-200 hover:bg-red-50 text-red-500 text-xs font-bold py-2.5 rounded-xl transition-colors"
+                  className="flex-1 border border-red-200 hover:bg-red-50 text-red-500 text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1"
                 >
-                  ✗ REJEITAR
+                  <X size={13} strokeWidth={2.5} /> REJEITAR
                 </button>
               </div>
             )}
             {m.estadoVerificacao === "APROVADO" && (
               <button
                 onClick={() => update(m.id, "SUSPENSO")}
-                className="mt-2.5 w-full border border-gray-200 text-gray-400 hover:bg-gray-50 text-xs font-medium py-2 rounded-xl transition-colors"
+                className="mt-2.5 w-full border border-gray-200 text-gray-400 hover:bg-gray-50 text-xs font-medium py-2 rounded-xl transition-colors flex items-center justify-center gap-1"
               >
-                ⊘ Suspender Acesso
+                <Ban size={13} strokeWidth={2} /> Suspender Acesso
               </button>
             )}
             {m.estadoVerificacao === "SUSPENSO" && (
               <button
                 onClick={() => update(m.id, "APROVADO")}
-                className="mt-2.5 w-full bg-[#1A6FBB]/10 hover:bg-[#1A6FBB]/20 text-[#1A6FBB] text-xs font-semibold py-2 rounded-xl transition-colors"
+                className="mt-2.5 w-full bg-[#1A6FBB]/10 hover:bg-[#1A6FBB]/20 text-[#1A6FBB] text-xs font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1"
               >
-                ↺ Reactivar Acesso
+                <RotateCcw size={13} strokeWidth={2} /> Reactivar Acesso
               </button>
             )}
           </div>

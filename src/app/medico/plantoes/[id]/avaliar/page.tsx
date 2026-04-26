@@ -4,6 +4,7 @@ import { plantoesMock, formatData } from "@/lib/mock-data";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
+import { Star, MapPin, Calendar, Banknote } from "lucide-react";
 
 export default function AvaliarPlantaoMedico({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -24,14 +25,16 @@ export default function AvaliarPlantaoMedico({ params }: { params: Promise<{ id:
   if (done) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#f7f8fa] px-6 text-center">
-        <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mb-4 text-4xl">⭐</div>
+        <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+          <Star size={40} strokeWidth={1.5} className="text-yellow-500 fill-yellow-500" />
+        </div>
         <h2 className="text-xl font-bold text-gray-900">Avaliação Enviada!</h2>
         <p className="text-gray-500 mt-2 text-sm leading-6">
           Obrigado pelo seu feedback. A sua avaliação ajuda a melhorar a qualidade das clínicas na plataforma.
         </p>
         <div className="mt-4 flex gap-1">
           {[1, 2, 3, 4, 5].map((s) => (
-            <span key={s} className={`text-2xl ${s <= nota ? "text-yellow-400" : "text-gray-200"}`}>★</span>
+            <Star key={s} size={22} strokeWidth={1.75} className={s <= nota ? "text-yellow-400 fill-yellow-400" : "text-gray-200"} />
           ))}
         </div>
         <p className="text-gray-600 text-sm mt-3 italic">"{comentario || "Sem comentário"}"</p>
@@ -54,9 +57,9 @@ export default function AvaliarPlantaoMedico({ params }: { params: Promise<{ id:
         <div className="bg-white rounded-2xl border border-gray-100 p-4">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Turno Realizado</p>
           <p className="font-semibold text-gray-900">{plantao.clinica.nome}</p>
-          <p className="text-sm text-gray-500 mt-0.5">📍 {plantao.clinica.morada}, {plantao.clinica.cidade}</p>
-          <p className="text-sm text-gray-500 mt-0.5">🗓 {formatData(plantao.dataInicio)}</p>
-          <p className="text-sm text-gray-500 mt-0.5">💰 {plantao.valorKwanzas.toLocaleString()} AOA</p>
+          <p className="text-sm text-gray-500 mt-0.5 inline-flex items-center gap-1"><MapPin size={13} strokeWidth={1.75} /> {plantao.clinica.morada}, {plantao.clinica.cidade}</p>
+          <p className="text-sm text-gray-500 mt-0.5 inline-flex items-center gap-1"><Calendar size={13} strokeWidth={1.75} /> {formatData(plantao.dataInicio)}</p>
+          <p className="text-sm text-gray-500 mt-0.5 inline-flex items-center gap-1"><Banknote size={13} strokeWidth={1.75} /> {plantao.valorKwanzas.toLocaleString()} AOA</p>
         </div>
 
         {/* Avaliação — estrelas */}
@@ -72,7 +75,7 @@ export default function AvaliarPlantaoMedico({ params }: { params: Promise<{ id:
                 onClick={() => setNota(s)}
                 className="text-4xl transition-transform hover:scale-110 active:scale-95"
               >
-                <span className={(hover || nota) >= s ? "text-yellow-400" : "text-gray-200"}>★</span>
+                <Star size={34} strokeWidth={1.75} className={(hover || nota) >= s ? "text-yellow-400 fill-yellow-400" : "text-gray-200"} />
               </button>
             ))}
           </div>

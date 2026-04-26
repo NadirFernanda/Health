@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ChevronRight, ClipboardList } from "lucide-react";
 
 function formatAOA(v: number) {
   return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
@@ -27,7 +28,7 @@ export default async function PlantoesDaClinica() {
       <div className="px-4 pt-5 space-y-3">
         {plantoes.length === 0 && (
           <div className="text-center py-16 text-gray-400">
-            <p className="text-4xl mb-3">📋</p>
+            <ClipboardList size={40} strokeWidth={1.25} className="mx-auto mb-3 text-gray-300" />
             <p className="text-sm">Ainda não publicou nenhum plantão.</p>
             <Link href="/clinica/publicar" className="mt-4 inline-block bg-brand-500 text-white text-sm font-bold px-6 py-3 rounded-xl">
               Publicar Plantão
@@ -55,7 +56,7 @@ export default async function PlantoesDaClinica() {
               <span className="text-[#1A6FBB] font-bold text-sm">{formatAOA(p.valorKwanzas)}</span>
               <span className="text-gray-300">·</span>
               <span className="text-gray-500 text-xs">{p._count.candidaturas} candidato(s)</span>
-              <span className="ml-auto text-[#1A6FBB] text-xs font-semibold">Ver →</span>
+              <span className="ml-auto text-[#1A6FBB] text-xs font-semibold inline-flex items-center gap-0.5">Ver <ChevronRight size={12} strokeWidth={2} /></span>
             </div>
           </Link>
         ))}

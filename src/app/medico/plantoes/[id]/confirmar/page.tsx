@@ -3,6 +3,7 @@ import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
 import { useState, use, useEffect } from "react";
 import Link from "next/link";
+import { Lock, CheckCircle, Building2, Calendar, Clock, Stethoscope, Banknote, Info, ChevronRight } from "lucide-react";
 
 type PlantaoInfo = {
   id: string; especialidade: string; dataInicio: string; dataFim: string;
@@ -57,14 +58,16 @@ export default function ConfirmarCandidatura({ params }: { params: Promise<{ id:
       <div>
         <TopBar titulo="Candidatura" back={`/medico/plantoes/${id}`} />
         <div className="px-4 py-10 flex flex-col items-center text-center space-y-4">
-          <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center text-4xl">🔒</div>
+          <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+            <Lock size={36} strokeWidth={1.5} className="text-orange-500" />
+          </div>
           <h2 className="text-xl font-bold text-gray-900">Verificação Necessária</h2>
           <p className="text-gray-500 text-sm leading-6 max-w-sm">
             Para se candidatar a plantões precisa de completar a Verificação Express.
             Garante a confiança das clínicas no seu perfil.
           </p>
           <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 w-full text-left space-y-2">
-            <p className="text-sm font-bold text-orange-700">✅ O que inclui a Verificação Express</p>
+            <p className="text-sm font-bold text-orange-700 flex items-center gap-1"><CheckCircle size={14} strokeWidth={2} /> O que inclui a Verificação Express</p>
             <ul className="text-xs text-orange-600 space-y-1">
               <li>• Confirmação do número de ordem/SINOME</li>
               <li>• Validação de identidade (BI/Passaporte)</li>
@@ -79,9 +82,9 @@ export default function ConfirmarCandidatura({ params }: { params: Promise<{ id:
           </div>
           <Link
             href="/medico/perfil"
-            className="w-full bg-[#1A6FBB] text-white font-bold py-4 rounded-2xl text-center block"
+            className="w-full bg-[#1A6FBB] text-white font-bold py-4 rounded-2xl text-center inline-flex items-center justify-center gap-1"
           >
-            Iniciar Verificação Express →
+            Iniciar Verificação Express <ChevronRight size={16} strokeWidth={2} />
           </Link>
           <button onClick={() => router.back()} className="text-gray-400 text-sm py-2">
             Voltar
@@ -95,8 +98,8 @@ export default function ConfirmarCandidatura({ params }: { params: Promise<{ id:
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#f7f8fa] px-6 text-center">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
-          <span className="text-4xl">✅</span>
-        </div>
+            <CheckCircle size={40} strokeWidth={1.5} className="text-green-500" />
+          </div>
         <h2 className="text-xl font-bold text-gray-900">Candidatura enviada!</h2>
         <p className="text-gray-500 mt-2 text-sm leading-6">
           A clínica irá analisar o seu perfil e notificaremos quando houver resposta.
@@ -118,16 +121,16 @@ export default function ConfirmarCandidatura({ params }: { params: Promise<{ id:
         <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
           <p className="text-xs text-gray-400 uppercase font-bold tracking-wide">Resumo</p>
           <div className="text-sm space-y-1.5 text-gray-700">
-            <p>🏥 <span className="font-semibold">{plantao.clinica.nome}</span></p>
-            <p>📅 {formatData(plantao.dataInicio)}</p>
-            <p>⏰ {formatHora(plantao.dataInicio)} – {formatHora(plantao.dataFim)}</p>
-            <p>🩺 {plantao.especialidade}</p>
-            <p>💵 <span className="font-bold text-[#1A6FBB] text-base">{formatAOA(plantao.valorKwanzas)}</span></p>
+          <p>&#x200B;<Building2 size={14} strokeWidth={1.75} className="inline mr-1 text-gray-400" /><span className="font-semibold">{plantao.clinica.nome}</span></p>
+            <p><Calendar size={14} strokeWidth={1.75} className="inline mr-1 text-gray-400" />{formatData(plantao.dataInicio)}</p>
+            <p><Clock size={14} strokeWidth={1.75} className="inline mr-1 text-gray-400" />{formatHora(plantao.dataInicio)} – {formatHora(plantao.dataFim)}</p>
+            <p><Stethoscope size={14} strokeWidth={1.75} className="inline mr-1 text-gray-400" />{plantao.especialidade}</p>
+            <p><Banknote size={14} strokeWidth={1.75} className="inline mr-1 text-gray-400" /><span className="font-bold text-[#1A6FBB] text-base">{formatAOA(plantao.valorKwanzas)}</span></p>
           </div>
         </div>
 
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
-          <p className="text-sm text-[#1A6FBB] font-semibold">ℹ️ Como funciona</p>
+          <p className="flex items-center gap-1 text-sm text-[#1A6FBB] font-semibold"><Info size={14} strokeWidth={2} /> Como funciona</p>
           <ul className="text-xs text-blue-700 mt-2 space-y-1.5">
             <li>• A clínica recebe a sua candidatura e analisa o seu perfil</li>
             <li>• Receberá uma notificação com a resposta em até 24h</li>

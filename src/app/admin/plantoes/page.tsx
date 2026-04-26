@@ -99,9 +99,13 @@ export default function AdminPlantoes() {
                       {badge.label}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5">🏥 {p.clinica.nome} · 📍 {p.clinica.cidade}</p>
+                  <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5">
+                    <span className="font-medium text-gray-700">{p.clinica.nome}</span>
+                    <span className="text-gray-300">·</span>
+                    {p.clinica.cidade}
+                  </p>
                   <p className="text-xs text-gray-400 mt-0.5">
-                    📅 {formatData(p.dataInicio)} · {formatHora(p.dataInicio)} – {formatHora(p.dataFim)}
+                    {formatData(p.dataInicio)} · {formatHora(p.dataInicio)} – {formatHora(p.dataFim)}
                   </p>
                 </div>
                 <div className="text-right shrink-0">
@@ -110,8 +114,8 @@ export default function AdminPlantoes() {
                 </div>
               </div>
               <div className="flex items-center gap-4 mt-2.5 pt-2.5 border-t border-gray-50">
-                <span className="text-xs text-gray-500">👥 {p.candidatos ?? 0} candidato(s)</span>
-                <span className="text-xs text-gray-500">💰 comissão: {formatAOA(Math.round(p.valorKwanzas * 0.1))}</span>
+                <span className="text-xs text-gray-500">{p.candidatos ?? 0} candidato(s)</span>
+                <span className="text-xs text-gray-500">comissão: {formatAOA(Math.round(p.valorKwanzas * 0.1))}</span>
                 <span className="text-xs font-mono text-gray-300 ml-auto">{p.id}</span>
               </div>
             </div>

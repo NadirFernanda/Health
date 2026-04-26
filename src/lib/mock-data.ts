@@ -403,9 +403,11 @@ export function calcularDuracao(inicio: string, fim: string): string {
 // --- ADMIN TYPES ---
 
 export type EstadoVerificacao = "APROVADO" | "PENDENTE" | "REJEITADO" | "SUSPENSO";
+export type TipoVerificacao = "NORMAL" | "EXPRESS";
 
 export interface AdminMedico extends Medico {
   estadoVerificacao: EstadoVerificacao;
+  tipoVerificacao?: TipoVerificacao;
   email: string;
   criadoEm: string;
 }
@@ -429,21 +431,21 @@ export const adminMedicosMock: AdminMedico[] = [
     numeroOrdem: "OA-LDA-2018-0077", numeroSinome: "SINOME-LDA-2018-0077", provincia: "Luanda", foto: "",
     rating: 0, totalAvaliacoes: 0, totalPlantoes: 0, verified: false,
     saldoCarteira: 0, bio: "Cardiologista com 10 anos de experiência.",
-    estadoVerificacao: "PENDENTE", email: "antonio.sebastiao@email.com", criadoEm: "2026-04-20T08:00:00",
+    estadoVerificacao: "PENDENTE", tipoVerificacao: "EXPRESS" as TipoVerificacao, email: "antonio.sebastiao@email.com", criadoEm: "2026-04-26T08:00:00",
   },
   {
     id: "med-006", nome: "Enf.ª Sofia Teixeira", tipo: "ENFERMEIRO" as TipoProfissional, especialidade: "Enfermagem de Urgência" as Especialidade,
     numeroOrdem: "OE-LDA-2022-0211", numeroSinome: "SINOME-LDA-2022-0211", provincia: "Luanda", foto: "",
     rating: 0, totalAvaliacoes: 0, totalPlantoes: 0, verified: false,
     saldoCarteira: 0, bio: "Enfermeira de urgência recém-chegada à cidade.",
-    estadoVerificacao: "PENDENTE", email: "sofia.teixeira@email.com", criadoEm: "2026-04-22T15:30:00",
+    estadoVerificacao: "PENDENTE", tipoVerificacao: "NORMAL" as TipoVerificacao, email: "sofia.teixeira@email.com", criadoEm: "2026-04-24T15:30:00",
   },
   {
     id: "med-007", nome: "Dr. Carlos Mendes", tipo: "MEDICO" as TipoProfissional, especialidade: "Medicina Geral" as Especialidade,
     numeroOrdem: "OA-LDA-2020-0099", numeroSinome: "SINOME-LDA-2020-0099", provincia: "Luanda", foto: "",
     rating: 0, totalAvaliacoes: 0, totalPlantoes: 0, verified: false,
     saldoCarteira: 0, bio: "Médico geral.",
-    estadoVerificacao: "REJEITADO", email: "carlos.mendes@email.com", criadoEm: "2026-04-10T10:00:00",
+    estadoVerificacao: "REJEITADO", tipoVerificacao: "NORMAL" as TipoVerificacao, email: "carlos.mendes@email.com", criadoEm: "2026-04-10T10:00:00",
   },
 ];
 

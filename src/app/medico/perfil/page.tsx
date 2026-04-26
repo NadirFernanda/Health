@@ -1,8 +1,9 @@
 "use client";
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { medicoLogado } from "@/lib/mock-data";
 import { TopBar } from "@/components/nav";
-import Link from "next/link";
+import { logoutAction } from "@/app/actions/auth";
+import { BadgeCheck, Star, ClipboardList, Stethoscope, MapPin, CheckCircle, Clock, Paperclip, Lock, Check, ChevronRight } from "lucide-react";
 
 type DocEstado = "APROVADO" | "PENDENTE" | "NAO_ENVIADO";
 
@@ -34,10 +35,10 @@ export default function PerfilMedico() {
     );
   };
 
-  const estadoConfig: Record<DocEstado, { cls: string; icon: string; label: string }> = {
-    APROVADO:    { cls: "text-success-500", icon: "✅", label: "Verificado" },
-    PENDENTE:    { cls: "text-yellow-500",  icon: "⏳", label: "Em análise" },
-    NAO_ENVIADO: { cls: "text-gray-300",    icon: "📎", label: "Não enviado" },
+  const estadoConfig: Record<DocEstado, { cls: string; icon: React.ReactNode; label: string }> = {
+    APROVADO:    { cls: "text-success-500", icon: <CheckCircle size={15} strokeWidth={2} />, label: "Verificado" },
+    PENDENTE:    { cls: "text-yellow-500",  icon: <Clock size={15} strokeWidth={2} />,       label: "Em análise" },
+    NAO_ENVIADO: { cls: "text-gray-300",    icon: <Paperclip size={15} strokeWidth={2} />,   label: "Não enviado" },
   };
 
   const avaliacoes = [
@@ -58,11 +59,11 @@ export default function PerfilMedico() {
         <h1 className="text-xl font-bold text-gray-900">{m.nome}</h1>
         {m.verified && (
           <span className="mt-1.5 inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
-            ✓ VERIFICADO
+            <BadgeCheck size={13} strokeWidth={2} /> VERIFICADO
           </span>
         )}
         <div className="flex items-center gap-1 mt-2">
-          <span className="text-yellow-400">⭐</span>
+          <Star size={14} strokeWidth={1.75} className="text-yellow-400 fill-yellow-400" />
           <span className="text-sm font-semibold text-gray-800">{m.rating}</span>
           <span className="text-gray-400 text-xs">({m.totalAvaliacoes} avaliações)</span>
         </div>
@@ -87,10 +88,10 @@ export default function PerfilMedico() {
       <div className="bg-white mt-2 px-4 py-4 border-b border-gray-100">
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Informações Profissionais</h3>
         <div className="space-y-2 text-sm text-gray-700">
-          <p>🔖 Nº Ordem: <span className="font-mono text-gray-900">{m.numeroOrdem}</span></p>
-          {m.numeroSinome && <p>📋 Nº SINOME: <span className="font-mono text-gray-900">{m.numeroSinome}</span></p>}
-          <p>🩺 Especialidade: {m.especialidade}</p>
-          <p>📍 Localização: {m.provincia}</p>
+          <p className="flex items-center gap-2"><ClipboardList size={14} strokeWidth={1.75} className="text-gray-400 shrink-0" /> Nº Ordem: <span className="font-mono text-gray-900">{m.numeroOrdem}</span></p>
+          {m.numeroSinome && <p className="flex items-center gap-2"><ClipboardList size={14} strokeWidth={1.75} className="text-gray-400 shrink-0" /> Nº SINOME: <span className="font-mono text-gray-900">{m.numeroSinome}</span></p>}
+          <p className="flex items-center gap-2"><Stethoscope size={14} strokeWidth={1.75} className="text-gray-400 shrink-0" /> Especialidade: {m.especialidade}</p>
+          <p className="flex items-center gap-2"><MapPin size={14} strokeWidth={1.75} className="text-gray-400 shrink-0" /> Localização: {m.provincia}</p>
           <p className="text-gray-600 leading-5 mt-1">{m.bio}</p>
         </div>
       </div>
@@ -99,19 +100,19 @@ export default function PerfilMedico() {
       {!m.verified && (
         <div className="mx-4 mt-4 bg-orange-50 border-2 border-orange-200 rounded-2xl p-4">
           <div className="flex items-start gap-3">
-            <span className="text-2xl">🔒</span>
+            <Lock size={22} strokeWidth={1.75} className="text-orange-500 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="font-bold text-orange-800 text-sm">Perfil não verificado</p>
               <p className="text-xs text-orange-600 mt-1 leading-5">
                 A Verificação Express desbloqueia candidaturas a plantões e aumenta a sua taxa de aceitação.
               </p>
               <div className="mt-3 space-y-1.5 text-xs text-orange-700">
-                <p>✓ Confirmação do SINOME / Ordem</p>
-                <p>✓ Validação de BI/Passaporte</p>
-                <p>✓ Prazo: 24–48h · Taxa única: <strong>2.500 AOA</strong></p>
+                <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> Confirmação do SINOME / Ordem</p>
+                <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> Validação de BI/Passaporte</p>
+                <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> Prazo: 24–48h · Taxa única: <strong>2.500 AOA</strong></p>
               </div>
-              <button className="mt-3 w-full bg-orange-500 text-white font-bold py-2.5 rounded-xl text-sm">
-                Iniciar Verificação Express →
+              <button className="mt-3 w-full bg-orange-500 text-white font-bold py-2.5 rounded-xl text-sm inline-flex items-center justify-center gap-1">
+                Iniciar Verificação Express <ChevronRight size={14} strokeWidth={2} />
               </button>
             </div>
           </div>
@@ -131,7 +132,7 @@ export default function PerfilMedico() {
             const cfg = estadoConfig[doc.estado];
             return (
               <div key={doc.label} className="flex items-center gap-3">
-                <span className={`text-base shrink-0 ${cfg.cls}`}>{cfg.icon}</span>
+                <span className={`shrink-0 ${cfg.cls}`}>{cfg.icon}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-gray-800 truncate">{doc.label}</p>
                   {doc.ficheiro ? (
@@ -174,7 +175,7 @@ export default function PerfilMedico() {
             <div key={i} className="bg-gray-50 rounded-xl p-3">
               <div className="flex items-center gap-1 mb-1">
                 {Array.from({ length: a.stars }).map((_, j) => (
-                  <span key={j} className="text-yellow-400 text-xs">⭐</span>
+                  <Star key={j} size={12} strokeWidth={1.75} className="text-yellow-400 fill-yellow-400" />
                 ))}
               </div>
               <p className="text-sm text-gray-700 leading-5">&ldquo;{a.texto}&rdquo;</p>
@@ -189,9 +190,11 @@ export default function PerfilMedico() {
         <button className="w-full border border-[#1A6FBB] text-[#1A6FBB] font-semibold py-3 rounded-2xl text-sm">
           Editar Perfil
         </button>
-        <Link href="/" className="block w-full text-center text-red-500 font-semibold py-3 text-sm">
-          Terminar Sessão
-        </Link>
+        <form action={logoutAction}>
+          <button type="submit" className="w-full text-center text-red-500 font-semibold py-3 text-sm">
+            Terminar Sessão
+          </button>
+        </form>
       </div>
     </div>
   );

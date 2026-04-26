@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { PlantaoCard } from "@/components/plantao-card";
 import { TopBar } from "@/components/nav";
+import { EmptyState } from "@/components/empty-state";
+import { Search } from "lucide-react";
 
 type PlantaoAPI = {
   id: string; especialidade: string; dataInicio: string; dataFim: string;
@@ -136,10 +138,13 @@ export default function BuscarPlantoes() {
         <p className="text-xs text-gray-500 mb-3">{plantoesFiltrados.length} plantão(ões) encontrado(s)</p>
         <div className="space-y-3">
           {plantoesFiltrados.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              <p className="text-4xl mb-2">🔍</p>
-              <p className="text-sm">Nenhum plantão encontrado com estes filtros.</p>
-            </div>
+            <EmptyState
+              icon={Search}
+              title="Nenhum plantão encontrado"
+              description="Nenhum turno na sua zona agora. Novas publicações chegam todos os dias!"
+              actionLabel="Activar alertas"
+              actionHref="/medico/notificacoes"
+            />
           ) : (
             plantoesFiltrados.map((p) => (
               <PlantaoCard key={p.id} plantao={p as never} showCandidatarBtn />

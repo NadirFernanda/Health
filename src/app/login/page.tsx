@@ -1,4 +1,5 @@
 import LoginForm from "./login-form";
+import { Stethoscope, Building2, Settings, type LucideIcon } from "lucide-react";
 
 export const metadata = { title: "Entrar — PlantãoMed" };
 
@@ -36,21 +37,21 @@ export default function LoginPage({
           <div className="space-y-2">
             <DemoCredential
               role="Médico"
-              icon="🩺"
+              icon={Stethoscope}
               email="medico@plantoamed.ao"
               password="med123456"
               color="text-blue-300"
             />
             <DemoCredential
               role="Clínica"
-              icon="🏥"
+              icon={Building2}
               email="clinica@horizonte.ao"
               password="cli123456"
               color="text-green-300"
             />
             <DemoCredential
               role="Administrador"
-              icon="⚙️"
+              icon={Settings}
               email="admin@plantoamed.ao"
               password="planto@admin2025"
               color="text-orange-300"
@@ -58,7 +59,15 @@ export default function LoginPage({
           </div>
         </div>
 
-        <p className="text-center text-xs text-white/20 mt-6">
+        {/* Criar conta */}
+        <p className="text-center text-sm text-white/50 mt-5">
+          Não tem conta?{" "}
+          <a href="/registar" className="text-blue-300 font-semibold hover:text-white transition-colors">
+            Criar conta gratuita
+          </a>
+        </p>
+
+        <p className="text-center text-xs text-white/20 mt-4">
           PlantãoMed © 2026 · Huambo, Angola
         </p>
       </div>
@@ -68,13 +77,13 @@ export default function LoginPage({
 
 function DemoCredential({
   role,
-  icon,
+  icon: Icon,
   email,
   password,
   color,
 }: {
   role: string;
-  icon: string;
+  icon: LucideIcon;
   email: string;
   password: string;
   color: string;
@@ -82,7 +91,7 @@ function DemoCredential({
   return (
     <div className="flex items-center justify-between gap-2">
       <div className="flex items-center gap-2 min-w-0">
-        <span className="text-base shrink-0">{icon}</span>
+        <Icon size={15} strokeWidth={1.75} className={`${color} shrink-0`} />
         <span className={`text-xs font-semibold ${color} shrink-0`}>{role}</span>
       </div>
       <div className="text-right min-w-0">

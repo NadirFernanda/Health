@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { PlantaoCard } from "@/components/plantao-card";
 import Link from "next/link";
+import { Bell, User, BadgeCheck } from "lucide-react";
 
 type Perfil = { nome: string; verified: boolean; disponivelAgora: boolean; saldoCarteira: number };
 type PlantaoAPI = {
@@ -63,19 +64,21 @@ export default function MedicoDashboard() {
       <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] px-5 pt-10 pb-6">
         <div className="flex items-center justify-between mb-1">
           <div>
-            <p className="text-blue-200 text-sm">Olá 👋</p>
+            <p className="text-blue-200 text-sm">Olá,</p>
             <h1 className="text-white font-bold text-xl">{perfil?.nome ?? "..."}</h1>
           </div>
           <div className="flex gap-2">
-            <Link href="/medico/notificacoes" className="relative w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-lg">
-              🔔
+            <Link href="/medico/notificacoes" className="relative w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white">
+              <Bell size={18} strokeWidth={1.75} />
             </Link>
-            <Link href="/medico/perfil" className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-lg">👤</Link>
+            <Link href="/medico/perfil" className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white">
+              <User size={18} strokeWidth={1.75} />
+            </Link>
           </div>
         </div>
         {perfil?.verified && (
           <span className="inline-flex items-center gap-1 bg-[#27AE60]/30 text-green-200 text-xs font-semibold px-2.5 py-1 rounded-full mt-2">
-            ✓ Perfil Verificado
+            <BadgeCheck size={13} strokeWidth={2} /> Perfil Verificado
           </span>
         )}
 
@@ -83,7 +86,7 @@ export default function MedicoDashboard() {
         <div className={`mt-3 flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors ${disponivel ? "bg-green-500/30" : "bg-white/10"}`}>
           <div>
             <p className="text-white text-xs font-bold">Disponível Agora</p>
-            <p className="text-blue-200 text-xs">{disponivel ? "🟢 Clínicas podem contactar-o directamente" : "Activate para receber turnos urgentes"}</p>
+            <p className="text-blue-200 text-xs">{disponivel ? "Clínicas podem contactar-o directamente" : "Activate para receber turnos urgentes"}</p>
           </div>
           <button
             onClick={toggleDisponivel}
@@ -120,7 +123,7 @@ export default function MedicoDashboard() {
                 : "bg-yellow-50 text-yellow-700 border-yellow-200";
               return (
                 <div key={c.id} className={`shrink-0 border rounded-xl px-3 py-2 text-xs font-semibold ${cor}`}>
-                  {c.estado === "ACEITE" ? "✓" : c.estado === "RECUSADO" ? "✗" : "⏳"} {c.plantao.clinica.nome}
+                  {c.plantao.clinica.nome}
                 </div>
               );
             })}

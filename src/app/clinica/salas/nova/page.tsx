@@ -3,6 +3,7 @@ import { useState } from "react";
 import { TipoSala, ZonaLuanda, Equipamentos } from "@/lib/mock-data";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
+import { Building2, DoorOpen, MapPin, Banknote, Wrench, Check, ChevronLeft, ChevronRight, Square, CheckSquare, Info } from "lucide-react";
 
 const zonaOpcoes: ZonaLuanda[] = ["Centralidade Horizonte", "Talatona", "Miramar", "Alvalade", "Kilamba"];
 const tipoOpcoes: { key: TipoSala; label: string; desc: string }[] = [
@@ -57,17 +58,19 @@ export default function NovaSala() {
   if (done) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#f7f8fa] px-6 text-center">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4 text-4xl">🏥</div>
+        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
+          <Building2 size={40} strokeWidth={1.5} className="text-green-500" />
+        </div>
         <h2 className="text-xl font-bold text-gray-900">Sala Publicada!</h2>
         <p className="text-gray-500 mt-2 text-sm leading-6">
           O seu consultório está visível para profissionais de saúde em Luanda.<br />
           Receberá notificação quando houver uma reserva.
         </p>
         <div className="mt-6 bg-white rounded-2xl border border-gray-100 p-4 text-left w-full max-w-xs space-y-2 text-sm text-gray-700">
-          <p>🚪 <strong>{nome}</strong></p>
-          <p>📍 {zona}</p>
-          <p>💰 {Number(preco).toLocaleString("pt-AO")} AOA/hora</p>
-          <p>🔧 {equipCount} equipamento(s)</p>
+          <p className="inline-flex items-center gap-1"><DoorOpen size={14} strokeWidth={1.75} /> <strong>{nome}</strong></p>
+          <p className="inline-flex items-center gap-1"><MapPin size={14} strokeWidth={1.75} /> {zona}</p>
+          <p className="inline-flex items-center gap-1"><Banknote size={14} strokeWidth={1.75} /> {Number(preco).toLocaleString("pt-AO")} AOA/hora</p>
+          <p className="inline-flex items-center gap-1"><Wrench size={14} strokeWidth={1.75} /> {equipCount} equipamento(s)</p>
         </div>
         <button
           onClick={() => router.push("/clinica/salas")}
@@ -129,7 +132,7 @@ export default function NovaSala() {
                     <p className="font-semibold text-sm text-gray-900">{t.label}</p>
                     <p className="text-xs text-gray-500 mt-0.5">{t.desc}</p>
                   </div>
-                  {tipo === t.key && <span className="ml-auto text-brand-500 font-bold text-lg">✓</span>}
+                  {tipo === t.key && <Check size={16} strokeWidth={2.5} className="ml-auto text-brand-500" />}
                 </button>
               ))}
             </div>
@@ -168,9 +171,9 @@ export default function NovaSala() {
           <button
             disabled={!passo1Valido}
             onClick={() => setPasso(2)}
-            className="w-full bg-brand-500 disabled:bg-gray-300 text-white font-bold py-4 rounded-2xl transition-colors"
+            className="w-full bg-brand-500 disabled:bg-gray-300 text-white font-bold py-4 rounded-2xl transition-colors inline-flex items-center justify-center gap-1"
           >
-            Continuar →
+            Continuar <ChevronRight size={16} strokeWidth={2} />
           </button>
         </div>
       )}
@@ -190,7 +193,7 @@ export default function NovaSala() {
                   equip[e.key] ? "border-success-500 bg-success-50" : "border-gray-100 bg-white"
                 }`}
               >
-                <span className="text-lg">{equip[e.key] ? "✅" : "⬜"}</span>
+                <span className="text-lg">{equip[e.key] ? <CheckSquare size={18} strokeWidth={2} /> : <Square size={18} strokeWidth={2} />}</span>
                 <span className={`text-sm font-semibold ${equip[e.key] ? "text-success-700" : "text-gray-700"}`}>{e.label}</span>
               </button>
             ))}
@@ -198,11 +201,11 @@ export default function NovaSala() {
 
           <p className="text-xs text-gray-400">{equipCount} equipamento(s) selecionado(s)</p>
           <div className="flex gap-3">
-            <button onClick={() => setPasso(1)} className="flex-1 border-2 border-gray-200 text-gray-600 font-bold py-3.5 rounded-2xl">
-              ← Voltar
+            <button onClick={() => setPasso(1)} className="flex-1 border-2 border-gray-200 text-gray-600 font-bold py-3.5 rounded-2xl inline-flex items-center justify-center gap-1">
+              <ChevronLeft size={16} strokeWidth={2} /> Voltar
             </button>
-            <button onClick={() => setPasso(3)} className="flex-1 bg-brand-500 text-white font-bold py-3.5 rounded-2xl">
-              Continuar →
+            <button onClick={() => setPasso(3)} className="flex-1 bg-brand-500 text-white font-bold py-3.5 rounded-2xl inline-flex items-center justify-center gap-1">
+              Continuar <ChevronRight size={16} strokeWidth={2} />
             </button>
           </div>
         </div>
@@ -250,16 +253,16 @@ export default function NovaSala() {
           </div>
 
           <div className="bg-purple-50 border border-purple-100 rounded-xl p-3 text-xs text-purple-700">
-            <p className="font-bold mb-1">💡 Como funciona</p>
+            <p className="font-bold mb-1 inline-flex items-center gap-1"><Info size={13} strokeWidth={2} /> Como funciona</p>
             <p>A sua sala ficará visível na pesquisa de profissionais. Receberá {Math.round(Number(preco) * 0.85).toLocaleString()} AOA por hora (após comissão MedFreela de 15%).</p>
           </div>
 
           <div className="flex gap-3">
-            <button onClick={() => setPasso(2)} className="flex-1 border-2 border-gray-200 text-gray-600 font-bold py-3.5 rounded-2xl">
-              ← Voltar
+            <button onClick={() => setPasso(2)} className="flex-1 border-2 border-gray-200 text-gray-600 font-bold py-3.5 rounded-2xl inline-flex items-center justify-center gap-1">
+              <ChevronLeft size={16} strokeWidth={2} /> Voltar
             </button>
-            <button onClick={() => setDone(true)} className="flex-1 bg-success-500 text-white font-bold py-3.5 rounded-2xl">
-              ✅ PUBLICAR
+            <button onClick={() => setDone(true)} className="flex-1 bg-success-500 text-white font-bold py-3.5 rounded-2xl inline-flex items-center justify-center gap-1">
+              <Check size={16} strokeWidth={2.5} /> PUBLICAR
             </button>
           </div>
         </div>

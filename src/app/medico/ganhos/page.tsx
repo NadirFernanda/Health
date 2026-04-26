@@ -2,6 +2,7 @@
 import { prisma } from "@/lib/db";
 import { TopBar } from "@/components/nav";
 import { redirect } from "next/navigation";
+import { TrendingUp, ArrowUp } from "lucide-react";
 
 function formatAOA(v: number) {
   return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
@@ -47,10 +48,12 @@ export default async function GanhosMedico() {
         <div className="space-y-2">
           {transacoes.map((t) => (
             <div key={t.id} className="bg-white rounded-2xl border border-gray-100 px-4 py-3 flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 ${
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                 t.tipo === "CREDITO" ? "bg-green-50" : "bg-gray-100"
               }`}>
-                {t.tipo === "CREDITO" ? "💚" : "↑"}
+                {t.tipo === "CREDITO"
+                  ? <TrendingUp size={18} strokeWidth={1.75} className="text-green-600" />
+                  : <ArrowUp size={18} strokeWidth={1.75} className="text-gray-500" />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-800 truncate">{t.descricao}</p>

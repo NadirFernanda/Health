@@ -2,6 +2,7 @@ import { salasMock, reservasDaClinicaMock, formatAOA, TipoSala } from "@/lib/moc
 import { TopBar } from "@/components/nav";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { MapPin, Star, CheckCircle, XCircle, Calendar } from "lucide-react";
 
 const tipoLabel: Record<TipoSala, string> = {
   CONSULTORIO: "Consultório",
@@ -26,8 +27,8 @@ export default async function DetalheSalaClinica({ params }: { params: Promise<{
         <div className="flex items-start justify-between gap-2">
           <div>
             <h2 className="font-bold text-gray-900 text-lg">{sala.nome}</h2>
-            <p className="text-xs text-gray-500 mt-0.5">{tipoLabel[sala.tipo]} · 📍 {sala.zona}</p>
-            <p className="text-yellow-500 text-xs mt-1">⭐ {sala.avaliacaoMedia} ({sala.totalAvaliacoes} avaliações)</p>
+            <p className="text-xs text-gray-500 mt-0.5 inline-flex items-center gap-1">{tipoLabel[sala.tipo]} · <MapPin size={11} strokeWidth={1.75} /> {sala.zona}</p>
+            <p className="text-yellow-500 text-xs mt-1 inline-flex items-center gap-1"><Star size={11} strokeWidth={1.75} fill="currentColor" /> {sala.avaliacaoMedia} ({sala.totalAvaliacoes} avaliações)</p>
           </div>
           <div className="text-right">
             <p className="text-brand-600 font-bold text-xl">{formatAOA(sala.precoPorHora)}<span className="text-xs text-gray-400 font-normal">/h</span></p>
@@ -62,7 +63,7 @@ export default async function DetalheSalaClinica({ params }: { params: Promise<{
             };
             return (
               <div key={key} className={`flex items-center gap-2 text-xs ${val ? "text-gray-700" : "text-gray-300"}`}>
-                <span>{val ? "✅" : "❌"}</span>
+                <span>{val ? <CheckCircle size={12} strokeWidth={2} /> : <XCircle size={12} strokeWidth={2} />}</span>
                 <span>{labels[key] ?? key}</span>
               </div>
             );
@@ -81,7 +82,7 @@ export default async function DetalheSalaClinica({ params }: { params: Promise<{
         <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Reservas</p>
         {reservas.length === 0 ? (
           <div className="text-center py-10 text-gray-400">
-            <p className="text-3xl mb-2">📅</p>
+            <Calendar size={32} strokeWidth={1.5} className="mx-auto mb-2 text-gray-300" />
             <p className="text-sm">Nenhuma reserva ainda.</p>
           </div>
         ) : (

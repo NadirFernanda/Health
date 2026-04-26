@@ -2,6 +2,7 @@
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { MapPin, Star, Stethoscope, Calendar, Clock, Banknote, Users, CheckCircle, XCircle, BadgeCheck, AlertTriangle } from "lucide-react";
 
 function formatAOA(v: number) { return new Intl.NumberFormat("pt-AO").format(v) + " AOA"; }
 function formatData(d: Date) { return d.toLocaleDateString("pt-AO", { weekday: "long", day: "2-digit", month: "long", year: "numeric" }); }
@@ -47,10 +48,10 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
           <div>
             <div className="flex items-center gap-1.5">
               <h2 className="font-bold text-gray-900 text-base">{clinica.nome}</h2>
-              {clinica.verified && <span className="text-[#27AE60] text-sm font-bold">✓</span>}
+              {clinica.verified && <BadgeCheck size={15} strokeWidth={2} className="text-[#27AE60]" />}
             </div>
-            <p className="text-gray-500 text-sm">📍 {clinica.cidade}, {clinica.provincia}</p>
-            <p className="text-yellow-500 text-xs mt-0.5">⭐ {clinica.rating} ({clinica.totalAvaliacoes} avaliações)</p>
+            <p className="flex items-center gap-1 text-gray-500 text-sm"><MapPin size={12} strokeWidth={1.75} /> {clinica.cidade}, {clinica.provincia}</p>
+            <p className="flex items-center gap-1 text-yellow-500 text-xs mt-0.5"><Star size={11} strokeWidth={1.75} fill="currentColor" /> {clinica.rating} ({clinica.totalAvaliacoes} avaliações)</p>
           </div>
         </div>
       </div>
@@ -59,14 +60,14 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
       <div className="bg-white mt-2 px-4 py-4 space-y-2.5 border-b border-gray-100">
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Dados do Plantão</h3>
         {[
-          { icon: "🩺", label: especialidade },
-          { icon: "📅", label: formatData(dataInicio) },
-          { icon: "⏰", label: `${formatHora(dataInicio)} – ${formatHora(dataFim)} (${calcularDuracao(dataInicio, dataFim)})` },
-          { icon: "💵", label: formatAOA(valorKwanzas), bold: true },
-          { icon: "👥", label: `${vagas - vagasPreenchidas} vaga(s) disponível(eis)` },
+          { icon: <Stethoscope size={16} strokeWidth={1.75} />, label: especialidade },
+          { icon: <Calendar size={16} strokeWidth={1.75} />, label: formatData(dataInicio) },
+          { icon: <Clock size={16} strokeWidth={1.75} />, label: `${formatHora(dataInicio)} – ${formatHora(dataFim)} (${calcularDuracao(dataInicio, dataFim)})` },
+          { icon: <Banknote size={16} strokeWidth={1.75} />, label: formatAOA(valorKwanzas), bold: true },
+          { icon: <Users size={16} strokeWidth={1.75} />, label: `${vagas - vagasPreenchidas} vaga(s) disponível(eis)` },
         ].map((item, i) => (
           <div key={i} className="flex items-center gap-3 text-sm">
-            <span className="text-lg w-6 text-center">{item.icon}</span>
+            <span className="text-gray-400 w-5 shrink-0">{item.icon}</span>
             <span className={item.bold ? "font-bold text-[#1A6FBB] text-base" : "text-gray-800"}>{item.label}</span>
           </div>
         ))}
@@ -79,7 +80,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
           {equipList.map((e) => (
             <div key={e.label} className="flex items-center gap-2.5 text-sm">
               <span className={e.ok ? "text-[#27AE60]" : "text-red-400"}>
-                {e.ok ? "✅" : "❌"}
+                {e.ok ? <CheckCircle size={16} strokeWidth={2} /> : <XCircle size={16} strokeWidth={2} />}
               </span>
               <span className={e.ok ? "text-gray-800" : "text-gray-400 line-through"}>{e.label}</span>
             </div>
@@ -104,7 +105,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
           CANDIDATAR-ME
         </Link>
         <p className="text-center text-xs text-gray-400 mt-2">
-          ⚠️ Só médicos com perfil verificado podem candidatar-se
+          <span className="inline-flex items-center gap-1"><AlertTriangle size={13} strokeWidth={2} className="text-yellow-500" /> Só médicos com perfil verificado podem candidatar-se</span>
         </p>
       </div>
     </div>

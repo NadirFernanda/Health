@@ -2,7 +2,9 @@
 import { useState } from "react";
 import { salasMock, Sala, ZonaLuanda, TipoSala, formatAOA } from "@/lib/mock-data";
 import { TopBar } from "@/components/nav";
+import { EmptyState } from "@/components/empty-state";
 import Link from "next/link";
+import { Building2, MapPin, Star, ChevronRight } from "lucide-react";
 
 const zonas: ZonaLuanda[] = ["Centralidade Horizonte", "Talatona", "Miramar", "Alvalade", "Kilamba"];
 const tipos: { key: TipoSala | "TODAS"; label: string }[] = [
@@ -24,12 +26,12 @@ function SalaCard({ sala }: { sala: Sala }) {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden active:opacity-90 transition-opacity">
         <div className="px-4 pt-4 pb-3 flex items-start justify-between gap-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-xl shrink-0">
-              🏥
+            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
+              <Building2 size={20} strokeWidth={1.75} className="text-purple-600" />
             </div>
             <div>
               <p className="font-semibold text-sm text-gray-900">{sala.clinica.nome}</p>
-              <p className="text-xs text-gray-500">📍 {sala.zona}</p>
+              <p className="flex items-center gap-1 text-xs text-gray-500"><MapPin size={10} strokeWidth={1.75} /> {sala.zona}</p>
             </div>
           </div>
           <span className="bg-purple-50 text-purple-700 text-xs font-semibold px-2 py-0.5 rounded-full shrink-0">
@@ -40,13 +42,13 @@ function SalaCard({ sala }: { sala: Sala }) {
           <p className="font-semibold text-gray-900 text-sm">{sala.nome}</p>
           <div className="flex items-center gap-4 text-sm">
             <span className="text-brand-600 font-bold text-base">{formatAOA(sala.precoPorHora)}<span className="text-gray-400 font-normal text-xs">/hora</span></span>
-            <span className="text-yellow-500 text-xs">⭐ {sala.avaliacaoMedia} ({sala.totalAvaliacoes})</span>
+            <span className="flex items-center gap-1 text-yellow-500 text-xs"><Star size={11} strokeWidth={1.75} fill="currentColor" /> {sala.avaliacaoMedia} ({sala.totalAvaliacoes})</span>
           </div>
           <p className="text-xs text-gray-400">{equipCount} equipamentos disponíveis</p>
         </div>
         <div className="px-4 pb-4">
-          <span className="w-full block text-center bg-brand-500 text-white text-sm font-semibold py-2.5 rounded-xl">
-            Ver disponibilidade →
+          <span className="w-full flex items-center justify-center gap-1 bg-brand-500 text-white text-sm font-semibold py-2.5 rounded-xl">
+            Ver disponibilidade <ChevronRight size={14} strokeWidth={2} />
           </span>
         </div>
       </div>
@@ -128,10 +130,13 @@ export default function BuscarSalas() {
         <p className="text-xs text-gray-500 mb-3">{filtradas.length} sala(s) encontrada(s)</p>
         <div className="space-y-3">
           {filtradas.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              <p className="text-3xl mb-2">🔍</p>
-              <p className="text-sm">Nenhuma sala encontrada com estes filtros.</p>
-            </div>
+            <EmptyState
+              icon={Building2}
+              title="Nenhuma sala disponível"
+              description="Nenhuma sala disponível com estes filtros. Tente alargar a pesquisa ou escolha outra zona."
+              actionLabel="Ver todas as salas"
+              onAction={() => { setZona("Todas"); setTipo("TODAS"); setApenasEquipadas(false); }}
+            />
           ) : (
             filtradas.map((s) => <SalaCard key={s.id} sala={s} />)
           )}

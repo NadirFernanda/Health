@@ -1,5 +1,8 @@
 import { Plantao, formatAOA, formatData, formatHora, calcularDuracao } from "@/lib/mock-data";
 import Link from "next/link";
+import {
+  Check, X, MapPin, Stethoscope, Calendar, Clock, Banknote, Users, BadgeCheck,
+} from "lucide-react";
 
 function EstadoBadge({ estado }: { estado: Plantao["estado"] }) {
   const map: Record<Plantao["estado"], { label: string; cls: string }> = {
@@ -22,7 +25,7 @@ function EquipBadge({ ok, label }: { ok: boolean; label: string }) {
         ok ? "bg-success-50 text-success-700" : "bg-gray-100 text-gray-400 line-through"
       }`}
     >
-      {ok ? "✓" : "✗"} {label}
+      {ok ? <Check size={11} strokeWidth={2.5} /> : <X size={11} strokeWidth={2.5} />} {label}
     </span>
   );
 }
@@ -55,10 +58,13 @@ export function PlantaoCard({
             <div className="flex items-center gap-1.5">
               <p className="font-semibold text-sm text-gray-900">{clinica.nome}</p>
               {clinica.verified && (
-                <span className="text-xs text-success-500 font-semibold">✓</span>
+                <BadgeCheck size={14} className="text-success-500" strokeWidth={2} />
               )}
             </div>
-            <p className="text-xs text-gray-500">📍 {clinica.cidade}, {clinica.provincia}</p>
+            <p className="text-xs text-gray-500 flex items-center gap-1">
+              <MapPin size={11} strokeWidth={1.75} />
+              {clinica.cidade}, {clinica.provincia}
+            </p>
           </div>
         </div>
         <EstadoBadge estado={estado} />
@@ -66,21 +72,34 @@ export function PlantaoCard({
 
       <div className="px-4 pb-3 border-t border-gray-50 pt-3 space-y-1.5">
         <div className="flex items-center gap-4 text-sm">
-          <span className="text-gray-500">🩺 <span className="text-gray-800 font-medium">{especialidade}</span></span>
-        </div>
-        <div className="flex items-center gap-4 text-sm">
-          <span className="text-gray-500">📅 <span className="text-gray-800">{formatData(dataInicio)}</span></span>
-        </div>
-        <div className="flex items-center gap-4 text-sm">
-          <span className="text-gray-500">
-            ⏰ <span className="text-gray-800">{formatHora(dataInicio)} – {formatHora(dataFim)}</span>
-            <span className="text-gray-400 ml-1">({calcularDuracao(dataInicio, dataFim)})</span>
+          <span className="flex items-center gap-1.5 text-gray-500">
+            <Stethoscope size={13} strokeWidth={1.75} />
+            <span className="text-gray-800 font-medium">{especialidade}</span>
           </span>
         </div>
         <div className="flex items-center gap-4 text-sm">
-          <span className="text-gray-500">💵 <span className="text-brand-600 font-bold">{formatAOA(valorKwanzas)}</span></span>
+          <span className="flex items-center gap-1.5 text-gray-500">
+            <Calendar size={13} strokeWidth={1.75} />
+            <span className="text-gray-800">{formatData(dataInicio)}</span>
+          </span>
+        </div>
+        <div className="flex items-center gap-4 text-sm">
+          <span className="flex items-center gap-1.5 text-gray-500">
+            <Clock size={13} strokeWidth={1.75} />
+            <span className="text-gray-800">{formatHora(dataInicio)} – {formatHora(dataFim)}</span>
+            <span className="text-gray-400">({calcularDuracao(dataInicio, dataFim)})</span>
+          </span>
+        </div>
+        <div className="flex items-center gap-4 text-sm">
+          <span className="flex items-center gap-1.5 text-gray-500">
+            <Banknote size={13} strokeWidth={1.75} />
+            <span className="text-brand-600 font-bold">{formatAOA(valorKwanzas)}</span>
+          </span>
           <span className="text-gray-400">·</span>
-          <span className="text-gray-500">👥 {vagas - vagasPreenchidas} vaga{vagas - vagasPreenchidas !== 1 ? "s" : ""}</span>
+          <span className="flex items-center gap-1.5 text-gray-500">
+            <Users size={13} strokeWidth={1.75} />
+            {vagas - vagasPreenchidas} vaga{vagas - vagasPreenchidas !== 1 ? "s" : ""}
+          </span>
         </div>
       </div>
 

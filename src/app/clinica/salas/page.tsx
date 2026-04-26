@@ -1,6 +1,7 @@
 import { salasMock, reservasDaClinicaMock, clinicaLogada, formatAOA } from "@/lib/mock-data";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
+import { Building2, Star, DoorOpen, CheckCircle, XCircle } from "lucide-react";
 
 export default function SalasDaClinica() {
   // Filtrar salas desta clínica
@@ -22,7 +23,7 @@ export default function SalasDaClinica() {
 
       {/* Banner Space-as-a-Service */}
       <div className="mx-4 mt-4 bg-gradient-to-r from-purple-600 to-purple-800 rounded-2xl p-4 text-white">
-        <p className="font-bold text-sm">Space-as-a-Service 🏥</p>
+        <p className="font-bold text-sm inline-flex items-center gap-1">Space-as-a-Service <Building2 size={14} strokeWidth={2} /></p>
         <p className="text-purple-200 text-xs mt-1">Alugue os seus consultórios por hora e gere receita adicional sem esforço.</p>
       </div>
 
@@ -54,7 +55,7 @@ export default function SalasDaClinica() {
               <div className="bg-white rounded-2xl border border-gray-100 p-4 active:opacity-90 transition-opacity">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-lg">🚪</div>
+                    <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-lg"><DoorOpen size={18} strokeWidth={1.75} className="text-purple-600" /></div>
                     <div>
                       <p className="font-semibold text-sm text-gray-900">{sala.nome}</p>
                       <p className="text-xs text-gray-500 capitalize mt-0.5">{sala.tipo === "CONSULTORIO" ? "Consultório" : sala.tipo === "OBSERVACAO" ? "Observação" : "Procedimentos"}</p>
@@ -62,13 +63,13 @@ export default function SalasDaClinica() {
                   </div>
                   <div className="text-right">
                     <p className="text-brand-600 font-bold text-sm">{formatAOA(sala.precoPorHora)}<span className="text-gray-400 font-normal text-xs">/h</span></p>
-                    <span className={`text-xs font-bold ${sala.disponivel ? "text-success-500" : "text-red-500"}`}>
-                      {sala.disponivel ? "● Disponível" : "○ Indisponível"}
+                    <span className={`text-xs font-bold inline-flex items-center gap-1 ${sala.disponivel ? "text-success-500" : "text-red-500"}`}>
+                      {sala.disponivel ? <CheckCircle size={12} strokeWidth={2} /> : <XCircle size={12} strokeWidth={2} />} {sala.disponivel ? "Disponível" : "Indisponível"}
                     </span>
                   </div>
                 </div>
                 <div className="mt-3 flex items-center justify-between border-t border-gray-50 pt-3">
-                  <p className="text-xs text-gray-500">⭐ {sala.avaliacaoMedia} · {sala.totalAvaliacoes} avaliações</p>
+                  <p className="text-xs text-gray-500 inline-flex items-center gap-1"><Star size={11} strokeWidth={1.75} fill="currentColor" className="text-yellow-500" /> {sala.avaliacaoMedia} · {sala.totalAvaliacoes} avaliações</p>
                   <p className="text-xs text-brand-600 font-semibold">{reservasDaSala.length} reserva(s) ativa(s)</p>
                 </div>
               </div>
@@ -78,7 +79,7 @@ export default function SalasDaClinica() {
 
         {minhasSalas.length === 0 && (
           <div className="text-center py-16 text-gray-400">
-            <p className="text-4xl mb-3">🏥</p>
+            <Building2 size={40} strokeWidth={1.25} className="mx-auto mb-3 text-gray-300" />
             <p className="text-sm">Ainda não tem salas registadas.</p>
             <Link
               href="/clinica/salas/nova"
