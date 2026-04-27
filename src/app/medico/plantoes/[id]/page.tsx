@@ -16,11 +16,11 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
   const { id } = await params;
   const plantao = await prisma.plantao.findUnique({
     where: { id },
-    include: { clinica: true },
+    include: { clinica: true, profissionalPublicador: true },
   });
   if (!plantao) return notFound();
 
-  const { clinica, especialidade, dataInicio, dataFim, valorKwanzas, vagas, vagasPreenchidas, descricao } = plantao;
+  const { clinica, profissionalPublicador, especialidade, dataInicio, dataFim, valorKwanzas, vagas, vagasPreenchidas, descricao } = plantao;
 
   const equipList = [
     { label: "Maca de exame", ok: plantao.maca },
@@ -37,21 +37,36 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
 
   return (
     <div>
-      <TopBar titulo="Detalhe do Plantão" back="/medico/buscar" />
+      <TopBar titulo="Detalhe do Plantão" back={clinica ? "/medico/buscar" : "/medico/plantoes"} />
 
-      {/* Header clínica */}
+      {/* Header clínica ou médico publicador */}
       <div className="bg-white px-4 py-5 border-b border-gray-100">
         <div className="flex items-center gap-3">
           <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-2xl font-bold text-[#1A6FBB]">
-            {clinica.nome.charAt(0)}
+            {clinica ? clinica.nome.charAt(0) : (profissionalPublicador?.nome?.charAt(0) ?? "M")}
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h2 className="font-bold text-gray-900 text-base">{clinica.nome}</h2>
-              {clinica.verified && <BadgeCheck size={15} strokeWidth={2} className="text-[#27AE60]" />}
+              <h2 className="font-bold text-gray-900 text-base">
+                {clinica ? clinica.nome : (profissionalPublicador?.nome ?? "Médico")}
+              </h2>
+              {(clinica?.verified || profissionalPublicador?.verified) && (
+                <BadgeCheck size={15} strokeWidth={2} className="text-[#27AE60]" />
+              )}
             </div>
-            <p className="flex items-center gap-1 text-gray-500 text-sm"><MapPin size={12} strokeWidth={1.75} /> {clinica.cidade}, {clinica.provincia}</p>
-            <p className="flex items-center gap-1 text-yellow-500 text-xs mt-0.5"><Star size={11} strokeWidth={1.75} fill="currentColor" /> {clinica.rating} ({clinica.totalAvaliacoes} avaliações)</p>
+            {clinica ? (
+              <>
+                <p className="flex items-center gap-1 text-gray-500 text-sm"><MapPin size={12} strokeWidth={1.75} /> {clinica.cidade}, {clinica.provincia}</p>
+                <p className="flex items-center gap-1 text-yellow-500 text-xs mt-0.5"><Star size={11} strokeWidth={1.75} fill="currentColor" /> {clinica.rating} ({clinica.totalAvaliacoes} avaliações)</p>
+              </>
+            ) : (
+              <>
+                <p className="text-gray-500 text-sm">Plantão publicado por médico</p>
+                {profissionalPublicador?.especialidade && (
+                  <p className="text-gray-400 text-xs mt-0.5">{profissionalPublicador.especialidade}</p>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
