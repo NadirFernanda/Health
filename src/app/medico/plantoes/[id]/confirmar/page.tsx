@@ -3,12 +3,13 @@ import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
 import { useState, use, useEffect } from "react";
 import Link from "next/link";
-import { Lock, CheckCircle, Building2, Calendar, Clock, Stethoscope, Banknote, Info, ChevronRight } from "lucide-react";
+import { Lock, CheckCircle, Building2, Calendar, Clock, Stethoscope, Banknote, Info, ChevronRight, Ban } from "lucide-react";
 
 type PlantaoInfo = {
   id: string; especialidade: string; dataInicio: string; dataFim: string;
   valorKwanzas: number;
   publicadoPorMedico: boolean;
+  profissionalPublicadorId: string | null;
   clinica: { nome: string } | null;
   profissionalPublicador: { nome: string } | null;
 };
@@ -25,6 +26,7 @@ export default function ConfirmarCandidatura({ params }: { params: Promise<{ id:
   const { id } = use(params);
   const router = useRouter();
   const [plantao, setPlantao] = useState<PlantaoInfo | null>(null);
+  const [perfilId, setPerfilId] = useState<string | null>(null);
   const [verified, setVerified] = useState<boolean | null>(null);
   const [enviado, setEnviado] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -32,7 +34,10 @@ export default function ConfirmarCandidatura({ params }: { params: Promise<{ id:
 
   useEffect(() => {
     fetch(`/api/plantoes/${id}`).then((r) => r.json()).then((d) => { if (d.id) setPlantao(d); });
-    fetch("/api/medico/perfil").then((r) => r.json()).then((d) => { if (typeof d.verified === "boolean") setVerified(d.verified); });
+    fetch("/api/medico/perfil").then((r) => r.json()).then((d) => {
+      if (typeof d.verified === "boolean") setVerified(d.verified);
+      if (d.id) setPerfilId(d.id);
+    });
   }, [id]);
 
   const handleCandidatar = async () => {
@@ -53,6 +58,27 @@ export default function ConfirmarCandidatura({ params }: { params: Promise<{ id:
   };
 
   if (!plantao) return <div className="p-8 text-center text-gray-400">A carregar...</div>;
+
+  // Bloquear auto-candidatura
+  if (perfilId && plantao.profissionalPublicadorId === perfilId) {
+    return (
+      <div>
+        <TopBar titulo="Candidatura" back={`/medico/plantoes/${id}`} />
+        <div className="px-4 py-10 flex flex-col items-center text-center space-y-4">
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-4">
+            <Ban size={36} strokeWidth={1.5} className="text-red-500" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Não permitido</h2>
+          <p className="text-gray-500 text-sm leading-6 max-w-sm">
+            Não podes candidatar-te ao teu próprio plantão. Esta vaga foi publicada por ti para encontrar um substituto.
+          </p>
+          <button onClick={() => router.back()} className="mt-4 bg-gray-100 text-gray-700 font-semibold px-8 py-3 rounded-2xl">
+            Voltar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Verificação Express — bloquear se não verificado
   if (verified === false) {

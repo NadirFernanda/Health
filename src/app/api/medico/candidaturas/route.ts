@@ -67,6 +67,10 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Plantão não disponível" }, { status: 400 });
   }
 
+  if (plantao.profissionalPublicadorId === prof.id) {
+    return Response.json({ error: "Não podes candidatar-te ao teu próprio plantão." }, { status: 403 });
+  }
+
   const existing = await prisma.candidatura.findUnique({
     where: { plantaoId_profissionalId: { plantaoId, profissionalId: prof.id } },
   });

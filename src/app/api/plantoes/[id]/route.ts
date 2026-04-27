@@ -19,6 +19,7 @@ export async function GET(
   return Response.json({
     id: p.id,
     publicadoPorMedico: p.publicadoPorMedico,
+    profissionalPublicadorId: p.profissionalPublicadorId,
     clinica: p.clinica ? {
       id: p.clinica.id,
       nome: p.clinica.nome,
