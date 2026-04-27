@@ -8,7 +8,9 @@ import { Lock, CheckCircle, Building2, Calendar, Clock, Stethoscope, Banknote, I
 type PlantaoInfo = {
   id: string; especialidade: string; dataInicio: string; dataFim: string;
   valorKwanzas: number;
-  clinica: { nome: string };
+  publicadoPorMedico: boolean;
+  clinica: { nome: string } | null;
+  profissionalPublicador: { nome: string } | null;
 };
 
 function formatAOA(v: number) { return new Intl.NumberFormat("pt-AO").format(v) + " AOA"; }
@@ -121,7 +123,7 @@ export default function ConfirmarCandidatura({ params }: { params: Promise<{ id:
         <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
           <p className="text-xs text-gray-400 uppercase font-bold tracking-wide">Resumo</p>
           <div className="text-sm space-y-1.5 text-gray-700">
-          <p>&#x200B;<Building2 size={14} strokeWidth={1.75} className="inline mr-1 text-gray-400" /><span className="font-semibold">{plantao.clinica.nome}</span></p>
+          <p>&#x200B;<Building2 size={14} strokeWidth={1.75} className="inline mr-1 text-gray-400" /><span className="font-semibold">{plantao.clinica?.nome ?? plantao.profissionalPublicador?.nome ?? "Médico"}</span></p>
             <p><Calendar size={14} strokeWidth={1.75} className="inline mr-1 text-gray-400" />{formatData(plantao.dataInicio)}</p>
             <p><Clock size={14} strokeWidth={1.75} className="inline mr-1 text-gray-400" />{formatHora(plantao.dataInicio)} – {formatHora(plantao.dataFim)}</p>
             <p><Stethoscope size={14} strokeWidth={1.75} className="inline mr-1 text-gray-400" />{plantao.especialidade}</p>
