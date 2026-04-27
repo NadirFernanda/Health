@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAuthSession } from "@/lib/api-auth";
+import type { TipoProfissional } from "@/generated/prisma";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
     where: {
       estado: "ABERTO",
       ...(especialidade && { especialidade }),
-      ...(tipoProfissional && { tipoProfissional: tipoProfissional as import("@/generated/prisma").TipoProfissional }),
+      ...(tipoProfissional && { tipoProfissional: tipoProfissional as TipoProfissional }),
       ...(zona && { clinicaId: { not: null }, clinica: { cidade: { contains: zona } } }),
       ...(valorMax && { valorKwanzas: { lte: parseInt(valorMax) } }),
       ...(disponivelAgora && {
