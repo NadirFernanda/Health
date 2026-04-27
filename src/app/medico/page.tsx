@@ -145,10 +145,10 @@ export default function MedicoDashboard() {
             <p className="text-xs text-blue-600 mt-0.5">Ver vagas que publicaste e as candidaturas →</p>
           </div>
         </Link>
-        <Link href="/medico/minhas-reservas" className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
+        <Link href="/medico/minhas-reservas" className="flex items-center justify-between bg-teal-50 border border-teal-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
           <div>
-            <p className="font-bold text-sm text-purple-800">Minhas Reservas de Salas</p>
-            <p className="text-xs text-purple-600 mt-0.5">Ver e gerir as tuas reservas de consultórios →</p>
+            <p className="font-bold text-sm text-teal-800">Minhas Reservas de Salas</p>
+            <p className="text-xs text-teal-600 mt-0.5">Ver e gerir as tuas reservas de consultórios →</p>
           </div>
         </Link>
       </div>
