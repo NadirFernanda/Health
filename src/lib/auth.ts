@@ -3,7 +3,7 @@
  * NÃO importar APIs Node.js neste módulo.
  */
 
-export type UserRole = "ADMIN" | "MEDICO" | "CLINICA";
+export type UserRole = "ADMIN" | "MEDICO" | "CLINICA" | "PROFISSIONAL";
 
 export const COOKIE_NAME = "planto_session";
 export const COOKIE_MAX_AGE = 60 * 60 * 8; // 8 horas
