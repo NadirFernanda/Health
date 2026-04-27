@@ -2,6 +2,38 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAuthSession, getProfissionalFromSession } from "@/lib/api-auth";
 
+export async function GET() {
+  const session = await getAuthSession();
+  if (!session || session.role !== "MEDICO") {
+    return Response.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
+  const prof = await getProfissionalFromSession(session);
+  if (!prof) return Response.json({ error: "Profissional não encontrado" }, { status: 404 });
+
+  const plantoes = await prisma.plantao.findMany({
+    where: { profissionalPublicadorId: prof.id },
+    include: { _count: { select: { candidaturas: true } } },
+    orderBy: { dataInicio: "desc" },
+  });
+
+  return Response.json(
+    plantoes.map((p) => ({
+      id: p.id,
+      especialidade: p.especialidade,
+      tipoProfissional: p.tipoProfissional,
+      dataInicio: p.dataInicio.toISOString(),
+      dataFim: p.dataFim.toISOString(),
+      valorKwanzas: p.valorKwanzas,
+      vagas: p.vagas,
+      vagasPreenchidas: p.vagasPreenchidas,
+      estado: p.estado,
+      descricao: p.descricao,
+      candidaturas: p._count.candidaturas,
+    }))
+  );
+}
+
 export async function POST(request: NextRequest) {
   const session = await getAuthSession();
   if (!session || session.role !== "MEDICO") {
