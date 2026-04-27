@@ -1,7 +1,7 @@
 import LoginForm from "./login-form";
 import { Stethoscope, Building2, Settings, type LucideIcon } from "lucide-react";
 
-export const metadata = { title: "Entrar — PlantãoMed" };
+export const metadata = { title: "Entrar — medfreela" };
 
 export default function LoginPage({
   searchParams,
@@ -17,7 +17,7 @@ export default function LoginPage({
           <div className="w-20 h-20 bg-[#1A6FBB] rounded-3xl flex items-center justify-center font-black text-white text-4xl mx-auto mb-4 shadow-2xl shadow-[#1A6FBB]/40">
             P
           </div>
-          <h1 className="text-white font-black text-3xl tracking-tight">PlantãoMed</h1>
+          <h1 className="text-white font-black text-3xl tracking-tight">medfreela</h1>
           <p className="text-blue-300/70 text-sm mt-1">Gestão de Plantões Médicos · Angola</p>
         </div>
 
@@ -68,7 +68,7 @@ export default function LoginPage({
         </p>
 
         <p className="text-center text-xs text-white/20 mt-4">
-          PlantãoMed © 2026 · Huambo, Angola
+          medfreela © 2026 · Huambo, Angola
         </p>
       </div>
     </div>
