@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAuthSession } from "@/lib/api-auth";
-import type { TipoProfissional } from "@/generated/prisma";
+import type { TipoProfissional } from "@/generated/prisma/enums";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
