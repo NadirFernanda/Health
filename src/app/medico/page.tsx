@@ -11,7 +11,7 @@ type PlantaoAPI = {
   descricao: string; clinica: { id: string; nome: string; morada: string; cidade: string; provincia: string; logo: string; rating: number; totalAvaliacoes: number; verified: boolean };
   equipamentos: Record<string, boolean>;
 };
-type Candidatura = { id: string; estado: string; plantao: { clinica: { nome: string } } };
+type Candidatura = { id: string; estado: string; plantao: { clinica: { nome: string } | null; profissionalPublicador?: { nome: string } | null } };
 
 function formatAOA(v: number) {
   return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
@@ -123,7 +123,7 @@ export default function MedicoDashboard() {
                 : "bg-yellow-50 text-yellow-700 border-yellow-200";
               return (
                 <div key={c.id} className={`shrink-0 border rounded-xl px-3 py-2 text-xs font-semibold ${cor}`}>
-                  {c.plantao.clinica.nome}
+                  {c.plantao.clinica?.nome ?? c.plantao.profissionalPublicador?.nome ?? "Plantão"}
                 </div>
               );
             })}
@@ -143,6 +143,12 @@ export default function MedicoDashboard() {
           <div>
             <p className="font-bold text-sm text-blue-800">Os meus plantões publicados</p>
             <p className="text-xs text-blue-600 mt-0.5">Ver vagas que publicaste e as candidaturas →</p>
+          </div>
+        </Link>
+        <Link href="/medico/minhas-reservas" className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
+          <div>
+            <p className="font-bold text-sm text-purple-800">Minhas Reservas de Salas</p>
+            <p className="text-xs text-purple-600 mt-0.5">Ver e gerir as tuas reservas de consultórios →</p>
           </div>
         </Link>
       </div>
