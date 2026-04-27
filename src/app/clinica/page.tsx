@@ -26,19 +26,22 @@ export default async function ClinicaDashboard() {
   const totalPago = plantoes.reduce((s, p) => s + p.valorKwanzas, 0);
 
   // Map to Plantao shape expected by PlantaoCard
-  const plantoesCard = plantoes.map((p) => ({
+  const plantoesCard = plantoes
+    .filter((p) => p.clinica !== null)
+    .map((p) => ({
     id: p.id,
     clinica: {
-      id: p.clinica.id,
-      nome: p.clinica.nome,
-      morada: p.clinica.morada ?? "",
-      cidade: p.clinica.cidade ?? "",
-      provincia: p.clinica.provincia,
-      logo: p.clinica.logo ?? "",
-      rating: p.clinica.rating,
-      totalAvaliacoes: p.clinica.totalAvaliacoes,
-      verified: p.clinica.verified,
+      id: p.clinica!.id,
+      nome: p.clinica!.nome,
+      morada: p.clinica!.morada ?? "",
+      cidade: p.clinica!.cidade ?? "",
+      provincia: p.clinica!.provincia,
+      logo: p.clinica!.logo ?? "",
+      rating: p.clinica!.rating,
+      totalAvaliacoes: p.clinica!.totalAvaliacoes,
+      verified: p.clinica!.verified,
     },
+    tipoProfissional: p.tipoProfissional,
     especialidade: p.especialidade as never,
     dataInicio: p.dataInicio.toISOString(),
     dataFim: p.dataFim.toISOString(),

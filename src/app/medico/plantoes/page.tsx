@@ -91,9 +91,11 @@ export default function MeusPlantoes() {
           <div className="text-center py-12 text-gray-400 text-sm">A carregar...</div>
         ) : filtrados.length === 0 ? (
           <EmptyState
-            titulo="Nenhum plantão publicado"
-            descricao="Ainda não publicaste nenhuma vaga de substituto."
-            acao={{ label: "Publicar plantão", href: "/medico/publicar-plantao" }}
+            icon={Stethoscope}
+            title="Nenhum plantão publicado"
+            description="Ainda não publicaste nenhuma vaga de substituto."
+            actionLabel="Publicar plantão"
+            actionHref="/medico/publicar-plantao"
           />
         ) : (
           filtrados.map((p) => {
