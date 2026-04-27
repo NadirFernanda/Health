@@ -132,11 +132,17 @@ export default function MedicoDashboard() {
       )}
 
       {/* Acção rápida: publicar substituto */}
-      <div className="px-4 pt-4">
+      <div className="px-4 pt-4 space-y-2">
         <Link href="/medico/publicar-plantao" className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
           <div>
             <p className="font-bold text-sm text-amber-800">Tens um plantão que não podes fazer?</p>
             <p className="text-xs text-amber-600 mt-0.5">Publica a vaga e paga um substituto →</p>
+          </div>
+        </Link>
+        <Link href="/medico/plantoes" className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
+          <div>
+            <p className="font-bold text-sm text-blue-800">Os meus plantões publicados</p>
+            <p className="text-xs text-blue-600 mt-0.5">Ver vagas que publicaste e as candidaturas →</p>
           </div>
         </Link>
       </div>
