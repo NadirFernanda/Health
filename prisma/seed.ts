@@ -252,11 +252,11 @@ async function main() {
   // ── Transações ────────────────────────────────────────────────────────────
   await prisma.transacaoCarteira.createMany({
     data: [
-      { profissionalId: medico.id, tipo: "CREDITO", valor: 15000, descricao: "Plantão — Clínica Horizonte", estado: "PROCESSADO" },
-      { profissionalId: medico.id, tipo: "CREDITO", valor: 20000, descricao: "Plantão noturno — Clínica Saúde+", estado: "PROCESSADO" },
-      { profissionalId: medico.id, tipo: "DEBITO",  valor: 10000, descricao: "Levantamento — Multicaixa Express", estado: "PROCESSADO" },
-      { profissionalId: medico.id, tipo: "CREDITO", valor: 15000, descricao: "Plantão — Clínica Central", estado: "PROCESSADO" },
-      { profissionalId: medico.id, tipo: "CREDITO", valor: 15000, descricao: "Plantão — Clínica Horizonte (em processamento)", estado: "PENDENTE" },
+      { profissionalId: medico.id, tipo: "CREDITO", valorCentavos: 15000n, descricao: "Plantão — Clínica Horizonte", estado: "PROCESSADO" },
+      { profissionalId: medico.id, tipo: "CREDITO", valorCentavos: 20000n, descricao: "Plantão noturno — Clínica Saúde+", estado: "PROCESSADO" },
+      { profissionalId: medico.id, tipo: "DEBITO",  valorCentavos: 10000n, descricao: "Levantamento — Multicaixa Express", estado: "PROCESSADO" },
+      { profissionalId: medico.id, tipo: "CREDITO", valorCentavos: 15000n, descricao: "Plantão — Clínica Central", estado: "PROCESSADO" },
+      { profissionalId: medico.id, tipo: "CREDITO", valorCentavos: 15000n, descricao: "Plantão — Clínica Horizonte (em processamento)", estado: "PENDENTE" },
     ],
   });
 
