@@ -70,7 +70,7 @@ export async function PATCH(
       // Marcar pagamento como PROCESSADO (libertado)
       await tx.pagamento.update({
         where: { id: pag.id },
-        data: { estado: "PROCESSADO", liberadoEm: agora },
+        data: { estado: "CONFIRMADO", liberadoEm: agora },
       });
 
       // Creditar saldo na carteira do médico
