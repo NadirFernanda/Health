@@ -124,7 +124,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
   if (step === "pagamento") {
     return (
       <div>
-        <TopBar titulo="Pagamento" back="#" />
+        <TopBar titulo="Pagamento" onBack={() => setStep("horario")} />
         <div className="px-4 py-5 space-y-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2 text-sm text-gray-700">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Resumo da Reserva</p>
@@ -184,7 +184,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
   if (step === "horario") {
     return (
       <div>
-        <TopBar titulo="Escolher Horário" back="#" />
+        <TopBar titulo="Escolher Horário" onBack={() => setStep("detalhe")} />
         <div className="px-4 py-5 space-y-5">
           <div className="bg-white rounded-2xl border border-gray-100 p-4">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-wide block mb-2">Data</label>

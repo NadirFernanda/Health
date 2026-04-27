@@ -63,18 +63,26 @@ export function BottomNav({ role }: { role: "medico" | "clinica" }) {
 export function TopBar({
   titulo,
   back,
+  onBack,
   actions,
 }: {
   titulo?: string;
   back?: string;
+  onBack?: () => void;
   actions?: React.ReactNode;
 }) {
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3">
-      {back && (
-        <Link href={back} className="text-gray-500 hover:text-[#1A6FBB] transition-colors">
-          <ChevronLeft size={20} strokeWidth={2} />
-        </Link>
+      {(back || onBack) && (
+        onBack ? (
+          <button onClick={onBack} className="text-gray-500 hover:text-[#1A6FBB] transition-colors">
+            <ChevronLeft size={20} strokeWidth={2} />
+          </button>
+        ) : (
+          <Link href={back!} className="text-gray-500 hover:text-[#1A6FBB] transition-colors">
+            <ChevronLeft size={20} strokeWidth={2} />
+          </Link>
+        )
       )}
       {titulo && <h1 className="text-base font-semibold text-gray-900 flex-1">{titulo}</h1>}
       {!titulo && <div className="flex-1" />}
