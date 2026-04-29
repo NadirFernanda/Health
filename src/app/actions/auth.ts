@@ -28,8 +28,13 @@ export async function loginAction(
     return { error: "Erro de ligação à base de dados. Tente novamente." };
   }
 
-  if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-    return { error: "Credenciais inválidas. Verifique e tente novamente." };
+  if (!user) {
+    return { error: "Não existe nenhuma conta com este e-mail. Verifique ou crie uma conta." };
+  }
+
+  const passwordOk = await bcrypt.compare(password, user.passwordHash);
+  if (!passwordOk) {
+    return { error: "Palavra-passe incorrecta. Tente novamente ou recupere a sua password." };
   }
 
   const dashboards: Record<string, string> = {
