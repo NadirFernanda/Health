@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Stethoscope, Building2, ChevronRight } from "lucide-react";
+import { Stethoscope, Building2, DoorOpen, ChevronRight } from "lucide-react";
 
 export default function RegistarPage() {
   return (
@@ -47,10 +47,26 @@ export default function RegistarPage() {
               <Building2 size={24} strokeWidth={1.75} className="text-[#0B3C74]" />
             </div>
             <div className="flex-1">
-              <p className="font-bold text-base text-gray-900">Sou Clínica / Consultório</p>
-              <p className="text-gray-500 text-sm mt-0.5">Publique turnos e alugue salas a profissionais verificados</p>
+              <p className="font-bold text-base text-gray-900">Sou Clínica</p>
+              <p className="text-gray-500 text-sm mt-0.5">Publique plantões e contrate profissionais de saúde</p>
             </div>
             <ChevronRight size={20} strokeWidth={1.75} className="text-[#0B3C74]" />
+          </div>
+        </Link>
+
+        <Link
+          href="/registar/consultorio"
+          className="block bg-white border-2 border-[#00A99D] rounded-2xl p-5 transition-colors hover:bg-teal-50"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-teal-50 rounded-xl flex items-center justify-center shrink-0">
+              <DoorOpen size={24} strokeWidth={1.75} className="text-[#00A99D]" />
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-base text-gray-900">Sou Proprietário de Consultório</p>
+              <p className="text-gray-500 text-sm mt-0.5">Publique salas disponíveis para médicos alugarem por horas</p>
+            </div>
+            <ChevronRight size={20} strokeWidth={1.75} className="text-[#00A99D]" />
           </div>
         </Link>
 

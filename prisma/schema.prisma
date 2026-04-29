@@ -136,6 +136,7 @@ model User {
 
   profissional Profissional?
   clinica      Clinica?
+  consultorio  Consultorio?
   notificacoes Notificacao[]
   credenciaisVerificadas Credencial[] @relation("CredencialVerificadaPor")
 }
@@ -213,6 +214,30 @@ model Clinica {
   @@index([verified])
 }
 
+model Consultorio {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nome            String
+  morada          String?
+  bairro          String?
+  zonaLuanda      String?
+  contacto        String?
+  cidade          String?
+  provincia       String    @default("Luanda")
+  descricao       String?
+  rating          Float     @default(0)
+  totalAvaliacoes Int       @default(0)
+  verified        Boolean   @default(false)
+  criadoEm        DateTime  @default(now())
+  updatedEm       DateTime  @updatedAt
+
+  salas               Sala[]
+
+  @@index([zonaLuanda])
+  @@index([verified])
+}
+
 model Plantao {
   id               String           @id @default(cuid())
   clinicaId        String?
@@ -278,8 +303,10 @@ model Candidatura {
 
 model Sala {
   id               String    @id @default(cuid())
-  clinicaId        String
-  clinica          Clinica   @relation(fields: [clinicaId], references: [id])
+  clinicaId        String?
+  clinica          Clinica?  @relation(fields: [clinicaId], references: [id])
+  consultorioId    String?
+  consultorio      Consultorio? @relation(fields: [consultorioId], references: [id])
   nome             String
   numero           String?
   tipo             TipoSala

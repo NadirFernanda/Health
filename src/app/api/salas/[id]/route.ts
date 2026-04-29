@@ -7,7 +7,7 @@ export async function GET(
   const { id } = await params;
   const s = await prisma.sala.findUnique({
     where: { id },
-    include: { clinica: true },
+    include: { clinica: true, consultorio: true },
   });
 
   if (!s) return Response.json({ error: "Não encontrado" }, { status: 404 });
@@ -23,14 +23,17 @@ export async function GET(
     disponivel: s.disponivel,
     avaliacaoMedia: s.avaliacaoMedia,
     totalAvaliacoes: s.totalAvaliacoes,
-    clinica: {
-      id: s.clinica.id,
-      nome: s.clinica.nome,
-      cidade: s.clinica.cidade,
-      morada: s.clinica.morada,
-      verified: s.clinica.verified,
-      rating: s.clinica.rating,
-    },
+    clinica: s.clinica
+      ? { id: s.clinica.id, nome: s.clinica.nome, cidade: s.clinica.cidade, morada: s.clinica.morada, verified: s.clinica.verified, rating: s.clinica.rating }
+      : null,
+    consultorio: s.consultorio
+      ? { id: s.consultorio.id, nome: s.consultorio.nome, cidade: s.consultorio.cidade, morada: s.consultorio.morada, verified: s.consultorio.verified, rating: s.consultorio.rating }
+      : null,
+    proprietario: s.clinica
+      ? { id: s.clinica.id, nome: s.clinica.nome, cidade: s.clinica.cidade, morada: s.clinica.morada, verified: s.clinica.verified, rating: s.clinica.rating }
+      : s.consultorio
+      ? { id: s.consultorio.id, nome: s.consultorio.nome, cidade: s.consultorio.cidade, morada: s.consultorio.morada, verified: s.consultorio.verified, rating: s.consultorio.rating }
+      : null,
     equipamentos: {
       maca: s.maca, estetoscopio: s.estetoscopio, tensiometro: s.tensiometro,
       termometro: s.termometro, computador: s.computador, materiaisBasicos: s.materiaisBasicos,

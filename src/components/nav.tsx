@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Home, Search, Building2, Wallet, User,
-  ClipboardList, CreditCard, ChevronLeft,
+  ClipboardList, CreditCard, ChevronLeft, DoorOpen,
   type LucideIcon,
 } from "lucide-react";
 
@@ -30,9 +30,16 @@ const clinicaNav: NavItem[] = [
   { href: "/clinica/conta",      label: "Conta",     icon: User },
 ];
 
-export function BottomNav({ role }: { role: "medico" | "clinica" }) {
+const consultorioNav: NavItem[] = [
+  { href: "/consultorio",            label: "Início",   icon: Home },
+  { href: "/consultorio/salas",      label: "Salas",    icon: DoorOpen },
+  { href: "/consultorio/faturacao",  label: "Ganhos",   icon: CreditCard },
+  { href: "/consultorio/conta",      label: "Conta",    icon: User },
+];
+
+export function BottomNav({ role }: { role: "medico" | "clinica" | "consultorio" }) {
   const pathname = usePathname();
-  const navItems = role === "medico" ? medicoNav : clinicaNav;
+  const navItems = role === "medico" ? medicoNav : role === "clinica" ? clinicaNav : consultorioNav;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 max-w-md mx-auto">

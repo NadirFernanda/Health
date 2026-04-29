@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { decodeToken, COOKIE_NAME } from "@/lib/auth";
 
 export const config = {
-  matcher: ["/admin/:path*", "/medico/:path*", "/clinica/:path*"],
+  matcher: ["/admin/:path*", "/medico/:path*", "/clinica/:path*", "/consultorio/:path*"],
 };
 
 const ROLE_PREFIXES: Record<string, string> = {
   "/admin": "ADMIN",
   "/medico": "MEDICO",
   "/clinica": "CLINICA",
+  "/consultorio": "PROPRIETARIO_SALA",
 };
 
 export function proxy(request: NextRequest): NextResponse {
@@ -33,6 +34,7 @@ export function proxy(request: NextRequest): NextResponse {
       ADMIN: "/admin",
       MEDICO: "/medico",
       CLINICA: "/clinica",
+      PROPRIETARIO_SALA: "/consultorio",
     };
     return NextResponse.redirect(
       new URL(dashboards[payload.role] ?? "/login", request.url)

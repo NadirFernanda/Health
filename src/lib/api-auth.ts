@@ -34,3 +34,7 @@ export async function getProfissionalFromSession(session: SessionPayload) {
 export async function getClinicaFromSession(session: SessionPayload) {
   return prisma.clinica.findUnique({ where: { userId: session.id } });
 }
+
+export async function getConsultorioFromSession(session: SessionPayload) {
+  return prisma.consultorio.findUnique({ where: { userId: session.id } });
+}

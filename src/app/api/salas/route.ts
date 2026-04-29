@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       ...(zona && { zona }),
       ...(tipo && { tipo: tipo as "CONSULTORIO" | "OBSERVACAO" | "PROCEDIMENTOS" }),
     },
-    include: { clinica: true },
+    include: { clinica: true, consultorio: true },
     orderBy: { avaliacaoMedia: "desc" },
   });
 
@@ -28,12 +28,17 @@ export async function GET(request: NextRequest) {
       disponivel: s.disponivel,
       avaliacaoMedia: s.avaliacaoMedia,
       totalAvaliacoes: s.totalAvaliacoes,
-      clinica: {
-        id: s.clinica.id,
-        nome: s.clinica.nome,
-        cidade: s.clinica.cidade,
-        verified: s.clinica.verified,
-      },
+      clinica: s.clinica
+        ? { id: s.clinica.id, nome: s.clinica.nome, cidade: s.clinica.cidade, verified: s.clinica.verified }
+        : null,
+      consultorio: s.consultorio
+        ? { id: s.consultorio.id, nome: s.consultorio.nome, cidade: s.consultorio.cidade, verified: s.consultorio.verified }
+        : null,
+      proprietario: s.clinica
+        ? { id: s.clinica.id, nome: s.clinica.nome, cidade: s.clinica.cidade, verified: s.clinica.verified }
+        : s.consultorio
+        ? { id: s.consultorio.id, nome: s.consultorio.nome, cidade: s.consultorio.cidade, verified: s.consultorio.verified }
+        : null,
       equipamentos: {
         maca: s.maca, estetoscopio: s.estetoscopio, tensiometro: s.tensiometro,
         termometro: s.termometro, computador: s.computador, materiaisBasicos: s.materiaisBasicos,
