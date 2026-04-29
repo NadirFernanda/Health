@@ -47,3 +47,10 @@ input:-webkit-autofill:active {
   caret-color: #ffffff;
   transition: background-color 9999s ease-in-out 0s;
 }
+
+/* Garantir texto visível em inputs com fundo branco (mobile) */
+input:not([class*="text-white"]),
+select:not([class*="text-white"]),
+textarea:not([class*="text-white"]) {
+  color: #111827;
+}
