@@ -33,11 +33,11 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   if (authed) return <>{children}</>;
 
   return (
-    <div className="fixed inset-0 z-[300] bg-[#062855] flex items-center justify-center p-6">
+    <div className="fixed inset-0 z-[300] bg-[#0D1F3C] flex items-center justify-center p-6">
       <div className="w-full max-w-xs">
         {/* Logo */}
         <div className="text-center mb-8">
-          <p className="text-[#0B3C74] font-black text-3xl tracking-tight">PLANTO</p>
+          <p className="text-[#1A6FBB] font-black text-3xl tracking-tight">PLANTO</p>
           <p className="text-gray-400 text-xs mt-1 uppercase tracking-widest">Painel Administrativo</p>
         </div>
 
@@ -50,7 +50,7 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
               onChange={(e) => { setInput(e.target.value); setErro(""); }}
               placeholder="••••••••••"
               autoFocus
-              className="w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0B3C74] transition-colors"
+              className="w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1A6FBB] transition-colors"
             />
           </div>
 
@@ -62,7 +62,7 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
 
           <button
             type="submit"
-            className="w-full bg-[#0B3C74] hover:bg-[#093264] text-white font-bold py-3 rounded-xl text-sm transition-colors"
+            className="w-full bg-[#1A6FBB] hover:bg-[#1558a0] text-white font-bold py-3 rounded-xl text-sm transition-colors"
           >
             Entrar
           </button>

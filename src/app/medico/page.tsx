@@ -61,14 +61,16 @@ export default function MedicoDashboard() {
   return (
     <div>
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] px-5 pt-6 pb-6">
+      <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] px-5 pt-6 pb-6">
         {/* Logo centrada no topo */}
         <div className="flex justify-center mb-4">
-          <img
-            src="/Imagens/LOGO_MED_FREELA.png"
-            alt="MedFreela"
-            className="h-12 w-auto object-contain drop-shadow-lg"
-          />
+          <div className="bg-white rounded-xl px-4 py-2 shadow-lg shadow-black/20">
+            <img
+              src="/Imagens/LOGO_MED_FREELA.png"
+              alt="MedFreela"
+              className="object-contain h-11 w-auto"
+            />
+          </div>
         </div>
         <div className="flex items-center justify-between mb-1">
           <div>
@@ -85,7 +87,7 @@ export default function MedicoDashboard() {
           </div>
         </div>
         {perfil?.verified && (
-          <span className="inline-flex items-center gap-1 bg-[#00A99D]/30 text-green-200 text-xs font-semibold px-2.5 py-1 rounded-full mt-2">
+          <span className="inline-flex items-center gap-1 bg-[#27AE60]/30 text-green-200 text-xs font-semibold px-2.5 py-1 rounded-full mt-2">
             <BadgeCheck size={13} strokeWidth={2} /> Perfil Verificado
           </span>
         )}
@@ -122,7 +124,7 @@ export default function MedicoDashboard() {
         <div className="px-4 pt-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">As minhas candidaturas</h2>
-            <Link href="/medico/buscar" className="text-xs text-[#0B3C74] font-semibold">Ver todas</Link>
+            <Link href="/medico/buscar" className="text-xs text-[#1A6FBB] font-semibold">Ver todas</Link>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {candidaturas.map((c) => {
@@ -165,7 +167,7 @@ export default function MedicoDashboard() {
       <div className="px-4 pt-5">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Plantões para si</h2>
-          <Link href="/medico/buscar" className="text-xs text-[#0B3C74] font-semibold">Ver todos</Link>
+          <Link href="/medico/buscar" className="text-xs text-[#1A6FBB] font-semibold">Ver todos</Link>
         </div>
         <div className="space-y-3">
           {plantoes.map((p) => (

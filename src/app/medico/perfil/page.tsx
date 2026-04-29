@@ -53,7 +53,7 @@ export default function PerfilMedico() {
 
       {/* Avatar e nome */}
       <div className="bg-white px-4 py-6 flex flex-col items-center border-b border-gray-100">
-        <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-4xl font-bold text-[#0B3C74] mb-3">
+        <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-4xl font-bold text-[#1A6FBB] mb-3">
           {m.nome.split(" ")[1]?.charAt(0) ?? "J"}
         </div>
         <h1 className="text-xl font-bold text-gray-900">{m.nome}</h1>
@@ -78,7 +78,7 @@ export default function PerfilMedico() {
           { label: "Saldo (AOA)", value: (m.saldoCarteira / 1000).toFixed(0) + "k" },
         ].map((s) => (
           <div key={s.label} className="text-center py-4 border-r border-gray-100 last:border-r-0">
-            <p className="text-xl font-bold text-[#0B3C74]">{s.value}</p>
+            <p className="text-xl font-bold text-[#1A6FBB]">{s.value}</p>
             <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
           </div>
         ))}
@@ -187,7 +187,7 @@ export default function PerfilMedico() {
 
       {/* Ações */}
       <div className="px-4 py-4 space-y-2">
-        <button className="w-full border border-[#0B3C74] text-[#0B3C74] font-semibold py-3 rounded-2xl text-sm">
+        <button className="w-full border border-[#1A6FBB] text-[#1A6FBB] font-semibold py-3 rounded-2xl text-sm">
           Editar Perfil
         </button>
         <form action={logoutAction}>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
 import { useState, use, useEffect } from "react";
@@ -109,9 +109,9 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
           <p className="flex items-center gap-2"><Building2 size={14} strokeWidth={1.75} className="text-gray-400" /> {sala.clinica.nome}</p>
           <p className="flex items-center gap-2"><MapPin size={14} strokeWidth={1.75} className="text-gray-400" /> {sala.zona}</p>
           <p className="flex items-center gap-2"><Clock size={14} strokeWidth={1.75} className="text-gray-400" /> {data} às {horaInicio}</p>
-          <p className="flex items-center gap-2"><Clock size={14} strokeWidth={1.75} className="text-gray-400" /> {duracao}h · <span className="font-bold text-[#0B3C74]">{formatAOA(valorTotal)}</span></p>
+          <p className="flex items-center gap-2"><Clock size={14} strokeWidth={1.75} className="text-gray-400" /> {duracao}h · <span className="font-bold text-[#1A6FBB]">{formatAOA(valorTotal)}</span></p>
         </div>
-        <button onClick={() => router.push("/medico/minhas-reservas")} className="mt-6 bg-[#0B3C74] text-white font-bold px-8 py-3 rounded-2xl w-full max-w-xs">
+        <button onClick={() => router.push("/medico/minhas-reservas")} className="mt-6 bg-[#1A6FBB] text-white font-bold px-8 py-3 rounded-2xl w-full max-w-xs">
           Ver minhas reservas
         </button>
         <button onClick={() => router.push("/medico")} className="mt-2 text-gray-400 text-sm py-2">
@@ -134,7 +134,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
             <p className="flex items-center gap-2"><Clock size={14} strokeWidth={1.75} className="text-gray-400" /> {duracao} hora(s)</p>
             <div className="pt-2 border-t border-gray-100 flex justify-between font-bold text-base">
               <span>Total</span>
-              <span className="text-[#0B3C74]">{formatAOA(valorTotal)}</span>
+              <span className="text-[#1A6FBB]">{formatAOA(valorTotal)}</span>
             </div>
             <p className="text-xs text-gray-400">Comissão Medfreela (15%): {formatAOA(comissao)} já incluída</p>
           </div>
@@ -146,22 +146,22 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
               { key: "TRANSFERENCIA_BANCARIA", label: "Transferência Bancária", icon: <Landmark size={20} strokeWidth={1.75} />,  desc: "NIB: 0040-0000-12345-67890 10 1 · BAI" },
             ] as const).map((m) => (
               <button key={m.key} onClick={() => setMetodo(m.key)}
-                className={`w-full flex items-start gap-3 p-3 rounded-xl border-2 text-left transition-colors ${metodo === m.key ? "border-[#0B3C74] bg-blue-50" : "border-gray-100 bg-gray-50"}`}
+                className={`w-full flex items-start gap-3 p-3 rounded-xl border-2 text-left transition-colors ${metodo === m.key ? "border-[#1A6FBB] bg-blue-50" : "border-gray-100 bg-gray-50"}`}
               >
                 <span className="text-xl">{m.icon}</span>
                 <div>
                   <p className="font-semibold text-sm text-gray-900">{m.label}</p>
                   <p className="text-xs text-gray-500 mt-0.5">{m.desc}</p>
                 </div>
-                {metodo === m.key && <Check size={16} strokeWidth={2.5} className="ml-auto text-[#0B3C74]" />}
+                {metodo === m.key && <Check size={16} strokeWidth={2.5} className="ml-auto text-[#1A6FBB]" />}
               </button>
             ))}
           </div>
 
           {metodo === "MULTICAIXA_EXPRESS" && (
             <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
-              <p className="flex items-center gap-1 text-sm font-semibold text-[#0B3C74]"><Smartphone size={14} strokeWidth={2} /> Referência Multicaixa</p>
-              <p className="text-xs text-[#0B3C74] mt-1">Entidade: <strong>30299</strong> · Referência: <strong>987 654 321</strong></p>
+              <p className="flex items-center gap-1 text-sm font-semibold text-[#1A6FBB]"><Smartphone size={14} strokeWidth={2} /> Referência Multicaixa</p>
+              <p className="text-xs text-[#1A6FBB] mt-1">Entidade: <strong>30299</strong> · Referência: <strong>987 654 321</strong></p>
               <p className="text-xs text-blue-500 mt-1">Valor: {formatAOA(valorTotal)} · Válida 30 minutos</p>
             </div>
           )}
@@ -190,7 +190,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
             <label className="text-xs font-bold text-gray-400 uppercase tracking-wide block mb-2">Data</label>
             <input type="date" value={data} onChange={(e) => setData(e.target.value)}
               min={new Date().toISOString().split("T")[0]}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-[#0B3C74]"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-[#1A6FBB]"
             />
           </div>
 
@@ -200,7 +200,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
               {SLOTS.map((slot) => (
                 <button key={slot} onClick={() => setHoraInicio(slot)}
                   className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-colors border ${
-                    horaInicio === slot ? "bg-[#0B3C74] text-white border-[#0B3C74]" : "bg-white text-gray-700 border-gray-200"
+                    horaInicio === slot ? "bg-[#1A6FBB] text-white border-[#1A6FBB]" : "bg-white text-gray-700 border-gray-200"
                   }`}
                 >
                   {slot}
@@ -210,23 +210,23 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
           </div>
 
           <div className="bg-white rounded-2xl border border-gray-100 p-4">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Duração: <span className="text-[#0B3C74]">{duracao}h</span></p>
-            <input type="range" min={1} max={8} value={duracao} onChange={(e) => setDuracao(Number(e.target.value))} className="w-full accent-[#0B3C74]" />
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Duração: <span className="text-[#1A6FBB]">{duracao}h</span></p>
+            <input type="range" min={1} max={8} value={duracao} onChange={(e) => setDuracao(Number(e.target.value))} className="w-full accent-[#1A6FBB]" />
             <div className="flex justify-between text-xs text-gray-400 mt-1"><span>1h</span><span>4h</span><span>8h</span></div>
           </div>
 
           <div className="bg-blue-50 rounded-2xl border border-blue-100 px-4 py-3 flex justify-between items-center">
             <div>
-              <p className="text-xs text-[#0B3C74]">Total estimado</p>
-              <p className="text-xl font-bold text-[#00A99D]">{formatAOA(valorTotal)}</p>
+              <p className="text-xs text-[#1A6FBB]">Total estimado</p>
+              <p className="text-xl font-bold text-[#0D4F8A]">{formatAOA(valorTotal)}</p>
             </div>
-            <div className="text-right text-xs text-[#0B3C74]">
+            <div className="text-right text-xs text-[#1A6FBB]">
               <p>{formatAOA(sala.precoPorHora)}/h × {duracao}h</p>
             </div>
           </div>
 
           <button disabled={!data || !horaInicio} onClick={() => setStep("pagamento")}
-            className="w-full bg-[#0B3C74] disabled:bg-gray-300 text-white font-bold py-4 rounded-2xl text-base transition-colors flex items-center justify-center gap-1"
+            className="w-full bg-[#1A6FBB] disabled:bg-gray-300 text-white font-bold py-4 rounded-2xl text-base transition-colors flex items-center justify-center gap-1"
           >
             Continuar para Pagamento <ChevronRight size={16} strokeWidth={2} />
           </button>
@@ -242,20 +242,20 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
 
       <div className="bg-white px-4 py-5 border-b border-gray-100">
         <div className="flex items-center gap-3">
-          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-2xl font-bold text-[#0B3C74]">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-2xl font-bold text-[#1A6FBB]">
             {sala.clinica.nome.charAt(0)}
           </div>
           <div>
             <div className="flex items-center gap-1.5">
               <h2 className="font-bold text-gray-900 text-base">{sala.clinica.nome}</h2>
-              {sala.clinica.verified && <BadgeCheck size={15} strokeWidth={2} className="text-[#00A99D]" />}
+              {sala.clinica.verified && <BadgeCheck size={15} strokeWidth={2} className="text-[#27AE60]" />}
             </div>
             <p className="flex items-center gap-1 text-gray-500 text-sm"><MapPin size={12} strokeWidth={1.75} /> {sala.zona}</p>
             <p className="flex items-center gap-1 text-yellow-500 text-xs mt-0.5"><Star size={11} strokeWidth={1.75} fill="currentColor" /> {sala.avaliacaoMedia} ({sala.totalAvaliacoes} avaliações)</p>
           </div>
         </div>
         <div className="mt-3 flex items-center gap-2">
-          <span className="bg-blue-50 text-[#0B3C74] text-xs font-bold px-2.5 py-1 rounded-full">{tipoLabel[sala.tipo]}</span>
+          <span className="bg-blue-50 text-[#1A6FBB] text-xs font-bold px-2.5 py-1 rounded-full">{tipoLabel[sala.tipo]}</span>
           {sala.disponivel && (
             <span className="bg-green-50 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full inline-flex items-center gap-1">
               <CheckCircle size={12} strokeWidth={2.25} /> Disponível
@@ -265,7 +265,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
       </div>
 
       <div className="bg-white mt-2 px-4 py-4 border-b border-gray-100">
-        <p className="text-3xl font-bold text-[#0B3C74]">{formatAOA(sala.precoPorHora)}<span className="text-base text-gray-400 font-normal">/hora</span></p>
+        <p className="text-3xl font-bold text-[#1A6FBB]">{formatAOA(sala.precoPorHora)}<span className="text-base text-gray-400 font-normal">/hora</span></p>
         <p className="text-xs text-gray-400 mt-1">Comissão Medfreela (15%) incluída no preço</p>
       </div>
 
@@ -274,7 +274,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
         <div className="space-y-2">
           {equipList.map((e) => (
             <div key={e.label} className="flex items-center gap-2.5 text-sm">
-              <span className={e.ok ? "text-[#00A99D]" : "text-red-400"}>
+              <span className={e.ok ? "text-[#27AE60]" : "text-red-400"}>
                 {e.ok ? <CheckCircle size={16} strokeWidth={2} /> : <XCircle size={16} strokeWidth={2} />}
               </span>
               <span className={e.ok ? "text-gray-800" : "text-gray-300 line-through"}>{e.label}</span>
@@ -302,7 +302,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
       <div className="px-4 py-6">
         <button
           onClick={() => setStep("horario")}
-          className="w-full bg-[#0B3C74] hover:bg-[#00A99D] text-white font-bold py-4 rounded-2xl text-base transition-colors"
+          className="w-full bg-[#1A6FBB] hover:bg-[#0D4F8A] text-white font-bold py-4 rounded-2xl text-base transition-colors"
         >
           RESERVAR ESTA SALA
         </button>

@@ -43,7 +43,7 @@ export default function RegistarProfissionalPage() {
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] px-5 pt-10 pb-6">
+      <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] px-5 pt-10 pb-6">
         <div className="flex items-center gap-3 mb-4">
           <Link href="/registar" className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white">
             <ChevronLeft size={20} strokeWidth={1.75} />
@@ -84,7 +84,7 @@ export default function RegistarProfissionalPage() {
                     value={form.nome}
                     onChange={(e) => set("nome", e.target.value)}
                     placeholder="Dr. João Silva"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0B3C74] transition-colors"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1A6FBB] transition-colors"
                   />
                 </div>
 
@@ -100,11 +100,11 @@ export default function RegistarProfissionalPage() {
                         onClick={() => set("tipo", t.key)}
                         className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium transition-colors text-left ${
                           form.tipo === t.key
-                            ? "border-[#0B3C74] bg-blue-50 text-[#0B3C74]"
+                            ? "border-[#1A6FBB] bg-blue-50 text-[#1A6FBB]"
                             : "border-gray-200 text-gray-700"
                         }`}
                       >
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${form.tipo === t.key ? "border-[#0B3C74] bg-[#0B3C74]" : "border-gray-300"}`}>
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${form.tipo === t.key ? "border-[#1A6FBB] bg-[#1A6FBB]" : "border-gray-300"}`}>
                           {form.tipo === t.key && <Check size={11} strokeWidth={3} className="text-white" />}
                         </div>
                         {t.label}
@@ -120,7 +120,7 @@ export default function RegistarProfissionalPage() {
                   <select
                     value={form.especialidade}
                     onChange={(e) => set("especialidade", e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0B3C74] bg-white transition-colors"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1A6FBB] bg-white transition-colors"
                   >
                     <option value="">Seleccione...</option>
                     {especialidades.map((e) => (
@@ -134,7 +134,7 @@ export default function RegistarProfissionalPage() {
                 type="button"
                 onClick={() => setStep(2)}
                 disabled={!step1Valid}
-                className="w-full bg-[#0B3C74] disabled:opacity-40 text-white font-bold py-4 rounded-2xl text-sm flex items-center justify-center gap-2"
+                className="w-full bg-[#1A6FBB] disabled:opacity-40 text-white font-bold py-4 rounded-2xl text-sm flex items-center justify-center gap-2"
               >
                 Continuar <ChevronRight size={16} strokeWidth={2} />
               </button>
@@ -159,7 +159,7 @@ export default function RegistarProfissionalPage() {
                     value={form.numeroSinome}
                     onChange={(e) => set("numeroSinome", e.target.value)}
                     placeholder="ex: 2025-MG-0234"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0B3C74] transition-colors"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1A6FBB] transition-colors"
                   />
                   <p className="text-xs text-gray-400 mt-1">Opcional — pode adicionar depois</p>
                 </div>
@@ -176,7 +176,7 @@ export default function RegistarProfissionalPage() {
                 <button
                   type="button"
                   onClick={() => setStep(3)}
-                  className="flex-1 bg-[#0B3C74] text-white font-bold py-4 rounded-2xl text-sm flex items-center justify-center gap-2"
+                  className="flex-1 bg-[#1A6FBB] text-white font-bold py-4 rounded-2xl text-sm flex items-center justify-center gap-2"
                 >
                   Continuar <ChevronRight size={16} strokeWidth={2} />
                 </button>
@@ -199,7 +199,7 @@ export default function RegistarProfissionalPage() {
                     value={form.email}
                     onChange={(e) => set("email", e.target.value)}
                     placeholder="o-seu@email.com"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0B3C74] transition-colors"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1A6FBB] transition-colors"
                   />
                 </div>
 
@@ -213,7 +213,7 @@ export default function RegistarProfissionalPage() {
                       value={form.password}
                       onChange={(e) => set("password", e.target.value)}
                       placeholder="Mínimo 8 caracteres"
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:border-[#0B3C74] transition-colors"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:border-[#1A6FBB] transition-colors"
                     />
                     <button
                       type="button"
@@ -247,7 +247,7 @@ export default function RegistarProfissionalPage() {
                 <button
                   type="submit"
                   disabled={pending || !step2Valid}
-                  className="flex-1 bg-[#0B3C74] disabled:opacity-40 text-white font-bold py-4 rounded-2xl text-sm flex items-center justify-center gap-2"
+                  className="flex-1 bg-[#1A6FBB] disabled:opacity-40 text-white font-bold py-4 rounded-2xl text-sm flex items-center justify-center gap-2"
                 >
                   {pending ? (
                     <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> A criar...</>
@@ -261,9 +261,9 @@ export default function RegistarProfissionalPage() {
 
           <p className="text-center text-gray-400 text-xs">
             Ao criar conta aceita os nossos{" "}
-            <span className="text-[#0B3C74]">Termos de Serviço</span>
+            <span className="text-[#1A6FBB]">Termos de Serviço</span>
             {" "}e{" "}
-            <span className="text-[#0B3C74]">Política de Privacidade</span>.
+            <span className="text-[#1A6FBB]">Política de Privacidade</span>.
           </p>
         </div>
       </form>

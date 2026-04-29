@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import { PlantaoCard } from "@/components/plantao-card";
 import { TopBar } from "@/components/nav";
@@ -71,7 +71,7 @@ export default function BuscarPlantoes() {
         </div>
         <button
           onClick={() => setDisponivelAgora((v) => !v)}
-          className={`w-12 h-6 rounded-full relative transition-colors shrink-0 ${disponivelAgora ? "bg-[#0B3C74]" : "bg-gray-200"}`}
+          className={`w-12 h-6 rounded-full relative transition-colors shrink-0 ${disponivelAgora ? "bg-[#1A6FBB]" : "bg-gray-200"}`}
         >
           <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${disponivelAgora ? "left-6" : "left-0.5"}`} />
         </button>
@@ -87,7 +87,7 @@ export default function BuscarPlantoes() {
               onClick={() => setFiltroTipo(t.value)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
                 filtroTipo === t.value
-                  ? "bg-[#0B3C74] text-white border-[#0B3C74]"
+                  ? "bg-[#1A6FBB] text-white border-[#1A6FBB]"
                   : "bg-white text-gray-600 border-gray-200"
               }`}
             >
@@ -107,7 +107,7 @@ export default function BuscarPlantoes() {
               onClick={() => setFiltroZona(z)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
                 filtroZona === z
-                  ? "bg-[#0B3C74] text-white border-[#0B3C74]"
+                  ? "bg-[#1A6FBB] text-white border-[#1A6FBB]"
                   : "bg-white text-gray-600 border-gray-200"
               }`}
             >
@@ -127,7 +127,7 @@ export default function BuscarPlantoes() {
               onClick={() => setFiltroEsp(e)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
                 filtroEsp === e
-                  ? "bg-[#0B3C74] text-white border-[#0B3C74]"
+                  ? "bg-[#1A6FBB] text-white border-[#1A6FBB]"
                   : "bg-white text-gray-600 border-gray-200"
               }`}
             >
@@ -152,7 +152,7 @@ export default function BuscarPlantoes() {
               onClick={() => setFiltroValor(f.key)}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
                 filtroValor === f.key
-                  ? "bg-[#0B3C74] text-white border-[#0B3C74]"
+                  ? "bg-[#1A6FBB] text-white border-[#1A6FBB]"
                   : "bg-white text-gray-600 border-gray-200"
               }`}
             >

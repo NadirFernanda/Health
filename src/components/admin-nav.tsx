@@ -18,15 +18,15 @@ const navItems: { href: string; label: string; icon: LucideIcon; exact?: boolean
 export function AdminNav() {
   const pathname = usePathname();
   return (
-    <header className="bg-[#062855] text-white shrink-0 shadow-lg">
+    <header className="bg-[#0D1F3C] text-white shrink-0 shadow-lg">
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div>
+          <div className="bg-white rounded-lg px-2 py-1 shadow">
             <img
               src="/Imagens/LOGO_MED_FREELA.png"
               alt="MedFreela"
-              className="h-8 w-auto object-contain"
+              className="object-contain h-8 w-auto"
             />
           </div>
           <div>
@@ -65,7 +65,7 @@ export function AdminNav() {
               href={item.href}
               className={`shrink-0 flex items-center gap-1.5 px-4 py-3 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
                 active
-                  ? "border-[#0B3C74] text-white bg-white/5"
+                  ? "border-[#1A6FBB] text-white bg-white/5"
                   : "border-transparent text-white/50 hover:text-white/75"
               }`}
             >

@@ -90,7 +90,7 @@ export function PlantaoCard({
 
       <div className="px-4 pb-3 border-t border-gray-50 pt-3 space-y-1.5">
         {tipoProfissional && (
-          <span className="inline-block text-xs font-semibold bg-blue-50 text-[#0B3C74] px-2 py-0.5 rounded-full mb-0.5">
+          <span className="inline-block text-xs font-semibold bg-blue-50 text-[#1A6FBB] px-2 py-0.5 rounded-full mb-0.5">
             {tipoProfissionalLabel[tipoProfissional] ?? tipoProfissional}
           </span>
         )}

@@ -1,4 +1,4 @@
-import { getAuthSession } from "@/lib/api-auth";
+﻿import { getAuthSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
@@ -53,10 +53,10 @@ export default async function PlantoesDaClinica() {
               }`}>{p.estado}</span>
             </div>
             <div className="flex items-center gap-3 mt-3">
-              <span className="text-[#0B3C74] font-bold text-sm">{formatAOA(p.valorKwanzas)}</span>
+              <span className="text-[#1A6FBB] font-bold text-sm">{formatAOA(p.valorKwanzas)}</span>
               <span className="text-gray-300">·</span>
               <span className="text-gray-500 text-xs">{p._count.candidaturas} candidato(s)</span>
-              <span className="ml-auto text-[#0B3C74] text-xs font-semibold inline-flex items-center gap-0.5">Ver <ChevronRight size={12} strokeWidth={2} /></span>
+              <span className="ml-auto text-[#1A6FBB] text-xs font-semibold inline-flex items-center gap-0.5">Ver <ChevronRight size={12} strokeWidth={2} /></span>
             </div>
           </Link>
         ))}

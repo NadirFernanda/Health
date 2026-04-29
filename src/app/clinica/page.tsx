@@ -1,4 +1,4 @@
-import { getAuthSession } from "@/lib/api-auth";
+﻿import { getAuthSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { PlantaoCard } from "@/components/plantao-card";
 import Link from "next/link";
@@ -61,14 +61,16 @@ export default async function ClinicaDashboard() {
   return (
     <div>
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] px-5 pt-6 pb-6">
+      <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] px-5 pt-6 pb-6">
         {/* Logo centrada no topo */}
         <div className="flex justify-center mb-4">
-          <img
-            src="/Imagens/LOGO_MED_FREELA.png"
-            alt="MedFreela"
-            className="h-12 w-auto object-contain drop-shadow-lg"
-          />
+          <div className="bg-white rounded-xl px-4 py-2 shadow-lg shadow-black/20">
+            <img
+              src="/Imagens/LOGO_MED_FREELA.png"
+              alt="MedFreela"
+              className="object-contain h-11 w-auto"
+            />
+          </div>
         </div>
         <div className="flex items-center justify-between mb-1">
           <div>
@@ -90,7 +92,7 @@ export default async function ClinicaDashboard() {
           </div>
         </div>
         {clinica.verified && (
-          <span className="inline-flex items-center gap-1 bg-[#00A99D]/30 text-green-200 text-xs font-semibold px-2.5 py-1 rounded-full mt-2">
+          <span className="inline-flex items-center gap-1 bg-[#27AE60]/30 text-green-200 text-xs font-semibold px-2.5 py-1 rounded-full mt-2">
             <BadgeCheck size={13} strokeWidth={2} /> Clínica Verificada
           </span>
         )}
@@ -112,7 +114,7 @@ export default async function ClinicaDashboard() {
       <div className="px-4 pt-5">
         <Link
           href="/clinica/publicar"
-          className="flex items-center justify-center gap-2 bg-[#00A99D] hover:bg-[#009082] text-white font-bold py-4 rounded-2xl transition-colors w-full"
+          className="flex items-center justify-center gap-2 bg-[#27AE60] hover:bg-[#1A7A42] text-white font-bold py-4 rounded-2xl transition-colors w-full"
         >
           <span className="text-xl">+</span> PUBLICAR NOVO PLANTÃO
         </Link>
@@ -122,7 +124,7 @@ export default async function ClinicaDashboard() {
       <div className="px-4 pt-5">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Plantões Ativos</h2>
-          <Link href="/clinica/plantoes" className="text-xs text-[#0B3C74] font-semibold">Ver todos</Link>
+          <Link href="/clinica/plantoes" className="text-xs text-[#1A6FBB] font-semibold">Ver todos</Link>
         </div>
         <div className="space-y-3">
           {plantoesCard.map((p) => (

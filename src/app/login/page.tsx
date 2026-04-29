@@ -10,7 +10,7 @@ export default function LoginPage({
   searchParams: Promise<{ redirect?: string }>;
 }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#062855] via-[#0B3C74] to-[#00A99D] flex flex-col items-center justify-center p-5">
+    <div className="min-h-screen bg-gradient-to-br from-[#0D1F3C] via-[#0D2E5C] to-[#0D4F8A] flex flex-col items-center justify-center p-5">
       <div className="w-full max-w-sm">
 
         {/* Voltar */}
@@ -26,11 +26,11 @@ export default function LoginPage({
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-2">
+          <div className="inline-block bg-white rounded-2xl px-6 py-4 shadow-2xl shadow-black/25 mb-2">
             <img
               src="/Imagens/LOGO_MED_FREELA.png"
               alt="MedFreela"
-              className="h-20 w-auto object-contain drop-shadow-2xl"
+              className="object-contain h-20 w-auto"
             />
           </div>
           <p className="text-blue-300/70 text-sm mt-3">Gestão de Plantões Médicos · Angola</p>

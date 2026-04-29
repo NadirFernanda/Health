@@ -1,4 +1,4 @@
-import { getAuthSession } from "@/lib/api-auth";
+﻿import { getAuthSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { TopBar } from "@/components/nav";
 import { redirect } from "next/navigation";
@@ -30,7 +30,7 @@ export default async function GanhosMedico() {
       <TopBar titulo="Meus Ganhos" back="/medico" />
 
       {/* Saldo */}
-      <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] px-5 py-6 mx-4 mt-4 rounded-2xl">
+      <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] px-5 py-6 mx-4 mt-4 rounded-2xl">
         <p className="text-blue-200 text-sm">Saldo disponível</p>
         <p className="text-white text-4xl font-bold mt-1">{formatAOA(prof.saldoCarteiraCentavos)}</p>
         {pendente > 0n && (
@@ -38,7 +38,7 @@ export default async function GanhosMedico() {
             🕐 {formatAOA(pendente)} em processamento (liberação em 24h)
           </p>
         )}
-        <button className="mt-4 bg-white text-[#0B3C74] font-bold text-sm px-5 py-2.5 rounded-xl w-full">
+        <button className="mt-4 bg-white text-[#1A6FBB] font-bold text-sm px-5 py-2.5 rounded-xl w-full">
           LEVANTAR SALDO
         </button>
       </div>
@@ -63,7 +63,7 @@ export default async function GanhosMedico() {
                 </p>
               </div>
               <div className="text-right shrink-0">
-                <p className={`font-bold text-sm ${t.tipo === "CREDITO" ? "text-[#00A99D]" : "text-gray-600"}`}>
+                <p className={`font-bold text-sm ${t.tipo === "CREDITO" ? "text-[#27AE60]" : "text-gray-600"}`}>
                   {t.tipo === "CREDITO" ? "+" : "-"}{formatAOA(t.valorCentavos)}
                 </p>
                 {t.estado === "PENDENTE" && (
