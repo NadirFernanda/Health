@@ -141,18 +141,18 @@ export default function RegistarProfissionalPage() {
             </>
           )}
 
-          {/* PASSO 2 — Credenciais SINOME */}
+          {/* PASSO 2 — Carteira Profissional */}
           {step === 2 && (
             <>
               <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
-                <h2 className="font-bold text-gray-900 text-sm">Credenciais SINOME/OMA</h2>
+                <h2 className="font-bold text-gray-900 text-sm">Carteira Profissional</h2>
                 <p className="text-xs text-gray-400 leading-5">
-                  O número de registo é necessário para verificação. Pode submeter os documentos depois de criar a conta.
+                  O número da carteira é necessário para verificação. Pode submeter os documentos depois de criar a conta.
                 </p>
 
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
-                    Nº Registo SINOME / OMA
+                    Nº da Carteira Profissional
                   </label>
                   <input
                     type="text"
