@@ -66,8 +66,14 @@ export default function PublicarPlantao() {
           Os médicos com especialidade compatível serão notificados agora.
         </p>
         <button
-          onClick={() => router.push("/clinica")}
+          onClick={() => router.push("/clinica/plantoes")}
           className="mt-6 bg-[#0B3C74] text-white font-bold px-8 py-3 rounded-2xl"
+        >
+          Ver plantões publicados
+        </button>
+        <button
+          onClick={() => router.push("/clinica")}
+          className="mt-3 text-gray-400 text-sm underline"
         >
           Voltar ao painel
         </button>
