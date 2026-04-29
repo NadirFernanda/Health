@@ -53,4 +53,5 @@ input:not([class*="text-white"]),
 select:not([class*="text-white"]),
 textarea:not([class*="text-white"]) {
   color: #111827;
+  -webkit-text-fill-color: #111827;
 }
