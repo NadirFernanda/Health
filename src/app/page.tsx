@@ -1,9 +1,32 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { decodeToken, COOKIE_NAME } from "@/lib/auth";
 import {
-  Stethoscope, Building2, BadgeCheck, Banknote, BedDouble, ChevronRight,
+  Stethoscope, Building2, BadgeCheck, Banknote, BedDouble, ChevronRight, LogOut,
 } from "lucide-react";
 
-export default function Home() {
+async function getSession() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(COOKIE_NAME)?.value;
+  if (!token) return null;
+  return decodeToken(token);
+}
+
+export default async function Home() {
+  const session = await getSession();
+
+  const dashboards: Record<string, string> = {
+    ADMIN: "/admin",
+    MEDICO: "/medico",
+    CLINICA: "/clinica",
+  };
+
+  const roleLabels: Record<string, string> = {
+    ADMIN: "Administrador",
+    MEDICO: "Médico",
+    CLINICA: "Clínica",
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Hero */}
@@ -35,41 +58,82 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Escolher perfil */}
+      {/* Conteúdo principal */}
       <div className="flex-1 px-6 py-8 flex flex-col gap-4">
-        <p className="text-center text-gray-500 text-sm mb-2">Como quer entrar?</p>
 
-        <Link
-          href="/medico"
-          className="block bg-[#1A6FBB] hover:bg-[#0D4F8A] text-white rounded-2xl p-5 transition-colors"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
-              <Stethoscope size={24} strokeWidth={1.75} className="text-white" />
+        {session ? (
+          /* ── Utilizador já autenticado ── */
+          <>
+            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+              <p className="text-sm text-gray-500 mb-1">Sessão activa como</p>
+              <p className="font-bold text-gray-900 text-base">{session.sub}</p>
+              <p className="text-xs text-[#1A6FBB] font-semibold mt-0.5">{roleLabels[session.role] ?? session.role}</p>
             </div>
-            <div>
-              <p className="font-bold text-base">Sou Profissional de Saúde</p>
-              <p className="text-blue-200 text-sm mt-0.5">Médico, enfermeiro ou técnico — encontre turnos e receba em segurança</p>
-            </div>
-            <ChevronRight size={20} strokeWidth={1.75} className="ml-auto text-blue-200" />
-          </div>
-        </Link>
 
-        <Link
-          href="/clinica"
-          className="block bg-white border-2 border-[#1A6FBB] text-[#1A6FBB] rounded-2xl p-5 transition-colors hover:bg-blue-50"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
-              <Building2 size={24} strokeWidth={1.75} className="text-[#1A6FBB]" />
-            </div>
-            <div>
-              <p className="font-bold text-base text-gray-900">Sou Clínica / Consultório</p>
-              <p className="text-gray-500 text-sm mt-0.5">Publique turnos e encontre profissionais verificados</p>
-            </div>
-            <ChevronRight size={20} strokeWidth={1.75} className="ml-auto text-[#1A6FBB]" />
-          </div>
-        </Link>
+            <Link
+              href={dashboards[session.role] ?? "/"}
+              className="block bg-[#1A6FBB] hover:bg-[#0D4F8A] text-white rounded-2xl p-5 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+                  <ChevronRight size={24} strokeWidth={1.75} className="text-white" />
+                </div>
+                <div>
+                  <p className="font-bold text-base">Ir para o meu painel</p>
+                  <p className="text-blue-200 text-sm mt-0.5">Continuar como {roleLabels[session.role] ?? session.role}</p>
+                </div>
+                <ChevronRight size={20} strokeWidth={1.75} className="ml-auto text-blue-200" />
+              </div>
+            </Link>
+
+            <form action="/api/auth/logout" method="POST">
+              <button
+                type="submit"
+                className="w-full flex items-center justify-center gap-2 bg-white border-2 border-gray-200 text-gray-600 hover:border-red-300 hover:text-red-600 rounded-2xl p-4 transition-colors font-semibold text-sm"
+              >
+                <LogOut size={16} strokeWidth={2} />
+                Sair e trocar de conta
+              </button>
+            </form>
+          </>
+        ) : (
+          /* ── Sem sessão — escolher papel ── */
+          <>
+            <p className="text-center text-gray-500 text-sm mb-2">Como quer entrar?</p>
+
+            <Link
+              href="/medico"
+              className="block bg-[#1A6FBB] hover:bg-[#0D4F8A] text-white rounded-2xl p-5 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+                  <Stethoscope size={24} strokeWidth={1.75} className="text-white" />
+                </div>
+                <div>
+                  <p className="font-bold text-base">Sou Profissional de Saúde</p>
+                  <p className="text-blue-200 text-sm mt-0.5">Médico, enfermeiro ou técnico — encontre turnos e receba em segurança</p>
+                </div>
+                <ChevronRight size={20} strokeWidth={1.75} className="ml-auto text-blue-200" />
+              </div>
+            </Link>
+
+            <Link
+              href="/clinica"
+              className="block bg-white border-2 border-[#1A6FBB] text-[#1A6FBB] rounded-2xl p-5 transition-colors hover:bg-blue-50"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
+                  <Building2 size={24} strokeWidth={1.75} className="text-[#1A6FBB]" />
+                </div>
+                <div>
+                  <p className="font-bold text-base text-gray-900">Sou Clínica / Consultório</p>
+                  <p className="text-gray-500 text-sm mt-0.5">Publique turnos e encontre profissionais verificados</p>
+                </div>
+                <ChevronRight size={20} strokeWidth={1.75} className="ml-auto text-[#1A6FBB]" />
+              </div>
+            </Link>
+          </>
+        )}
 
         {/* Diferenciais */}
         <div className="mt-4 space-y-3">
