@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { decodeToken, COOKIE_NAME } from "@/lib/auth";
 import {
-  Stethoscope, Building2, BadgeCheck, Banknote, BedDouble, ChevronRight, LogOut,
+  Stethoscope, Building2, BadgeCheck, Banknote, BedDouble, ChevronRight, LogOut, DoorOpen,
 } from "lucide-react";
 
 async function getSession() {
@@ -19,12 +19,14 @@ export default async function Home() {
     ADMIN: "/admin",
     MEDICO: "/medico",
     CLINICA: "/clinica",
+    PROPRIETARIO_SALA: "/consultorio",
   };
 
   const roleLabels: Record<string, string> = {
     ADMIN: "Administrador",
     MEDICO: "Médico",
     CLINICA: "Clínica",
+    PROPRIETARIO_SALA: "Proprietário de Consultório",
   };
 
   return (
@@ -129,10 +131,26 @@ export default async function Home() {
                   <Building2 size={24} strokeWidth={1.75} className="text-[#0B3C74]" />
                 </div>
                 <div>
-                  <p className="font-bold text-base text-gray-900">Sou Clínica / Consultório</p>
-                  <p className="text-gray-500 text-sm mt-0.5">Publique turnos e encontre profissionais verificados</p>
+                  <p className="font-bold text-base text-gray-900">Sou Clínica</p>
+                  <p className="text-gray-500 text-sm mt-0.5">Publique turnos e contrate profissionais verificados</p>
                 </div>
                 <ChevronRight size={20} strokeWidth={1.75} className="ml-auto text-[#0B3C74]" />
+              </div>
+            </Link>
+
+            <Link
+              href="/consultorio"
+              className="block bg-white border-2 border-[#00A99D] text-[#00A99D] rounded-2xl p-5 transition-colors hover:bg-teal-50"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-teal-50 rounded-xl flex items-center justify-center shrink-0">
+                  <DoorOpen size={24} strokeWidth={1.75} className="text-[#00A99D]" />
+                </div>
+                <div>
+                  <p className="font-bold text-base text-gray-900">Sou Proprietário de Consultório</p>
+                  <p className="text-gray-500 text-sm mt-0.5">Publique horas vagas e alugue salas por hora</p>
+                </div>
+                <ChevronRight size={20} strokeWidth={1.75} className="ml-auto text-[#00A99D]" />
               </div>
             </Link>
           </>
