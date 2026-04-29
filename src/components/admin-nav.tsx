@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/app/actions/auth";
 import {
@@ -21,11 +22,18 @@ export function AdminNav() {
     <header className="bg-[#0D1F3C] text-white shrink-0 shadow-lg">
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-[#1A6FBB] rounded-lg flex items-center justify-center font-black text-base">M</div>
+        <div className="flex items-center gap-3">
+          <div className="bg-white rounded-lg px-2 py-1 shadow">
+            <Image
+              src="/Imagens/LOGO_MED_FREELA.png"
+              alt="MedFreela"
+              width={80}
+              height={32}
+              className="object-contain"
+            />
+          </div>
           <div>
-            <p className="font-bold text-sm leading-tight tracking-wide">MEDFREELA ADMIN</p>
-            <p className="text-white/40 text-xs leading-tight">Painel de Gestão</p>
+            <p className="font-bold text-xs leading-tight tracking-widest text-white/80">PAINEL DE GESTÃO</p>
           </div>
         </div>
         <div className="flex items-center gap-2">

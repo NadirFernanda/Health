@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { cookies } from "next/headers";
 import { decodeToken, COOKIE_NAME } from "@/lib/auth";
 import {
@@ -30,12 +31,18 @@ export default async function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] px-6 pt-16 pb-12 flex flex-col items-center text-center">
-        <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-4">
-          <Stethoscope size={32} strokeWidth={1.75} className="text-white" />
+      <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] px-6 pt-14 pb-10 flex flex-col items-center text-center">
+        <div className="bg-white rounded-2xl px-6 py-4 shadow-2xl shadow-black/25 mb-4">
+          <Image
+            src="/Imagens/LOGO_MED_FREELA.png"
+            alt="MedFreela"
+            width={200}
+            height={100}
+            className="object-contain"
+            priority
+          />
         </div>
-        <h1 className="text-3xl font-bold text-white tracking-tight">MedFreela</h1>
-        <p className="text-blue-100 mt-4 text-sm leading-6 max-w-xs">
+        <p className="text-blue-100 text-sm leading-6 max-w-xs">
           A plataforma que transforma profissionais
           disponíveis e consultórios vazios em
           serviços de saúde activos.

@@ -1,13 +1,21 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Stethoscope, Building2, ChevronRight } from "lucide-react";
 
 export default function RegistarPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] px-6 pt-16 pb-12 flex flex-col items-center text-center">
-        <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-4">
-          <Stethoscope size={32} strokeWidth={1.75} className="text-white" />
+      <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] px-6 pt-12 pb-10 flex flex-col items-center text-center">
+        <div className="bg-white rounded-2xl px-5 py-3 shadow-2xl shadow-black/25 mb-4">
+          <Image
+            src="/Imagens/LOGO_MED_FREELA.png"
+            alt="MedFreela"
+            width={160}
+            height={80}
+            className="object-contain"
+            priority
+          />
         </div>
         <h1 className="text-2xl font-bold text-white tracking-tight">Criar conta</h1>
         <p className="text-blue-100 mt-2 text-sm leading-6 max-w-xs">
