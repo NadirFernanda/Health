@@ -1,9 +1,239 @@
 "use client";
-import React, { useState, useRef } from "react";
-import { medicoLogado } from "@/lib/mock-data";
+import React, { useState, useRef, useEffect } from "react";
 import { TopBar } from "@/components/nav";
 import { logoutAction } from "@/app/actions/auth";
 import { BadgeCheck, Star, ClipboardList, Stethoscope, MapPin, CheckCircle, Clock, Paperclip, Lock, Check, ChevronRight } from "lucide-react";
+
+type DocEstado = "APROVADO" | "PENDENTE" | "NAO_ENVIADO";
+
+interface Documento {
+  label: string;
+  estado: DocEstado;
+  ficheiro?: string;
+}
+
+interface PerfilData {
+  nome: string;
+  tipo: string;
+  especialidade: string;
+  numeroOrdem: string;
+  numeroSinome: string;
+  provincia: string;
+  bio: string;
+  rating: number;
+  totalAvaliacoes: number;
+  totalPlantoes: number;
+  verified: boolean;
+  saldoCarteira: number;
+}
+
+export default function PerfilMedico() {
+  const [perfil, setPerfil] = useState<PerfilData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const [docs, setDocs] = useState<Documento[]>([
+    { label: "Cédula da Ordem dos Médicos", estado: "NAO_ENVIADO" },
+    { label: "Bilhete de Identidade", estado: "NAO_ENVIADO" },
+    { label: "Licenciatura em Medicina", estado: "NAO_ENVIADO" },
+    { label: "Carteira Profissional", estado: "NAO_ENVIADO" },
+    { label: "Certificado de Especialidade (opcional)", estado: "NAO_ENVIADO" },
+  ]);
+
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    fetch("/api/medico/perfil")
+      .then((r) => r.json())
+      .then((data) => {
+        setPerfil(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const handleUpload = (index: number, file: File | undefined) => {
+    if (!file) return;
+    setDocs((prev) =>
+      prev.map((d, i) =>
+        i === index ? { ...d, ficheiro: file.name, estado: "PENDENTE" } : d
+      )
+    );
+  };
+
+  const estadoConfig: Record<DocEstado, { cls: string; icon: React.ReactNode; label: string }> = {
+    APROVADO:    { cls: "text-green-500",  icon: <CheckCircle size={15} strokeWidth={2} />, label: "Verificado" },
+    PENDENTE:    { cls: "text-yellow-500", icon: <Clock size={15} strokeWidth={2} />,       label: "Em análise" },
+    NAO_ENVIADO: { cls: "text-gray-300",   icon: <Paperclip size={15} strokeWidth={2} />,   label: "Não enviado" },
+  };
+
+  if (loading) {
+    return (
+      <div>
+        <TopBar titulo="O meu Perfil" back="/medico" />
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-2 border-[#0B3C74] border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!perfil) {
+    return (
+      <div>
+        <TopBar titulo="O meu Perfil" back="/medico" />
+        <p className="text-center text-gray-400 py-20">Erro ao carregar perfil.</p>
+      </div>
+    );
+  }
+
+  const iniciais = perfil.nome.trim().split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+
+  return (
+    <div>
+      <TopBar titulo="O meu Perfil" back="/medico" />
+
+      {/* Avatar e nome */}
+      <div className="bg-white px-4 py-6 flex flex-col items-center border-b border-gray-100">
+        <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-3xl font-bold text-[#0B3C74] mb-3">
+          {iniciais}
+        </div>
+        <h1 className="text-xl font-bold text-gray-900">{perfil.nome}</h1>
+        {perfil.verified && (
+          <span className="mt-1.5 inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
+            <BadgeCheck size={13} strokeWidth={2} /> VERIFICADO
+          </span>
+        )}
+        <div className="flex items-center gap-1 mt-2">
+          <Star size={14} strokeWidth={1.75} className="text-yellow-400 fill-yellow-400" />
+          <span className="text-sm font-semibold text-gray-800">{perfil.rating.toFixed(1)}</span>
+          <span className="text-gray-400 text-xs">({perfil.totalAvaliacoes} avaliações)</span>
+        </div>
+        <p className="text-gray-500 text-sm mt-1">{perfil.especialidade} · {perfil.provincia}</p>
+      </div>
+
+      {/* Estatísticas */}
+      <div className="bg-white grid grid-cols-3 border-b border-gray-100">
+        {[
+          { label: "Plantões", value: perfil.totalPlantoes },
+          { label: "Avaliações", value: perfil.totalAvaliacoes },
+          { label: "Saldo (AOA)", value: (perfil.saldoCarteira / 1000).toFixed(0) + "k" },
+        ].map((s) => (
+          <div key={s.label} className="text-center py-4 border-r border-gray-100 last:border-r-0">
+            <p className="text-xl font-bold text-[#0B3C74]">{s.value}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Informações */}
+      <div className="bg-white mt-2 px-4 py-4 border-b border-gray-100">
+        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Informações Profissionais</h3>
+        <div className="space-y-2 text-sm text-gray-700">
+          {perfil.numeroOrdem && (
+            <p className="flex items-center gap-2">
+              <ClipboardList size={14} strokeWidth={1.75} className="text-gray-400 shrink-0" />
+              Nº Ordem: <span className="font-mono text-gray-900">{perfil.numeroOrdem}</span>
+            </p>
+          )}
+          {perfil.numeroSinome && (
+            <p className="flex items-center gap-2">
+              <ClipboardList size={14} strokeWidth={1.75} className="text-gray-400 shrink-0" />
+              Carteira Profissional: <span className="font-mono text-gray-900">{perfil.numeroSinome}</span>
+            </p>
+          )}
+          <p className="flex items-center gap-2">
+            <Stethoscope size={14} strokeWidth={1.75} className="text-gray-400 shrink-0" />
+            Especialidade: {perfil.especialidade}
+          </p>
+          <p className="flex items-center gap-2">
+            <MapPin size={14} strokeWidth={1.75} className="text-gray-400 shrink-0" />
+            Localização: {perfil.provincia}
+          </p>
+          {perfil.bio && <p className="text-gray-600 leading-5 mt-1">{perfil.bio}</p>}
+        </div>
+      </div>
+
+      {/* Verificação Express */}
+      {!perfil.verified && (
+        <div className="mx-4 mt-4 bg-orange-50 border-2 border-orange-200 rounded-2xl p-4">
+          <div className="flex items-start gap-3">
+            <Lock size={22} strokeWidth={1.75} className="text-orange-500 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-bold text-orange-800 text-sm">Perfil não verificado</p>
+              <p className="text-xs text-orange-600 mt-1 leading-5">
+                A Verificação Express desbloqueia candidaturas a plantões e aumenta a sua taxa de aceitação.
+              </p>
+              <div className="mt-3 space-y-1.5 text-xs text-orange-700">
+                <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> Confirmação da Carteira Profissional / Ordem</p>
+                <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> Validação de BI/Passaporte</p>
+                <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> Prazo: 24–48h · Taxa única: <strong>2.500 AOA</strong></p>
+              </div>
+              <button className="mt-3 w-full bg-orange-500 text-white font-bold py-2.5 rounded-xl text-sm inline-flex items-center justify-center gap-1">
+                Iniciar Verificação Express <ChevronRight size={14} strokeWidth={2} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Documentos / Upload */}
+      <div className="bg-white mt-2 px-4 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide">Documentos</h3>
+          <span className="text-xs text-gray-400">
+            {docs.filter((d) => d.estado === "APROVADO").length}/{docs.length} verificados
+          </span>
+        </div>
+        <div className="space-y-3">
+          {docs.map((doc, i) => {
+            const cfg = estadoConfig[doc.estado];
+            return (
+              <div key={doc.label} className="flex items-center gap-3">
+                <span className={`shrink-0 ${cfg.cls}`}>{cfg.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-800 truncate">{doc.label}</p>
+                  {doc.ficheiro ? (
+                    <p className="text-xs text-gray-400 font-mono truncate">{doc.ficheiro}</p>
+                  ) : (
+                    <p className="text-xs text-gray-300">Nenhum ficheiro</p>
+                  )}
+                </div>
+                <div className="shrink-0 flex items-center gap-2">
+                  <span className={`text-xs font-semibold ${cfg.cls}`}>{cfg.label}</span>
+                  <input
+                    ref={(el) => { inputRefs.current[i] = el; }}
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    className="hidden"
+                    onChange={(e) => handleUpload(i, e.target.files?.[0])}
+                  />
+                  {doc.estado !== "APROVADO" && (
+                    <button
+                      onClick={() => inputRefs.current[i]?.click()}
+                      className="text-xs text-[#0B3C74] font-semibold border border-blue-200 px-2 py-1 rounded-lg"
+                    >
+                      {doc.estado === "NAO_ENVIADO" ? "Carregar" : "Substituir"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-xs text-gray-400 mt-3">Formatos aceites: PDF, JPG, PNG · Máx. 10 MB por ficheiro</p>
+      </div>
+
+      {/* Ações */}
+      <div className="px-4 py-4 space-y-2 mb-6">
+        <form action={logoutAction}>
+          <button type="submit" className="w-full text-center text-red-500 font-semibold py-3 text-sm">
+            Terminar Sessão
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
 
 type DocEstado = "APROVADO" | "PENDENTE" | "NAO_ENVIADO";
 
