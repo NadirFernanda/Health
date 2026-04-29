@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { PlantaoCard } from "@/components/plantao-card";
 import Link from "next/link";
 import { Bell, User, BadgeCheck } from "lucide-react";
@@ -65,15 +64,11 @@ export default function MedicoDashboard() {
       <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] px-5 pt-6 pb-6">
         {/* Logo centrada no topo */}
         <div className="flex justify-center mb-4">
-          <div className="bg-white rounded-xl px-4 py-2 shadow-lg shadow-black/20">
-            <Image
-              src="/Imagens/LOGO_MED_FREELA.png"
-              alt="MedFreela"
-              width={110}
-              height={44}
-              className="object-contain"
-            />
-          </div>
+          <img
+            src="/Imagens/LOGO_MED_FREELA.png"
+            alt="MedFreela"
+            className="h-12 w-auto object-contain drop-shadow-lg"
+          />
         </div>
         <div className="flex items-center justify-between mb-1">
           <div>

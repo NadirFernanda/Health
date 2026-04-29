@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Stethoscope, Building2, ChevronRight } from "lucide-react";
 
 export default function RegistarPage() {
@@ -7,14 +6,11 @@ export default function RegistarPage() {
     <div className="min-h-screen flex flex-col bg-white">
       {/* Hero */}
       <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] px-6 pt-12 pb-10 flex flex-col items-center text-center">
-        <div className="bg-white rounded-2xl px-5 py-3 shadow-2xl shadow-black/25 mb-4">
-          <Image
+        <div className="mb-4">
+          <img
             src="/Imagens/LOGO_MED_FREELA.png"
             alt="MedFreela"
-            width={160}
-            height={80}
-            className="object-contain"
-            priority
+            className="h-16 w-auto object-contain drop-shadow-2xl"
           />
         </div>
         <h1 className="text-2xl font-bold text-white tracking-tight">Criar conta</h1>

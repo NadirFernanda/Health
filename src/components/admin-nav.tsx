@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/app/actions/auth";
 import {
@@ -23,13 +22,11 @@ export function AdminNav() {
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="bg-white rounded-lg px-2 py-1 shadow">
-            <Image
+          <div>
+            <img
               src="/Imagens/LOGO_MED_FREELA.png"
               alt="MedFreela"
-              width={80}
-              height={32}
-              className="object-contain"
+              className="h-8 w-auto object-contain"
             />
           </div>
           <div>

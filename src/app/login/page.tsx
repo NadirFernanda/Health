@@ -1,6 +1,5 @@
 import LoginForm from "./login-form";
 import Link from "next/link";
-import Image from "next/image";
 import { Stethoscope, Building2, Settings, ChevronLeft, type LucideIcon } from "lucide-react";
 
 export const metadata = { title: "Entrar — Medfreela" };
@@ -27,14 +26,11 @@ export default function LoginPage({
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-block bg-white rounded-2xl px-6 py-4 shadow-2xl shadow-black/25 mb-2">
-            <Image
+          <div className="flex justify-center mb-2">
+            <img
               src="/Imagens/LOGO_MED_FREELA.png"
               alt="MedFreela"
-              width={180}
-              height={90}
-              className="object-contain"
-              priority
+              className="h-20 w-auto object-contain drop-shadow-2xl"
             />
           </div>
           <p className="text-blue-300/70 text-sm mt-3">Gestão de Plantões Médicos · Angola</p>
