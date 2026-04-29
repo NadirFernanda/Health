@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { PlantaoCard } from "@/components/plantao-card";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bell, User, MapPin, BadgeCheck } from "lucide-react";
+import { Bell, User, MapPin, BadgeCheck, ClipboardList } from "lucide-react";
 
 function formatAOA(v: number) {
   return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
@@ -110,13 +110,19 @@ export default async function ClinicaDashboard() {
         </div>
       </div>
 
-      {/* Publicar novo */}
-      <div className="px-4 pt-5">
+      {/* Publicar novo + Ver plantões */}
+      <div className="px-4 pt-5 flex gap-3">
         <Link
           href="/clinica/publicar"
-          className="flex items-center justify-center gap-2 bg-[#00A99D] hover:bg-[#009082] text-white font-bold py-4 rounded-2xl transition-colors w-full"
+          className="flex-1 flex items-center justify-center gap-2 bg-[#00A99D] hover:bg-[#009082] text-white font-bold py-4 rounded-2xl transition-colors"
         >
-          <span className="text-xl">+</span> PUBLICAR NOVO PLANTÃO
+          <span className="text-xl">+</span> PUBLICAR
+        </Link>
+        <Link
+          href="/clinica/plantoes"
+          className="flex-1 flex items-center justify-center gap-2 bg-[#0B3C74] hover:bg-[#092e5a] text-white font-bold py-4 rounded-2xl transition-colors"
+        >
+          <ClipboardList size={18} strokeWidth={1.75} /> VER PLANTÕES
         </Link>
       </div>
 
