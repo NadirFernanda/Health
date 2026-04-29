@@ -10,7 +10,7 @@ export async function GET() {
 
   const reservas = await prisma.reservaSala.findMany({
     where: { profissionalId: prof.id },
-    include: { sala: { include: { clinica: true } } },
+    include: { sala: { include: { clinica: true, consultorio: true } } },
     orderBy: { criadoEm: "desc" },
   });
 
@@ -30,11 +30,11 @@ export async function GET() {
         nome: r.sala.nome,
         tipo: r.sala.tipo,
         zona: r.sala.zona,
-        clinica: {
-          id: r.sala.clinica.id,
-          nome: r.sala.clinica.nome,
-          cidade: r.sala.clinica.cidade,
-        },
+        proprietario: r.sala.clinica
+          ? { id: r.sala.clinica.id, nome: r.sala.clinica.nome, cidade: r.sala.clinica.cidade }
+          : r.sala.consultorio
+          ? { id: r.sala.consultorio.id, nome: r.sala.consultorio.nome, cidade: r.sala.consultorio.cidade }
+          : null,
       },
     }))
   );

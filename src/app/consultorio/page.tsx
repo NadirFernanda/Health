@@ -30,7 +30,7 @@ export default async function ConsultorioDashboard() {
   // Reservas recentes
   const reservasRecentes = await prisma.reservaSala.findMany({
     where: { sala: { consultorioId: consultorio.id } },
-    include: { sala: true, profissional: true },
+    include: { sala: true, profissional: { select: { nome: true } } },
     orderBy: { criadoEm: "desc" },
     take: 5,
   });
@@ -137,27 +137,25 @@ export default async function ConsultorioDashboard() {
           ) : (
             <div className="space-y-3">
               {reservasRecentes.map((r) => {
-                const inicio = new Date(r.dataInicio);
-                const fim = new Date(r.dataFim);
-                const horas = Math.round((fim.getTime() - inicio.getTime()) / 3600000);
+                const inicio = new Date(r.data);
                 return (
                   <div key={r.id} className="bg-white rounded-2xl border border-gray-100 px-4 py-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-semibold text-gray-900 text-sm">{r.profissional.nome}</p>
-                        <p className="text-gray-400 text-xs mt-0.5">{r.sala.nome} · {horas}h</p>
+                        <p className="text-gray-400 text-xs mt-0.5">{r.sala.nome} · {r.duracaoHoras}h</p>
                         <p className="text-gray-400 text-xs">
                           {inicio.toLocaleDateString("pt-AO", { day: "2-digit", month: "short" })}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-[#0B3C74] text-sm">{formatAOA(r.totalKwanzas)}</p>
+                        <p className="font-bold text-[#0B3C74] text-sm">{formatAOA(r.valorTotal)}</p>
                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                           r.estado === "CONFIRMADA" ? "bg-green-100 text-green-700" :
-                          r.estado === "PENDENTE" ? "bg-yellow-100 text-yellow-700" :
+                          r.estado === "PENDENTE_PAGAMENTO" ? "bg-yellow-100 text-yellow-700" :
                           "bg-gray-100 text-gray-500"
                         }`}>
-                          {r.estado === "CONFIRMADA" ? "Confirmada" : r.estado === "PENDENTE" ? "Pendente" : r.estado}
+                          {r.estado === "CONFIRMADA" ? "Confirmada" : r.estado === "PENDENTE_PAGAMENTO" ? "Pendente" : r.estado}
                         </span>
                       </div>
                     </div>

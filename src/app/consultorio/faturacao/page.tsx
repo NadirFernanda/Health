@@ -22,11 +22,11 @@ export default async function ConsultorioFaturacaoPage() {
 
   const reservas = await prisma.reservaSala.findMany({
     where: { salaId: { in: salaIds }, estado: "CONFIRMADA" },
-    include: { sala: true, profissional: true },
+    include: { sala: true, profissional: { select: { nome: true } } },
     orderBy: { criadoEm: "desc" },
   });
 
-  const totalBruto = reservas.reduce((s, r) => s + r.totalKwanzas, 0);
+  const totalBruto = reservas.reduce((s, r) => s + r.valorTotal, 0);
   const comissao = Math.round(totalBruto * 0.15);
   const totalLiquido = totalBruto - comissao;
 
@@ -68,20 +68,18 @@ export default async function ConsultorioFaturacaoPage() {
           ) : (
             <div className="space-y-3">
               {reservas.map((r) => {
-                const inicio = new Date(r.dataInicio);
-                const fim = new Date(r.dataFim);
-                const horas = Math.round((fim.getTime() - inicio.getTime()) / 3600000);
+                const inicio = new Date(r.data);
                 return (
                   <div key={r.id} className="bg-white rounded-2xl border border-gray-100 px-4 py-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-semibold text-gray-900 text-sm">{r.profissional.nome}</p>
-                        <p className="text-gray-400 text-xs mt-0.5">{r.sala.nome} · {horas}h</p>
+                        <p className="text-gray-400 text-xs mt-0.5">{r.sala.nome} · {r.duracaoHoras}h</p>
                         <p className="text-gray-400 text-xs">
                           {inicio.toLocaleDateString("pt-AO", { day: "2-digit", month: "short", year: "numeric" })}
                         </p>
                       </div>
-                      <p className="font-bold text-[#00A99D] text-sm">+{formatAOA(r.totalKwanzas - Math.round(r.totalKwanzas * 0.15))}</p>
+                      <p className="font-bold text-[#00A99D] text-sm">+{formatAOA(r.valorTotal - Math.round(r.valorTotal * 0.15))}</p>
                     </div>
                   </div>
                 );
