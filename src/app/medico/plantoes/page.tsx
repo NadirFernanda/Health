@@ -76,7 +76,7 @@ export default function MeusPlantoes() {
               key={f}
               onClick={() => setFiltro(f)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                filtro === f ? "bg-[#1A6FBB] text-white" : "bg-gray-100 text-gray-600"
+                filtro === f ? "bg-[#0B3C74] text-white" : "bg-gray-100 text-gray-600"
               }`}
             >
               {f === "TODOS" ? "Todos" : (estadoMap[f]?.label ?? f)}
@@ -110,7 +110,7 @@ export default function MeusPlantoes() {
                 {/* Cabeçalho */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <Stethoscope size={16} strokeWidth={1.75} className="text-[#1A6FBB]" />
+                    <Stethoscope size={16} strokeWidth={1.75} className="text-[#0B3C74]" />
                     <span className="font-bold text-gray-900 text-sm">{p.especialidade}</span>
                   </div>
                   <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${estado.cls}`}>
@@ -130,7 +130,7 @@ export default function MeusPlantoes() {
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-500">
                     <Banknote size={13} strokeWidth={1.75} />
-                    <span className="font-semibold text-[#1A6FBB]">{formatAOA(p.valorKwanzas)}</span>
+                    <span className="font-semibold text-[#0B3C74]">{formatAOA(p.valorKwanzas)}</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-500">
                     <Users size={13} strokeWidth={1.75} />

@@ -30,7 +30,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] px-6 pt-14 pb-10 flex flex-col items-center text-center">
+      <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] px-6 pt-14 pb-10 flex flex-col items-center text-center">
         <div className="bg-white rounded-2xl px-6 py-4 shadow-2xl shadow-black/25 mb-4">
           <img
             src="/Imagens/LOGO_MED_FREELA.png"
@@ -48,15 +48,15 @@ export default async function Home() {
       {/* Stats */}
       <div className="bg-white border-b border-gray-100 px-6 py-5 grid grid-cols-3 gap-4 text-center">
         <div>
-          <p className="text-2xl font-bold text-[#1A6FBB]">41</p>
+          <p className="text-2xl font-bold text-[#0B3C74]">41</p>
           <p className="text-xs text-gray-500 mt-0.5">Turnos realizados</p>
         </div>
         <div>
-          <p className="text-2xl font-bold text-[#27AE60]">20+</p>
+          <p className="text-2xl font-bold text-[#00A99D]">20+</p>
           <p className="text-xs text-gray-500 mt-0.5">Profissionais verificados</p>
         </div>
         <div>
-          <p className="text-2xl font-bold text-[#1A6FBB]">5</p>
+          <p className="text-2xl font-bold text-[#0B3C74]">5</p>
           <p className="text-xs text-gray-500 mt-0.5">Clínicas parceiras</p>
         </div>
       </div>
@@ -70,12 +70,12 @@ export default async function Home() {
             <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
               <p className="text-sm text-gray-500 mb-1">Sessão activa como</p>
               <p className="font-bold text-gray-900 text-base">{session.sub}</p>
-              <p className="text-xs text-[#1A6FBB] font-semibold mt-0.5">{roleLabels[session.role] ?? session.role}</p>
+              <p className="text-xs text-[#0B3C74] font-semibold mt-0.5">{roleLabels[session.role] ?? session.role}</p>
             </div>
 
             <Link
               href={dashboards[session.role] ?? "/"}
-              className="block bg-[#1A6FBB] hover:bg-[#0D4F8A] text-white rounded-2xl p-5 transition-colors"
+              className="block bg-[#0B3C74] hover:bg-[#00A99D] text-white rounded-2xl p-5 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
@@ -106,7 +106,7 @@ export default async function Home() {
 
             <Link
               href="/medico"
-              className="block bg-[#1A6FBB] hover:bg-[#0D4F8A] text-white rounded-2xl p-5 transition-colors"
+              className="block bg-[#0B3C74] hover:bg-[#00A99D] text-white rounded-2xl p-5 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
@@ -122,17 +122,17 @@ export default async function Home() {
 
             <Link
               href="/clinica"
-              className="block bg-white border-2 border-[#1A6FBB] text-[#1A6FBB] rounded-2xl p-5 transition-colors hover:bg-blue-50"
+              className="block bg-white border-2 border-[#0B3C74] text-[#0B3C74] rounded-2xl p-5 transition-colors hover:bg-blue-50"
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
-                  <Building2 size={24} strokeWidth={1.75} className="text-[#1A6FBB]" />
+                  <Building2 size={24} strokeWidth={1.75} className="text-[#0B3C74]" />
                 </div>
                 <div>
                   <p className="font-bold text-base text-gray-900">Sou Clínica / Consultório</p>
                   <p className="text-gray-500 text-sm mt-0.5">Publique turnos e encontre profissionais verificados</p>
                 </div>
-                <ChevronRight size={20} strokeWidth={1.75} className="ml-auto text-[#1A6FBB]" />
+                <ChevronRight size={20} strokeWidth={1.75} className="ml-auto text-[#0B3C74]" />
               </div>
             </Link>
           </>
@@ -146,7 +146,7 @@ export default async function Home() {
             { icon: BedDouble, title: "Equipamentos declarados", desc: "Saiba exatamente o que há na sala antes de aceitar" },
           ].map((item) => (
             <div key={item.title} className="flex items-start gap-3 bg-gray-50 rounded-xl p-3">
-              <item.icon size={20} strokeWidth={1.75} className="text-[#1A6FBB] shrink-0 mt-0.5" />
+              <item.icon size={20} strokeWidth={1.75} className="text-[#0B3C74] shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-gray-800">{item.title}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>

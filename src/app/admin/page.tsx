@@ -99,8 +99,8 @@ export default function AdminDashboard() {
       {/* Visão geral rápida */}
       <div className="grid grid-cols-3 gap-2">
         {[
-          { label: "Plantões hoje",      value: "2", color: "text-[#1A6FBB]" },
-          { label: "Receita do mês",     value: formatAOA(55000), color: "text-[#27AE60]" },
+          { label: "Plantões hoje",      value: "2", color: "text-[#0B3C74]" },
+          { label: "Receita do mês",     value: formatAOA(55000), color: "text-[#00A99D]" },
           { label: "Comissão do mês",    value: formatAOA(5500),  color: "text-purple-600" },
         ].map((s) => (
           <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-3 text-center">
@@ -114,13 +114,13 @@ export default function AdminDashboard() {
       <div>
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Plantões Recentes</p>
-          <Link href="/admin/plantoes" className="text-xs text-[#1A6FBB] font-semibold flex items-center gap-0.5">Ver todos <ChevronRight size={12} strokeWidth={2} /></Link>
+          <Link href="/admin/plantoes" className="text-xs text-[#0B3C74] font-semibold flex items-center gap-0.5">Ver todos <ChevronRight size={12} strokeWidth={2} /></Link>
         </div>
         <div className="space-y-1.5">
           {plantoesMock.slice(0, 3).map((p) => (
             <div key={p.id} className="bg-white rounded-xl border border-gray-100 px-3 py-2.5 flex items-center gap-3">
               <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
-                <ClipboardList size={15} strokeWidth={1.75} className="text-[#1A6FBB]" />
+                <ClipboardList size={15} strokeWidth={1.75} className="text-[#0B3C74]" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-gray-900 truncate">{p.especialidade} — {p.clinica.nome}</p>
@@ -128,7 +128,7 @@ export default function AdminDashboard() {
                   {new Date(p.dataInicio).toLocaleDateString("pt-AO", { day: "2-digit", month: "short" })} · {p.candidatos ?? 0} candidato(s)
                 </p>
               </div>
-              <p className="text-xs font-bold text-[#1A6FBB] shrink-0">{formatAOA(p.valorKwanzas)}</p>
+              <p className="text-xs font-bold text-[#0B3C74] shrink-0">{formatAOA(p.valorKwanzas)}</p>
             </div>
           ))}
         </div>
@@ -138,7 +138,7 @@ export default function AdminDashboard() {
       <div>
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Transações Recentes</p>
-          <Link href="/admin/transacoes" className="text-xs text-[#1A6FBB] font-semibold flex items-center gap-0.5">Ver todas <ChevronRight size={12} strokeWidth={2} /></Link>
+          <Link href="/admin/transacoes" className="text-xs text-[#0B3C74] font-semibold flex items-center gap-0.5">Ver todas <ChevronRight size={12} strokeWidth={2} /></Link>
         </div>
         <div className="space-y-1.5">
           {allTransacoesMock.slice(0, 4).map((t) => (
@@ -152,7 +152,7 @@ export default function AdminDashboard() {
                   {new Date(t.data).toLocaleDateString("pt-AO", { day: "2-digit", month: "short" })}
                 </p>
               </div>
-              <p className={`text-xs font-bold shrink-0 ${t.tipo === "CREDITO" ? "text-[#27AE60]" : "text-gray-600"}`}>
+              <p className={`text-xs font-bold shrink-0 ${t.tipo === "CREDITO" ? "text-[#00A99D]" : "text-gray-600"}`}>
                 {t.tipo === "CREDITO" ? "+" : "-"}{formatAOA(Number(t.valorCentavos / 100n))}
               </p>
             </div>

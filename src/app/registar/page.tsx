@@ -5,7 +5,7 @@ export default function RegistarPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] px-6 pt-12 pb-10 flex flex-col items-center text-center">
+      <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] px-6 pt-12 pb-10 flex flex-col items-center text-center">
         <div className="bg-white rounded-2xl px-5 py-3 shadow-2xl shadow-black/25 mb-4">
           <img
             src="/Imagens/LOGO_MED_FREELA.png"
@@ -24,7 +24,7 @@ export default function RegistarPage() {
 
         <Link
           href="/registar/profissional"
-          className="block bg-[#1A6FBB] hover:bg-[#0D4F8A] text-white rounded-2xl p-5 transition-colors"
+          className="block bg-[#0B3C74] hover:bg-[#00A99D] text-white rounded-2xl p-5 transition-colors"
         >
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
@@ -40,23 +40,23 @@ export default function RegistarPage() {
 
         <Link
           href="/registar/clinica"
-          className="block bg-white border-2 border-[#1A6FBB] rounded-2xl p-5 transition-colors hover:bg-blue-50"
+          className="block bg-white border-2 border-[#0B3C74] rounded-2xl p-5 transition-colors hover:bg-blue-50"
         >
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
-              <Building2 size={24} strokeWidth={1.75} className="text-[#1A6FBB]" />
+              <Building2 size={24} strokeWidth={1.75} className="text-[#0B3C74]" />
             </div>
             <div className="flex-1">
               <p className="font-bold text-base text-gray-900">Sou Clínica / Consultório</p>
               <p className="text-gray-500 text-sm mt-0.5">Publique turnos e alugue salas a profissionais verificados</p>
             </div>
-            <ChevronRight size={20} strokeWidth={1.75} className="text-[#1A6FBB]" />
+            <ChevronRight size={20} strokeWidth={1.75} className="text-[#0B3C74]" />
           </div>
         </Link>
 
         <p className="text-center text-gray-400 text-sm mt-4">
           Já tem conta?{" "}
-          <Link href="/login" className="text-[#1A6FBB] font-semibold hover:underline">
+          <Link href="/login" className="text-[#0B3C74] font-semibold hover:underline">
             Entrar
           </Link>
         </p>

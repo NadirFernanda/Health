@@ -10,7 +10,7 @@ export default function LoginPage({
   searchParams: Promise<{ redirect?: string }>;
 }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0D1F3C] via-[#0D2E5C] to-[#0D4F8A] flex flex-col items-center justify-center p-5">
+    <div className="min-h-screen bg-gradient-to-br from-[#062855] via-[#0B3C74] to-[#00A99D] flex flex-col items-center justify-center p-5">
       <div className="w-full max-w-sm">
 
         {/* Voltar */}

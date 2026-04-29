@@ -18,7 +18,7 @@ export default function ContaClinica() {
 
       {/* Header */}
       <div className="bg-white px-4 py-6 flex flex-col items-center border-b border-gray-100">
-        <div className="w-20 h-20 rounded-2xl bg-blue-50 flex items-center justify-center text-4xl font-bold text-[#1A6FBB] mb-3">
+        <div className="w-20 h-20 rounded-2xl bg-blue-50 flex items-center justify-center text-4xl font-bold text-[#0B3C74] mb-3">
           {c.nome.charAt(0)}
         </div>
         <h1 className="text-xl font-bold text-gray-900 text-center">{c.nome}</h1>
@@ -50,7 +50,7 @@ export default function ContaClinica() {
         <div className="space-y-2">
           {docs.map((d) => (
             <div key={d.label} className="flex items-center gap-2.5 text-sm">
-              <CheckCircle size={15} strokeWidth={2} className="text-[#27AE60]" />
+              <CheckCircle size={15} strokeWidth={2} className="text-[#00A99D]" />
               <span className="text-gray-800">{d.label}</span>
             </div>
           ))}
@@ -62,10 +62,10 @@ export default function ContaClinica() {
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Plano Actual</h3>
         <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="font-bold text-[#1A6FBB]">Plano Gratuito</p>
+            <p className="font-bold text-[#0B3C74]">Plano Gratuito</p>
             <p className="text-xs text-gray-500 mt-0.5">Comissão de 10% por plantão</p>
           </div>
-          <button className="bg-[#1A6FBB] text-white text-xs font-bold px-4 py-2 rounded-xl">
+          <button className="bg-[#0B3C74] text-white text-xs font-bold px-4 py-2 rounded-xl">
             UPGRADE
           </button>
         </div>
@@ -73,7 +73,7 @@ export default function ContaClinica() {
 
       {/* Ações */}
       <div className="px-4 py-4 space-y-2">
-        <button className="w-full border border-[#1A6FBB] text-[#1A6FBB] font-semibold py-3 rounded-2xl text-sm">
+        <button className="w-full border border-[#0B3C74] text-[#0B3C74] font-semibold py-3 rounded-2xl text-sm">
           Editar Perfil da Clínica
         </button>
         <form action={logoutAction}>

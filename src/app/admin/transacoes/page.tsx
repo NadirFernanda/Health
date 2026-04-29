@@ -32,7 +32,7 @@ export default function AdminTransacoes() {
         </div>
         <div className="bg-white rounded-2xl border border-gray-100 p-4">
           <p className="text-xs text-gray-400 mb-1">Pagamentos a médicos</p>
-          <p className="text-lg font-bold text-[#27AE60]">{formatAOA(totalCredito)}</p>
+          <p className="text-lg font-bold text-[#00A99D]">{formatAOA(totalCredito)}</p>
           <p className="text-xs text-gray-400 mt-0.5">Histórico visível</p>
         </div>
         <div className="bg-white rounded-2xl border border-gray-100 p-4">
@@ -90,7 +90,7 @@ export default function AdminTransacoes() {
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className={`font-bold text-sm ${t.tipo === "CREDITO" ? "text-[#27AE60]" : "text-gray-600"}`}>
+                  <p className={`font-bold text-sm ${t.tipo === "CREDITO" ? "text-[#00A99D]" : "text-gray-600"}`}>
                     {t.tipo === "CREDITO" ? "+" : "−"}{formatAOA(Number(t.valorCentavos / 100n))}
                   </p>
                   {t.tipo === "CREDITO" && (

@@ -1,4 +1,4 @@
-import { candidatosMock, plantoesDaClinica, formatAOA, formatData, formatHora } from "@/lib/mock-data";
+﻿import { candidatosMock, plantoesDaClinica, formatAOA, formatData, formatHora } from "@/lib/mock-data";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -19,7 +19,7 @@ export default async function DetalhePlantaoClinica({ params }: { params: Promis
         <p className="text-sm text-gray-500 mt-0.5">
           <Calendar size={13} strokeWidth={1.75} className="inline mr-1" />{formatData(plantao.dataInicio)} · {formatHora(plantao.dataInicio)} – {formatHora(plantao.dataFim)}
         </p>
-        <p className="text-[#1A6FBB] font-bold mt-1">{formatAOA(plantao.valorKwanzas)}</p>
+        <p className="text-[#0B3C74] font-bold mt-1">{formatAOA(plantao.valorKwanzas)}</p>
         <span className="inline-block mt-1.5 bg-green-50 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full">
           {candidatosMock.length} candidato(s)
         </span>
@@ -32,13 +32,13 @@ export default async function DetalhePlantaoClinica({ params }: { params: Promis
           {candidatosMock.map((m) => (
             <div key={m.id} className="bg-white rounded-2xl border border-gray-100 p-4">
               <div className="flex items-start gap-3">
-                <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-xl font-bold text-[#1A6FBB] shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-xl font-bold text-[#0B3C74] shrink-0">
                   {m.nome.split(" ")[1]?.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
                     <p className="font-bold text-gray-900 text-sm truncate">{m.nome}</p>
-                    {m.verified && <BadgeCheck size={13} strokeWidth={2} className="text-[#27AE60] shrink-0" />}
+                    {m.verified && <BadgeCheck size={13} strokeWidth={2} className="text-[#00A99D] shrink-0" />}
                   </div>
                   <p className="text-xs text-gray-500">{m.especialidade}</p>
                   <div className="flex items-center gap-3 mt-1">
@@ -54,7 +54,7 @@ export default async function DetalhePlantaoClinica({ params }: { params: Promis
                 </button>
                 <Link
                   href={`/clinica`}
-                  className="flex-1 text-center bg-[#27AE60] text-white font-bold py-2.5 rounded-xl text-xs"
+                  className="flex-1 text-center bg-[#00A99D] text-white font-bold py-2.5 rounded-xl text-xs"
                 >
                   ACEITAR
                 </Link>

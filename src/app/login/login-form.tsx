@@ -37,7 +37,7 @@ export default function LoginForm({
           autoComplete="email"
           required
           placeholder="o-seu@email.com"
-          className="w-full bg-white/8 border border-white/15 text-white placeholder-white/25 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-[#1A6FBB] focus:bg-white/12 transition-all"
+          className="w-full bg-white/8 border border-white/15 text-white placeholder-white/25 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-[#0B3C74] focus:bg-white/12 transition-all"
         />
       </div>
 
@@ -57,7 +57,7 @@ export default function LoginForm({
             autoComplete="current-password"
             required
             placeholder="••••••••••••"
-            className="w-full bg-white/8 border border-white/15 text-white placeholder-white/25 rounded-xl px-4 py-3.5 pr-12 text-sm focus:outline-none focus:border-[#1A6FBB] focus:bg-white/12 transition-all"
+            className="w-full bg-white/8 border border-white/15 text-white placeholder-white/25 rounded-xl px-4 py-3.5 pr-12 text-sm focus:outline-none focus:border-[#0B3C74] focus:bg-white/12 transition-all"
           />
           <button
             type="button"
@@ -87,7 +87,7 @@ export default function LoginForm({
       <button
         type="submit"
         disabled={pending}
-        className="w-full bg-[#1A6FBB] hover:bg-[#1558a0] active:bg-[#0D4F8A] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl text-sm transition-all mt-2 shadow-lg shadow-[#1A6FBB]/30 flex items-center justify-center gap-2"
+        className="w-full bg-[#0B3C74] hover:bg-[#093264] active:bg-[#00A99D] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl text-sm transition-all mt-2 shadow-lg shadow-[#0B3C74]/30 flex items-center justify-center gap-2"
       >
         {pending ? (
           <>

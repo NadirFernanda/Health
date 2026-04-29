@@ -24,7 +24,7 @@ type ReservaAPI = {
 type FiltroEstado = "TODAS" | "CONFIRMADA" | "CONCLUIDA" | "CANCELADA";
 
 const estadoMap: Record<ReservaAPI["estado"], { label: string; cls: string }> = {
-  CONFIRMADA: { label: "Confirmada", cls: "bg-blue-50 text-[#1A6FBB]" },
+  CONFIRMADA: { label: "Confirmada", cls: "bg-blue-50 text-[#0B3C74]" },
   PENDENTE:   { label: "Pendente",   cls: "bg-yellow-50 text-yellow-700" },
   CANCELADA:  { label: "Cancelada",  cls: "bg-red-50 text-red-600" },
   CONCLUIDA:  { label: "Concluída",  cls: "bg-gray-100 text-gray-600" },
@@ -83,7 +83,7 @@ export default function MinhasReservas() {
               key={f}
               onClick={() => setFiltro(f)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                filtro === f ? "bg-[#1A6FBB] text-white" : "bg-gray-100 text-gray-600"
+                filtro === f ? "bg-[#0B3C74] text-white" : "bg-gray-100 text-gray-600"
               }`}
             >
               {f === "TODAS" ? "Todas" : estadoMap[f as ReservaAPI["estado"]].label}
@@ -102,7 +102,7 @@ export default function MinhasReservas() {
           <div className="text-center py-16 text-gray-400">
             <Calendar size={34} strokeWidth={1.5} className="mx-auto mb-2 text-gray-300" />
             <p className="text-sm">Nenhuma reserva encontrada.</p>
-            <a href="/medico/salas" className="mt-3 inline-block text-xs text-[#1A6FBB] font-semibold">
+            <a href="/medico/salas" className="mt-3 inline-block text-xs text-[#0B3C74] font-semibold">
               Explorar salas →
             </a>
           </div>
@@ -126,7 +126,7 @@ export default function MinhasReservas() {
                       <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${estadoMap[r.estado].cls}`}>
                         {estadoMap[r.estado].label}
                       </span>
-                      <p className="text-[#1A6FBB] font-bold text-sm mt-1">{formatAOA(r.valorTotal)}</p>
+                      <p className="text-[#0B3C74] font-bold text-sm mt-1">{formatAOA(r.valorTotal)}</p>
                     </div>
                   </div>
                   <p className="text-xs text-gray-400 mt-1 inline-flex items-center gap-1">

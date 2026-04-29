@@ -104,13 +104,13 @@ export default function ConfirmarCandidatura({ params }: { params: Promise<{ id:
             </ul>
           </div>
           <div className="bg-blue-50 rounded-2xl p-4 w-full">
-            <p className="text-xs text-[#1A6FBB] font-bold mb-1">Taxa de verificação única</p>
-            <p className="text-3xl font-bold text-[#1A6FBB]">2.500 AOA</p>
+            <p className="text-xs text-[#0B3C74] font-bold mb-1">Taxa de verificação única</p>
+            <p className="text-3xl font-bold text-[#0B3C74]">2.500 AOA</p>
             <p className="text-xs text-gray-400 mt-1">Pagamento via Multicaixa Express</p>
           </div>
           <Link
             href="/medico/perfil"
-            className="w-full bg-[#1A6FBB] text-white font-bold py-4 rounded-2xl text-center inline-flex items-center justify-center gap-1"
+            className="w-full bg-[#0B3C74] text-white font-bold py-4 rounded-2xl text-center inline-flex items-center justify-center gap-1"
           >
             Iniciar Verificação Express <ChevronRight size={16} strokeWidth={2} />
           </Link>
@@ -134,7 +134,7 @@ export default function ConfirmarCandidatura({ params }: { params: Promise<{ id:
         </p>
         <button
           onClick={() => router.push("/medico")}
-          className="mt-6 bg-[#1A6FBB] text-white font-bold px-8 py-3 rounded-2xl"
+          className="mt-6 bg-[#0B3C74] text-white font-bold px-8 py-3 rounded-2xl"
         >
           Voltar ao início
         </button>
@@ -153,12 +153,12 @@ export default function ConfirmarCandidatura({ params }: { params: Promise<{ id:
             <p><Calendar size={14} strokeWidth={1.75} className="inline mr-1 text-gray-400" />{formatData(plantao.dataInicio)}</p>
             <p><Clock size={14} strokeWidth={1.75} className="inline mr-1 text-gray-400" />{formatHora(plantao.dataInicio)} – {formatHora(plantao.dataFim)}</p>
             <p><Stethoscope size={14} strokeWidth={1.75} className="inline mr-1 text-gray-400" />{plantao.especialidade}</p>
-            <p><Banknote size={14} strokeWidth={1.75} className="inline mr-1 text-gray-400" /><span className="font-bold text-[#1A6FBB] text-base">{formatAOA(plantao.valorKwanzas)}</span></p>
+            <p><Banknote size={14} strokeWidth={1.75} className="inline mr-1 text-gray-400" /><span className="font-bold text-[#0B3C74] text-base">{formatAOA(plantao.valorKwanzas)}</span></p>
           </div>
         </div>
 
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
-          <p className="flex items-center gap-1 text-sm text-[#1A6FBB] font-semibold"><Info size={14} strokeWidth={2} /> Como funciona</p>
+          <p className="flex items-center gap-1 text-sm text-[#0B3C74] font-semibold"><Info size={14} strokeWidth={2} /> Como funciona</p>
           <ul className="text-xs text-blue-700 mt-2 space-y-1.5">
             <li>• A clínica recebe a sua candidatura e analisa o seu perfil</li>
             <li>• Receberá uma notificação com a resposta em até 24h</li>
@@ -172,7 +172,7 @@ export default function ConfirmarCandidatura({ params }: { params: Promise<{ id:
         <button
           onClick={handleCandidatar}
           disabled={loading}
-          className="w-full bg-[#1A6FBB] hover:bg-[#0D4F8A] disabled:opacity-60 text-white font-bold py-4 rounded-2xl transition-colors text-base"
+          className="w-full bg-[#0B3C74] hover:bg-[#00A99D] disabled:opacity-60 text-white font-bold py-4 rounded-2xl transition-colors text-base"
         >
           {loading ? "A enviar..." : "CONFIRMAR CANDIDATURA"}
         </button>
