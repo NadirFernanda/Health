@@ -1,6 +1,6 @@
 import LoginForm from "./login-form";
 import Link from "next/link";
-import { Stethoscope, Building2, Settings, ChevronLeft, type LucideIcon } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 
 export const metadata = { title: "Entrar — Medfreela" };
 
@@ -44,36 +44,6 @@ export default function LoginPage({
           <LoginForm searchParams={searchParams} />
         </div>
 
-        {/* Credenciais de demonstração */}
-        <div className="mt-5 bg-white/5 border border-white/10 rounded-2xl p-4">
-          <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3 text-center">
-            Contas de demonstração
-          </p>
-          <div className="space-y-2">
-            <DemoCredential
-              role="Médico"
-              icon={Stethoscope}
-              email="medico@plantoamed.ao"
-              password="med123456"
-              color="text-blue-300"
-            />
-            <DemoCredential
-              role="Clínica"
-              icon={Building2}
-              email="clinica@horizonte.ao"
-              password="cli123456"
-              color="text-green-300"
-            />
-            <DemoCredential
-              role="Administrador"
-              icon={Settings}
-              email="admin@plantoamed.ao"
-              password="planto@admin2025"
-              color="text-orange-300"
-            />
-          </div>
-        </div>
-
         {/* Criar conta */}
         <p className="text-center text-sm text-white/50 mt-5">
           Não tem conta?{" "}
@@ -85,33 +55,6 @@ export default function LoginPage({
         <p className="text-center text-xs text-white/20 mt-4">
           Medfreela © 2026 · Huambo, Angola
         </p>
-      </div>
-    </div>
-  );
-}
-
-function DemoCredential({
-  role,
-  icon: Icon,
-  email,
-  password,
-  color,
-}: {
-  role: string;
-  icon: LucideIcon;
-  email: string;
-  password: string;
-  color: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-2">
-      <div className="flex items-center gap-2 min-w-0">
-        <Icon size={15} strokeWidth={1.75} className={`${color} shrink-0`} />
-        <span className={`text-xs font-semibold ${color} shrink-0`}>{role}</span>
-      </div>
-      <div className="text-right min-w-0">
-        <p className="text-white/50 text-xs truncate">{email}</p>
-        <p className="text-white/30 text-xs font-mono">{password}</p>
       </div>
     </div>
   );
