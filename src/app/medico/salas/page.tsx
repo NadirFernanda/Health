@@ -40,27 +40,27 @@ function SalaCard({ sala }: { sala: Sala }) {
         <div className="px-4 pt-4 pb-3 flex items-start justify-between gap-2">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-              <Building2 size={20} strokeWidth={1.75} className="text-[#1A6FBB]" />
+              <Building2 size={20} strokeWidth={1.75} className="text-[#0B3C74]" />
             </div>
             <div>
               <p className="font-semibold text-sm text-gray-900">{sala.clinica.nome}</p>
               <p className="flex items-center gap-1 text-xs text-gray-500"><MapPin size={10} strokeWidth={1.75} /> {sala.zona}</p>
             </div>
           </div>
-          <span className="bg-blue-50 text-[#1A6FBB] text-xs font-semibold px-2 py-0.5 rounded-full shrink-0">
+          <span className="bg-blue-50 text-[#0B3C74] text-xs font-semibold px-2 py-0.5 rounded-full shrink-0">
             {tipoLabel[sala.tipo]}
           </span>
         </div>
         <div className="px-4 pb-3 border-t border-gray-50 pt-3 space-y-1.5">
           <p className="font-semibold text-gray-900 text-sm">{sala.nome}</p>
           <div className="flex items-center gap-4 text-sm">
-            <span className="text-[#1A6FBB] font-bold text-base">{formatAOA(sala.precoPorHora)}<span className="text-gray-400 font-normal text-xs">/hora</span></span>
+            <span className="text-[#0B3C74] font-bold text-base">{formatAOA(sala.precoPorHora)}<span className="text-gray-400 font-normal text-xs">/hora</span></span>
             <span className="flex items-center gap-1 text-yellow-500 text-xs"><Star size={11} strokeWidth={1.75} fill="currentColor" /> {sala.avaliacaoMedia} ({sala.totalAvaliacoes})</span>
           </div>
           <p className="text-xs text-gray-400">{equipCount} equipamentos disponíveis</p>
         </div>
         <div className="px-4 pb-4">
-          <span className="w-full flex items-center justify-center gap-1 bg-[#1A6FBB] text-white text-sm font-semibold py-2.5 rounded-xl">
+          <span className="w-full flex items-center justify-center gap-1 bg-[#0B3C74] text-white text-sm font-semibold py-2.5 rounded-xl">
             Ver disponibilidade <ChevronRight size={14} strokeWidth={2} />
           </span>
         </div>
@@ -100,7 +100,7 @@ export default function BuscarSalas() {
       <TopBar titulo="Salas & Consultórios" back="/medico" />
 
       {/* Banner */}
-      <div className="mx-4 mt-4 bg-gradient-to-r from-[#1A6FBB] to-[#0D4F8A] rounded-2xl p-4 text-white">
+      <div className="mx-4 mt-4 bg-gradient-to-r from-[#0B3C74] to-[#00A99D] rounded-2xl p-4 text-white">
         <p className="font-bold text-sm">Space-as-a-Service</p>
         <p className="text-blue-200 text-xs mt-1">Reserve um consultório por hora dentro de uma clínica verificada</p>
       </div>
@@ -114,7 +114,7 @@ export default function BuscarSalas() {
               key={z}
               onClick={() => setZona(z)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
-                zona === z ? "bg-[#1A6FBB] text-white border-[#1A6FBB]" : "bg-white text-gray-600 border-gray-200"
+                zona === z ? "bg-[#0B3C74] text-white border-[#0B3C74]" : "bg-white text-gray-600 border-gray-200"
               }`}
             >
               {z}
@@ -132,7 +132,7 @@ export default function BuscarSalas() {
               key={t.key}
               onClick={() => setTipo(t.key)}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
-                tipo === t.key ? "bg-[#1A6FBB] text-white border-[#1A6FBB]" : "bg-white text-gray-600 border-gray-200"
+                tipo === t.key ? "bg-[#0B3C74] text-white border-[#0B3C74]" : "bg-white text-gray-600 border-gray-200"
               }`}
             >
               {t.label}
@@ -146,7 +146,7 @@ export default function BuscarSalas() {
         <span className="text-xs text-gray-600 font-semibold">Apenas com Maca + Computador</span>
         <button
           onClick={() => setApenasEquipadas((v) => !v)}
-          className={`w-11 h-6 rounded-full transition-colors relative ${apenasEquipadas ? "bg-[#1A6FBB]" : "bg-gray-200"}`}
+          className={`w-11 h-6 rounded-full transition-colors relative ${apenasEquipadas ? "bg-[#0B3C74]" : "bg-gray-200"}`}
         >
           <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${apenasEquipadas ? "left-5" : "left-0.5"}`} />
         </button>

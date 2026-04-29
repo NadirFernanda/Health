@@ -43,7 +43,7 @@ export default function RegistarClinicaPage() {
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] px-5 pt-10 pb-6">
+      <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] px-5 pt-10 pb-6">
         <div className="flex items-center gap-3 mb-4">
           <Link href="/registar" className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white">
             <ChevronLeft size={20} strokeWidth={1.75} />
@@ -84,7 +84,7 @@ export default function RegistarClinicaPage() {
                     value={form.nome}
                     onChange={(e) => set("nome", e.target.value)}
                     placeholder="ex: Clínica Horizonte Saúde"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1A6FBB] transition-colors"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0B3C74] transition-colors"
                   />
                 </div>
 
@@ -95,7 +95,7 @@ export default function RegistarClinicaPage() {
                   <select
                     value={form.zonaLuanda}
                     onChange={(e) => set("zonaLuanda", e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1A6FBB] bg-white transition-colors"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0B3C74] bg-white transition-colors"
                   >
                     <option value="">Seleccione a zona...</option>
                     {zonas.map((z) => (
@@ -113,7 +113,7 @@ export default function RegistarClinicaPage() {
                     value={form.morada}
                     onChange={(e) => set("morada", e.target.value)}
                     placeholder="ex: Rua da Missão, n.º 45"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1A6FBB] transition-colors"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0B3C74] transition-colors"
                   />
                 </div>
 
@@ -126,7 +126,7 @@ export default function RegistarClinicaPage() {
                     value={form.contacto}
                     onChange={(e) => set("contacto", e.target.value)}
                     placeholder="ex: +244 923 000 000"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1A6FBB] transition-colors"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0B3C74] transition-colors"
                   />
                 </div>
               </div>
@@ -135,7 +135,7 @@ export default function RegistarClinicaPage() {
                 type="button"
                 onClick={() => setStep(2)}
                 disabled={!step1Valid}
-                className="w-full bg-[#1A6FBB] disabled:opacity-40 text-white font-bold py-4 rounded-2xl text-sm flex items-center justify-center gap-2"
+                className="w-full bg-[#0B3C74] disabled:opacity-40 text-white font-bold py-4 rounded-2xl text-sm flex items-center justify-center gap-2"
               >
                 Continuar <ChevronRight size={16} strokeWidth={2} />
               </button>
@@ -157,7 +157,7 @@ export default function RegistarClinicaPage() {
                     value={form.email}
                     onChange={(e) => set("email", e.target.value)}
                     placeholder="clinica@exemplo.ao"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1A6FBB] transition-colors"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0B3C74] transition-colors"
                   />
                 </div>
 
@@ -171,7 +171,7 @@ export default function RegistarClinicaPage() {
                       value={form.password}
                       onChange={(e) => set("password", e.target.value)}
                       placeholder="Mínimo 8 caracteres"
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:border-[#1A6FBB] transition-colors"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:border-[#0B3C74] transition-colors"
                     />
                     <button
                       type="button"
@@ -205,7 +205,7 @@ export default function RegistarClinicaPage() {
                 <button
                   type="submit"
                   disabled={pending || !step2Valid}
-                  className="flex-1 bg-[#1A6FBB] disabled:opacity-40 text-white font-bold py-4 rounded-2xl text-sm flex items-center justify-center gap-2"
+                  className="flex-1 bg-[#0B3C74] disabled:opacity-40 text-white font-bold py-4 rounded-2xl text-sm flex items-center justify-center gap-2"
                 >
                   {pending ? (
                     <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> A criar...</>
@@ -219,9 +219,9 @@ export default function RegistarClinicaPage() {
 
           <p className="text-center text-gray-400 text-xs">
             Ao criar conta aceita os nossos{" "}
-            <span className="text-[#1A6FBB]">Termos de Serviço</span>
+            <span className="text-[#0B3C74]">Termos de Serviço</span>
             {" "}e{" "}
-            <span className="text-[#1A6FBB]">Política de Privacidade</span>.
+            <span className="text-[#0B3C74]">Política de Privacidade</span>.
           </p>
         </div>
       </form>

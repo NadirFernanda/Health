@@ -62,8 +62,8 @@ function CardPendente({
       >
         <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${tipo === "profissional" ? "bg-blue-50" : "bg-green-50"}`}>
           {tipo === "profissional"
-            ? <User size={18} strokeWidth={1.75} className="text-[#1A6FBB]" />
-            : <Building2 size={18} strokeWidth={1.75} className="text-[#27AE60]" />
+            ? <User size={18} strokeWidth={1.75} className="text-[#0B3C74]" />
+            : <Building2 size={18} strokeWidth={1.75} className="text-[#00A99D]" />
           }
         </div>
         <div className="flex-1 min-w-0">
@@ -103,7 +103,7 @@ function CardPendente({
             </button>
             <button
               onClick={onAprovar}
-              className="flex-1 flex items-center justify-center gap-1.5 bg-[#27AE60] text-white text-sm font-semibold py-2.5 rounded-xl"
+              className="flex-1 flex items-center justify-center gap-1.5 bg-[#00A99D] text-white text-sm font-semibold py-2.5 rounded-xl"
             >
               <CheckCircle size={15} strokeWidth={1.75} /> Aprovar
             </button>
@@ -148,7 +148,7 @@ export default function AdminVerificacaoPage() {
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] px-5 pt-10 pb-6">
+      <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] px-5 pt-10 pb-6">
         <div className="flex items-center gap-3 mb-2">
           <Link href="/admin" className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white">
             <ChevronLeft size={20} strokeWidth={1.75} />
@@ -167,7 +167,7 @@ export default function AdminVerificacaoPage() {
               onClick={() => setFiltro(f)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
                 filtro === f
-                  ? "bg-[#1A6FBB] text-white"
+                  ? "bg-[#0B3C74] text-white"
                   : "bg-white border border-gray-200 text-gray-600"
               }`}
             >

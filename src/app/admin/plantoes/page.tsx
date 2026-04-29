@@ -48,7 +48,7 @@ export default function AdminPlantoes() {
         placeholder="Buscar por especialidade ou clínica..."
         value={busca}
         onChange={(e) => setBusca(e.target.value)}
-        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A6FBB] bg-white"
+        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#0B3C74] bg-white"
       />
 
       {/* Filtros */}
@@ -58,7 +58,7 @@ export default function AdminPlantoes() {
             key={f}
             onClick={() => setFiltro(f)}
             className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-              filtro === f ? "bg-[#1A6FBB] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              filtro === f ? "bg-[#0B3C74] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
             {f === "EM_ANDAMENTO" ? "Em andamento" : f.charAt(0) + f.slice(1).toLowerCase()} ({count(f)})
@@ -75,7 +75,7 @@ export default function AdminPlantoes() {
             <p className="text-xs text-gray-400 mt-0.5">Valor total</p>
           </div>
           <div>
-            <p className="text-sm font-bold text-[#27AE60]">{formatAOA(totalValor - totalComissao)}</p>
+            <p className="text-sm font-bold text-[#00A99D]">{formatAOA(totalValor - totalComissao)}</p>
             <p className="text-xs text-gray-400 mt-0.5">Pago médicos</p>
           </div>
           <div>
@@ -109,7 +109,7 @@ export default function AdminPlantoes() {
                   </p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-sm font-bold text-[#1A6FBB]">{formatAOA(p.valorKwanzas)}</p>
+                  <p className="text-sm font-bold text-[#0B3C74]">{formatAOA(p.valorKwanzas)}</p>
                   <p className="text-xs text-gray-400">{p.vagas} vaga(s)</p>
                 </div>
               </div>

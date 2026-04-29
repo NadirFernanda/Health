@@ -39,7 +39,7 @@ export default function AdminMedicos() {
             key={f}
             onClick={() => setFiltro(f)}
             className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-              filtro === f ? "bg-[#1A6FBB] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              filtro === f ? "bg-[#0B3C74] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
             {f.charAt(0) + f.slice(1).toLowerCase()} ({count(f)})
@@ -53,7 +53,7 @@ export default function AdminMedicos() {
           <div key={m.id} className="bg-white rounded-2xl border border-gray-100 p-4">
             <div className="flex items-start gap-3">
               {/* Avatar */}
-              <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center font-bold text-[#1A6FBB] text-lg shrink-0">
+              <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center font-bold text-[#0B3C74] text-lg shrink-0">
                 {m.nome.split(" ")[1]?.charAt(0) ?? m.nome.charAt(0)}
               </div>
               <div className="flex-1 min-w-0">
@@ -86,7 +86,7 @@ export default function AdminMedicos() {
               <div className="flex gap-2 mt-3">
                 <button
                   onClick={() => update(m.id, "APROVADO")}
-                  className="flex-1 bg-[#27AE60] hover:bg-[#1A7A42] text-white text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1"
+                  className="flex-1 bg-[#00A99D] hover:bg-[#009082] text-white text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1"
                 >
                   <Check size={13} strokeWidth={2.5} /> APROVAR
                 </button>
@@ -109,7 +109,7 @@ export default function AdminMedicos() {
             {m.estadoVerificacao === "SUSPENSO" && (
               <button
                 onClick={() => update(m.id, "APROVADO")}
-                className="mt-2.5 w-full bg-[#1A6FBB]/10 hover:bg-[#1A6FBB]/20 text-[#1A6FBB] text-xs font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1"
+                className="mt-2.5 w-full bg-[#0B3C74]/10 hover:bg-[#0B3C74]/20 text-[#0B3C74] text-xs font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1"
               >
                 <RotateCcw size={13} strokeWidth={2} /> Reactivar Acesso
               </button>

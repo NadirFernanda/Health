@@ -17,7 +17,7 @@ export default function FaturacaoClinica() {
       <TopBar titulo="Faturação" back="/clinica" />
 
       {/* Resumo */}
-      <div className="bg-gradient-to-br from-[#1A6FBB] to-[#0D4F8A] mx-4 mt-4 rounded-2xl px-5 py-5">
+      <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] mx-4 mt-4 rounded-2xl px-5 py-5">
         <p className="text-blue-200 text-sm">Total pago este mês</p>
         <p className="text-white text-4xl font-bold mt-1">{formatAOA(totalPago)}</p>
         <p className="text-blue-200 text-xs mt-2">
@@ -28,11 +28,11 @@ export default function FaturacaoClinica() {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 px-4 mt-3">
         <div className="bg-white rounded-2xl border border-gray-100 p-4 text-center">
-          <p className="text-2xl font-bold text-[#1A6FBB]">{transacoes.length}</p>
+          <p className="text-2xl font-bold text-[#0B3C74]">{transacoes.length}</p>
           <p className="text-xs text-gray-400 mt-0.5">Plantões pagos</p>
         </div>
         <div className="bg-white rounded-2xl border border-gray-100 p-4 text-center">
-          <p className="text-2xl font-bold text-[#27AE60]">{formatAOA(totalPago - totalComissao)}</p>
+          <p className="text-2xl font-bold text-[#00A99D]">{formatAOA(totalPago - totalComissao)}</p>
           <p className="text-xs text-gray-400 mt-0.5">Pago aos médicos</p>
         </div>
       </div>

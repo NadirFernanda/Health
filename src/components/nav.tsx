@@ -45,11 +45,11 @@ export function BottomNav({ role }: { role: "medico" | "clinica" }) {
               key={item.href}
               href={item.href}
               className={`flex flex-col items-center gap-0.5 px-4 py-1 rounded-xl transition-colors ${
-                active ? "text-[#1A6FBB]" : "text-gray-400"
+                active ? "text-[#0B3C74]" : "text-gray-400"
               }`}
             >
               <Icon size={22} strokeWidth={active ? 2 : 1.75} />
-              <span className={`text-xs font-medium ${active ? "text-[#1A6FBB]" : "text-gray-400"}`}>
+              <span className={`text-xs font-medium ${active ? "text-[#0B3C74]" : "text-gray-400"}`}>
                 {item.label}
               </span>
             </Link>
@@ -75,11 +75,11 @@ export function TopBar({
     <header className="sticky top-0 z-40 bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3">
       {(back || onBack) && (
         onBack ? (
-          <button onClick={onBack} className="text-gray-500 hover:text-[#1A6FBB] transition-colors">
+          <button onClick={onBack} className="text-gray-500 hover:text-[#0B3C74] transition-colors">
             <ChevronLeft size={20} strokeWidth={2} />
           </button>
         ) : (
-          <Link href={back!} className="text-gray-500 hover:text-[#1A6FBB] transition-colors">
+          <Link href={back!} className="text-gray-500 hover:text-[#0B3C74] transition-colors">
             <ChevronLeft size={20} strokeWidth={2} />
           </Link>
         )

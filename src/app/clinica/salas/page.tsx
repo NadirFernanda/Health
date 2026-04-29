@@ -23,7 +23,7 @@ export default function SalasDaClinica() {
       />
 
       {/* Banner Space-as-a-Service */}
-      <div className="mx-4 mt-4 bg-gradient-to-r from-[#1A6FBB] to-[#0D4F8A] rounded-2xl p-4 text-white">
+      <div className="mx-4 mt-4 bg-gradient-to-r from-[#0B3C74] to-[#00A99D] rounded-2xl p-4 text-white">
         <p className="font-bold text-sm inline-flex items-center gap-1">Space-as-a-Service <Building2 size={14} strokeWidth={2} /></p>
         <p className="text-blue-200 text-xs mt-1">Alugue os seus consultórios por hora e gere receita adicional sem esforço.</p>
       </div>
@@ -56,7 +56,7 @@ export default function SalasDaClinica() {
               <div className="bg-white rounded-2xl border border-gray-100 p-4 active:opacity-90 transition-opacity">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-lg"><DoorOpen size={18} strokeWidth={1.75} className="text-[#1A6FBB]" /></div>
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-lg"><DoorOpen size={18} strokeWidth={1.75} className="text-[#0B3C74]" /></div>
                     <div>
                       <p className="font-semibold text-sm text-gray-900">{sala.nome}</p>
                       <p className="text-xs text-gray-500 capitalize mt-0.5">{sala.tipo === "CONSULTORIO" ? "Consultório" : sala.tipo === "OBSERVACAO" ? "Observação" : "Procedimentos"}</p>

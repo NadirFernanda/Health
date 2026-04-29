@@ -67,7 +67,7 @@ export default function PublicarPlantao() {
         </p>
         <button
           onClick={() => router.push("/clinica")}
-          className="mt-6 bg-[#1A6FBB] text-white font-bold px-8 py-3 rounded-2xl"
+          className="mt-6 bg-[#0B3C74] text-white font-bold px-8 py-3 rounded-2xl"
         >
           Voltar ao painel
         </button>
@@ -85,7 +85,7 @@ export default function PublicarPlantao() {
           {[1, 2, 3].map((s) => (
             <div
               key={s}
-              className={`h-1.5 flex-1 rounded-full transition-colors ${s <= step ? "bg-[#1A6FBB]" : "bg-gray-200"}`}
+              className={`h-1.5 flex-1 rounded-full transition-colors ${s <= step ? "bg-[#0B3C74]" : "bg-gray-200"}`}
             />
           ))}
         </div>
@@ -102,7 +102,7 @@ export default function PublicarPlantao() {
             <select
               value={form.tipoProfissional}
               onChange={(e) => setForm({ ...form, tipoProfissional: e.target.value })}
-              className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm bg-white focus:outline-none focus:border-[#1A6FBB]"
+              className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm bg-white focus:outline-none focus:border-[#0B3C74]"
             >
               {tiposProfissional.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -115,7 +115,7 @@ export default function PublicarPlantao() {
             <select
               value={form.especialidade}
               onChange={(e) => setForm({ ...form, especialidade: e.target.value })}
-              className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm bg-white focus:outline-none focus:border-[#1A6FBB]"
+              className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm bg-white focus:outline-none focus:border-[#0B3C74]"
             >
               <option value="">Selecionar especialidade...</option>
               {especialidades.map((e) => <option key={e}>{e}</option>)}
@@ -127,13 +127,13 @@ export default function PublicarPlantao() {
               <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Data início *</label>
               <input type="date" value={form.dataInicio}
                 onChange={(e) => setForm({ ...form, dataInicio: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#1A6FBB]" />
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#0B3C74]" />
             </div>
             <div>
               <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Hora início *</label>
               <input type="time" value={form.horaInicio}
                 onChange={(e) => setForm({ ...form, horaInicio: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#1A6FBB]" />
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#0B3C74]" />
             </div>
           </div>
 
@@ -142,13 +142,13 @@ export default function PublicarPlantao() {
               <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Data fim *</label>
               <input type="date" value={form.dataFim}
                 onChange={(e) => setForm({ ...form, dataFim: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#1A6FBB]" />
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#0B3C74]" />
             </div>
             <div>
               <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Hora fim *</label>
               <input type="time" value={form.horaFim}
                 onChange={(e) => setForm({ ...form, horaFim: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#1A6FBB]" />
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#0B3C74]" />
             </div>
           </div>
 
@@ -156,7 +156,7 @@ export default function PublicarPlantao() {
             <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Valor (AOA) *</label>
             <input type="number" placeholder="Ex: 15000" value={form.valor}
               onChange={(e) => setForm({ ...form, valor: e.target.value })}
-              className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#1A6FBB]" />
+              className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#0B3C74]" />
             <p className="text-xs text-gray-400 mt-1">O médico receberá este valor integralmente</p>
           </div>
 
@@ -174,7 +174,7 @@ export default function PublicarPlantao() {
           <button
             onClick={() => setStep(2)}
             disabled={!form.especialidade || !form.dataInicio || !form.valor}
-            className="w-full bg-[#1A6FBB] disabled:opacity-40 text-white font-bold py-4 rounded-2xl mt-2 inline-flex items-center justify-center gap-1"
+            className="w-full bg-[#0B3C74] disabled:opacity-40 text-white font-bold py-4 rounded-2xl mt-2 inline-flex items-center justify-center gap-1"
           >
             PRÓXIMO <ChevronRight size={16} strokeWidth={2} />
           </button>
@@ -206,7 +206,7 @@ export default function PublicarPlantao() {
             <button onClick={() => setStep(1)} className="flex-1 border border-gray-200 text-gray-600 font-semibold py-3.5 rounded-2xl text-sm inline-flex items-center justify-center gap-1">
               <ChevronLeft size={16} strokeWidth={2} /> Voltar
             </button>
-            <button onClick={() => setStep(3)} className="flex-1 bg-[#1A6FBB] text-white font-bold py-3.5 rounded-2xl text-sm inline-flex items-center justify-center gap-1">
+            <button onClick={() => setStep(3)} className="flex-1 bg-[#0B3C74] text-white font-bold py-3.5 rounded-2xl text-sm inline-flex items-center justify-center gap-1">
               PRÓXIMO <ChevronRight size={16} strokeWidth={2} />
             </button>
           </div>
@@ -221,7 +221,7 @@ export default function PublicarPlantao() {
             <p className="font-bold text-gray-900 text-base">{form.especialidade}</p>
             <p className="text-xs text-gray-500 uppercase tracking-wide">{tiposProfissional.find(t => t.value === form.tipoProfissional)?.label}</p>
             <p className="text-gray-600 inline-flex items-center gap-1"><Calendar size={14} strokeWidth={1.75} /> {form.dataInicio} · {form.horaInicio} – {form.horaFim}</p>
-            <p className="text-[#1A6FBB] font-bold text-lg">{parseInt(form.valor || "0").toLocaleString()} AOA</p>
+            <p className="text-[#0B3C74] font-bold text-lg">{parseInt(form.valor || "0").toLocaleString()} AOA</p>
             <p className="text-gray-500 inline-flex items-center gap-1"><Users size={14} strokeWidth={1.75} /> {form.vagas} vaga(s)</p>
             <div className="border-t border-gray-100 pt-3">
               <p className="text-xs text-gray-400 mb-2 font-semibold">EQUIPAMENTOS</p>
@@ -243,7 +243,7 @@ export default function PublicarPlantao() {
             <button onClick={() => setStep(2)} className="flex-1 border border-gray-200 text-gray-600 font-semibold py-3.5 rounded-2xl text-sm inline-flex items-center justify-center gap-1">
               <ChevronLeft size={16} strokeWidth={2} /> Voltar
             </button>
-            <button onClick={() => setPublicado(true)} className="flex-1 bg-[#27AE60] text-white font-bold py-3.5 rounded-2xl text-sm">
+            <button onClick={() => setPublicado(true)} className="flex-1 bg-[#00A99D] text-white font-bold py-3.5 rounded-2xl text-sm">
               PUBLICAR
             </button>
           </div>

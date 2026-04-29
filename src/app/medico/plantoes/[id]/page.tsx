@@ -42,7 +42,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
       {/* Header clínica ou médico publicador */}
       <div className="bg-white px-4 py-5 border-b border-gray-100">
         <div className="flex items-center gap-3">
-          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-2xl font-bold text-[#1A6FBB]">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-2xl font-bold text-[#0B3C74]">
             {clinica ? clinica.nome.charAt(0) : (profissionalPublicador?.nome?.charAt(0) ?? "M")}
           </div>
           <div>
@@ -51,7 +51,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
                 {clinica ? clinica.nome : (profissionalPublicador?.nome ?? "Médico")}
               </h2>
               {(clinica?.verified || profissionalPublicador?.verified) && (
-                <BadgeCheck size={15} strokeWidth={2} className="text-[#27AE60]" />
+                <BadgeCheck size={15} strokeWidth={2} className="text-[#00A99D]" />
               )}
             </div>
             {clinica ? (
@@ -83,7 +83,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
         ].map((item, i) => (
           <div key={i} className="flex items-center gap-3 text-sm">
             <span className="text-gray-400 w-5 shrink-0">{item.icon}</span>
-            <span className={item.bold ? "font-bold text-[#1A6FBB] text-base" : "text-gray-800"}>{item.label}</span>
+            <span className={item.bold ? "font-bold text-[#0B3C74] text-base" : "text-gray-800"}>{item.label}</span>
           </div>
         ))}
       </div>
@@ -94,7 +94,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
         <div className="space-y-2">
           {equipList.map((e) => (
             <div key={e.label} className="flex items-center gap-2.5 text-sm">
-              <span className={e.ok ? "text-[#27AE60]" : "text-red-400"}>
+              <span className={e.ok ? "text-[#00A99D]" : "text-red-400"}>
                 {e.ok ? <CheckCircle size={16} strokeWidth={2} /> : <XCircle size={16} strokeWidth={2} />}
               </span>
               <span className={e.ok ? "text-gray-800" : "text-gray-400 line-through"}>{e.label}</span>
@@ -115,7 +115,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
       <div className="px-4 py-6">
         <Link
           href={`/medico/plantoes/${plantao.id}/confirmar`}
-          className="block w-full text-center bg-[#1A6FBB] hover:bg-[#0D4F8A] text-white font-bold py-4 rounded-2xl transition-colors text-base"
+          className="block w-full text-center bg-[#0B3C74] hover:bg-[#00A99D] text-white font-bold py-4 rounded-2xl transition-colors text-base"
         >
           CANDIDATAR-ME
         </Link>
