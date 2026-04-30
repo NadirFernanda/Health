@@ -1,28 +1,61 @@
 "use client";
-import { adminMedicosMock, AdminMedico, EstadoVerificacao } from "@/lib/mock-data";
-import { useState } from "react";
-import { Check, X, Star, ClipboardList, MessageCircle, Clock, Ban, RotateCcw } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, X, Star, ClipboardList, MessageCircle, Ban, RotateCcw } from "lucide-react";
 
+type EstadoVerificacao = "APROVADO" | "PENDENTE" | "REJEITADO" | "SUSPENSO";
 type Filtro = "TODOS" | "PENDENTE" | "APROVADO" | "REJEITADO" | "SUSPENSO";
 
+type Medico = {
+  id: string; nome: string; email: string; especialidade: string; provincia: string;
+  numeroOrdem: string; rating: number; totalAvaliacoes: number; totalPlantoes: number;
+  verified: boolean; estadoVerificacao: EstadoVerificacao; criadoEm: string;
+};
+
 const badgeMap: Record<EstadoVerificacao, { cls: string; label: string }> = {
-  APROVADO:  { cls: "bg-green-100 text-green-700",  label: "Verificado" },
-  PENDENTE:  { cls: "bg-yellow-100 text-yellow-700", label: "Pendente"  },
+  APROVADO:  { cls: "bg-green-100 text-green-700",   label: "Verificado" },
+  PENDENTE:  { cls: "bg-yellow-100 text-yellow-700", label: "Pendente"   },
   REJEITADO: { cls: "bg-red-100 text-red-600",       label: "Rejeitado"  },
   SUSPENSO:  { cls: "bg-gray-100 text-gray-500",     label: "Suspenso"   },
 };
 
 export default function AdminMedicos() {
-  const [filtro, setFiltro]   = useState<Filtro>("TODOS");
-  const [lista,  setLista]    = useState<AdminMedico[]>(adminMedicosMock);
+  const [filtro, setFiltro] = useState<Filtro>("TODOS");
+  const [lista, setLista]   = useState<Medico[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/admin/medicos")
+      .then((r) => r.json())
+      .then((d) => { if (Array.isArray(d)) setLista(d); })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const acao = async (id: string, a: string) => {
+    await fetch(`/api/admin/medicos/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ acao: a }),
+    });
+    // Reflecte a mudança localmente
+    setLista((prev) => prev.map((m) => {
+      if (m.id !== id) return m;
+      if (a === "APROVAR")   return { ...m, verified: true,  estadoVerificacao: "APROVADO" };
+      if (a === "REJEITAR")  return { ...m, verified: false, estadoVerificacao: "REJEITADO" };
+      if (a === "SUSPENDER") return { ...m, estadoVerificacao: "SUSPENSO" };
+      if (a === "REATIVAR")  return { ...m, estadoVerificacao: "APROVADO" };
+      return m;
+    }));
+  };
 
   const filtered = filtro === "TODOS" ? lista : lista.filter((m) => m.estadoVerificacao === filtro);
-
   const count = (f: Filtro) =>
     f === "TODOS" ? lista.length : lista.filter((m) => m.estadoVerificacao === f).length;
 
-  const update = (id: string, estado: EstadoVerificacao) =>
-    setLista((prev) => prev.map((m) => (m.id === id ? { ...m, estadoVerificacao: estado } : m)));
+  if (loading) return (
+    <div className="p-4 pt-10 flex justify-center">
+      <div className="w-8 h-8 border-2 border-[#0B3C74] border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   return (
     <div className="p-4 space-y-4 pb-10 max-w-2xl mx-auto">
@@ -85,13 +118,13 @@ export default function AdminMedicos() {
             {m.estadoVerificacao === "PENDENTE" && (
               <div className="flex gap-2 mt-3">
                 <button
-                  onClick={() => update(m.id, "APROVADO")}
+                  onClick={() => acao(m.id, "APROVAR")}
                   className="flex-1 bg-[#00A99D] hover:bg-[#009082] text-white text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1"
                 >
                   <Check size={13} strokeWidth={2.5} /> APROVAR
                 </button>
                 <button
-                  onClick={() => update(m.id, "REJEITADO")}
+                  onClick={() => acao(m.id, "REJEITAR")}
                   className="flex-1 border border-red-200 hover:bg-red-50 text-red-500 text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1"
                 >
                   <X size={13} strokeWidth={2.5} /> REJEITAR
@@ -100,7 +133,7 @@ export default function AdminMedicos() {
             )}
             {m.estadoVerificacao === "APROVADO" && (
               <button
-                onClick={() => update(m.id, "SUSPENSO")}
+                onClick={() => acao(m.id, "SUSPENDER")}
                 className="mt-2.5 w-full border border-gray-200 text-gray-400 hover:bg-gray-50 text-xs font-medium py-2 rounded-xl transition-colors flex items-center justify-center gap-1"
               >
                 <Ban size={13} strokeWidth={2} /> Suspender Acesso
@@ -108,7 +141,7 @@ export default function AdminMedicos() {
             )}
             {m.estadoVerificacao === "SUSPENSO" && (
               <button
-                onClick={() => update(m.id, "APROVADO")}
+                onClick={() => acao(m.id, "REATIVAR")}
                 className="mt-2.5 w-full bg-[#0B3C74]/10 hover:bg-[#0B3C74]/20 text-[#0B3C74] text-xs font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1"
               >
                 <RotateCcw size={13} strokeWidth={2} /> Reactivar Acesso

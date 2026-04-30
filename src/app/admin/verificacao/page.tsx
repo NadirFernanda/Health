@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { adminMedicosMock, adminClinicasMock, AdminMedico, AdminClinica } from "@/lib/mock-data";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, Zap, Clock, CheckCircle, XCircle, ChevronRight, User, Building2, AlertTriangle } from "lucide-react";
 
 type Filtro = "TODOS" | "EXPRESS" | "NORMAL";
+
+type MedicoPendente = {
+  id: string; nome: string; email: string; especialidade: string;
+  numeroOrdem: string; tipoVerificacao: "EXPRESS" | "NORMAL"; criadoEm: string;
+};
+type ClinicaPendente = {
+  id: string; nome: string; email: string; morada: string; alvara: string; criadoEm: string;
+};
 
 function horasAtras(criadoEm: string): string {
   const diff = Date.now() - new Date(criadoEm).getTime();
@@ -116,34 +123,58 @@ function CardPendente({
 
 export default function AdminVerificacaoPage() {
   const [filtro, setFiltro] = useState<Filtro>("TODOS");
-  const [medicos, setMedicos] = useState(adminMedicosMock);
-  const [clinicas, setClinicas] = useState(adminClinicasMock);
+  const [medicos, setMedicos] = useState<MedicoPendente[]>([]);
+  const [clinicas, setClinicas] = useState<ClinicaPendente[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const aprovarMedico = (id: string) =>
-    setMedicos((prev) => prev.map((m) => m.id === id ? { ...m, estadoVerificacao: "APROVADO" as const, verified: true } : m));
-  const rejeitarMedico = (id: string) =>
-    setMedicos((prev) => prev.map((m) => m.id === id ? { ...m, estadoVerificacao: "REJEITADO" as const } : m));
-  const aprovarClinica = (id: string) =>
-    setClinicas((prev) => prev.map((c) => c.id === id ? { ...c, estadoVerificacao: "APROVADO" as const, verified: true } : c));
-  const rejeitarClinica = (id: string) =>
-    setClinicas((prev) => prev.map((c) => c.id === id ? { ...c, estadoVerificacao: "REJEITADO" as const } : c));
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/admin/medicos").then((r) => r.json()),
+      fetch("/api/admin/clinicas").then((r) => r.json()),
+    ]).then(([ms, cs]) => {
+      if (Array.isArray(ms)) setMedicos(ms.filter((m: { estadoVerificacao: string }) => m.estadoVerificacao === "PENDENTE"));
+      if (Array.isArray(cs)) setClinicas(cs.filter((c: { estadoVerificacao: string }) => c.estadoVerificacao === "PENDENTE"));
+    }).finally(() => setLoading(false));
+  }, []);
 
-  const medicosPendentes = medicos.filter((m) => m.estadoVerificacao === "PENDENTE");
-  const clinicasPendentes = clinicas.filter((c) => c.estadoVerificacao === "PENDENTE");
+  const aprovarMedico = async (id: string) => {
+    await fetch(`/api/admin/medicos/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ acao: "APROVAR" }) });
+    setMedicos((prev) => prev.filter((m) => m.id !== id));
+  };
+  const rejeitarMedico = async (id: string) => {
+    await fetch(`/api/admin/medicos/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ acao: "REJEITAR" }) });
+    setMedicos((prev) => prev.filter((m) => m.id !== id));
+  };
+  const aprovarClinica = async (id: string) => {
+    await fetch(`/api/admin/clinicas/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ acao: "APROVAR" }) });
+    setClinicas((prev) => prev.filter((c) => c.id !== id));
+  };
+  const rejeitarClinica = async (id: string) => {
+    await fetch(`/api/admin/clinicas/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ acao: "REJEITAR" }) });
+    setClinicas((prev) => prev.filter((c) => c.id !== id));
+  };
 
-  const filtrarMedicos = (lista: AdminMedico[]) => {
+  const medicosPendentes = medicos;
+  const clinicasPendentes = clinicas;
+
+  const filtrarMedicos = (lista: MedicoPendente[]) => {
     if (filtro === "EXPRESS") return lista.filter((m) => m.tipoVerificacao === "EXPRESS");
     if (filtro === "NORMAL") return lista.filter((m) => m.tipoVerificacao !== "EXPRESS");
     return lista;
   };
-
-  const filtrarClinicas = (lista: AdminClinica[]) => {
+  const filtrarClinicas = (lista: ClinicaPendente[]) => {
     if (filtro === "EXPRESS") return [];
     return lista;
   };
 
   const expressCount = medicosPendentes.filter((m) => m.tipoVerificacao === "EXPRESS").length;
   const totalPendentes = medicosPendentes.length + clinicasPendentes.length;
+
+  if (loading) return (
+    <div className="flex justify-center pt-16">
+      <div className="w-8 h-8 border-2 border-[#0B3C74] border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
@@ -194,8 +225,8 @@ export default function AdminVerificacaoPage() {
                   <CardPendente
                     key={m.id}
                     nome={m.nome}
-                    subtitulo={`${m.especialidade} (${m.tipo === "MEDICO" ? "Médico" : m.tipo === "ENFERMEIRO" ? "Enfermeiro" : "Técnico"})`}
-                    numero={m.numeroSinome}
+                    subtitulo={m.especialidade}
+                    numero={m.numeroOrdem}
                     email={m.email}
                     criadoEm={m.criadoEm}
                     express
@@ -232,8 +263,8 @@ export default function AdminVerificacaoPage() {
                   <CardPendente
                     key={m.id}
                     nome={m.nome}
-                    subtitulo={`${m.especialidade} (${m.tipo === "MEDICO" ? "Médico" : m.tipo === "ENFERMEIRO" ? "Enfermeiro" : "Técnico"})`}
-                    numero={m.numeroSinome}
+                    subtitulo={m.especialidade}
+                    numero={m.numeroOrdem}
                     email={m.email}
                     criadoEm={m.criadoEm}
                     tipo="profissional"
@@ -245,8 +276,8 @@ export default function AdminVerificacaoPage() {
                 <CardPendente
                   key={c.id}
                   nome={c.nome}
-                  subtitulo={`Clínica · NIF ${c.nif}`}
-                  numero={c.nif}
+                  subtitulo={`Clínica · ${c.morada || "Luanda"}`}
+                  numero={c.alvara || "—"}
                   email={c.email}
                   criadoEm={c.criadoEm}
                   tipo="clinica"

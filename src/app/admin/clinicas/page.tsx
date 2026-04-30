@@ -1,26 +1,61 @@
 "use client";
-import { adminClinicasMock, AdminClinica, EstadoVerificacao } from "@/lib/mock-data";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, X, Star, MessageCircle, MapPin, Ban, RotateCcw } from "lucide-react";
 
+type EstadoVerificacao = "APROVADO" | "PENDENTE" | "REJEITADO" | "SUSPENSO";
 type Filtro = "TODOS" | "PENDENTE" | "APROVADO" | "REJEITADO" | "SUSPENSO";
 
+type Clinica = {
+  id: string; nome: string; email: string; morada: string; zonaLuanda: string;
+  contacto: string; alvara: string; rating: number; totalAvaliacoes: number;
+  totalPlantoes: number; totalSalas: number; verified: boolean;
+  estadoVerificacao: EstadoVerificacao; criadoEm: string;
+};
+
 const badgeMap: Record<EstadoVerificacao, { cls: string; label: string }> = {
-  APROVADO:  { cls: "bg-green-100 text-green-700",  label: "Verificada" },
-  PENDENTE:  { cls: "bg-yellow-100 text-yellow-700", label: "Pendente"  },
+  APROVADO:  { cls: "bg-green-100 text-green-700",   label: "Verificada" },
+  PENDENTE:  { cls: "bg-yellow-100 text-yellow-700", label: "Pendente"   },
   REJEITADO: { cls: "bg-red-100 text-red-600",       label: "Rejeitada"  },
   SUSPENSO:  { cls: "bg-gray-100 text-gray-500",     label: "Suspensa"   },
 };
 
 export default function AdminClinicas() {
   const [filtro, setFiltro] = useState<Filtro>("TODOS");
-  const [lista, setLista]   = useState<AdminClinica[]>(adminClinicasMock);
+  const [lista, setLista]   = useState<Clinica[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/admin/clinicas")
+      .then((r) => r.json())
+      .then((d) => { if (Array.isArray(d)) setLista(d); })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const acao = async (id: string, a: string) => {
+    await fetch(`/api/admin/clinicas/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ acao: a }),
+    });
+    setLista((prev) => prev.map((c) => {
+      if (c.id !== id) return c;
+      if (a === "APROVAR")   return { ...c, verified: true,  estadoVerificacao: "APROVADO" as const };
+      if (a === "REJEITAR")  return { ...c, verified: false, estadoVerificacao: "REJEITADO" as const };
+      if (a === "SUSPENDER") return { ...c, estadoVerificacao: "SUSPENSO" as const };
+      if (a === "REATIVAR")  return { ...c, estadoVerificacao: "APROVADO" as const };
+      return c;
+    }));
+  };
 
   const filtered = filtro === "TODOS" ? lista : lista.filter((c) => c.estadoVerificacao === filtro);
   const count = (f: Filtro) =>
     f === "TODOS" ? lista.length : lista.filter((c) => c.estadoVerificacao === f).length;
-  const update = (id: string, estado: EstadoVerificacao) =>
-    setLista((prev) => prev.map((c) => (c.id === id ? { ...c, estadoVerificacao: estado } : c)));
+
+  if (loading) return (
+    <div className="p-4 pt-10 flex justify-center">
+      <div className="w-8 h-8 border-2 border-[#0B3C74] border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   return (
     <div className="p-4 space-y-4 pb-10 max-w-2xl mx-auto">
@@ -63,9 +98,8 @@ export default function AdminClinicas() {
                 </div>
                 <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                   <MapPin size={11} strokeWidth={1.75} />
-                  {c.morada}, {c.cidade}
+                  {c.morada || c.zonaLuanda || "—"}
                 </p>
-                <p className="text-xs text-gray-400">NIF: <span className="font-mono">{c.nif}</span></p>
                 <p className="text-xs text-gray-400">{c.email}</p>
                 <p className="text-xs text-gray-300 mt-0.5">
                   Cadastro: {new Date(c.criadoEm).toLocaleDateString("pt-AO", { day: "2-digit", month: "short", year: "numeric" })}
@@ -85,13 +119,13 @@ export default function AdminClinicas() {
             {c.estadoVerificacao === "PENDENTE" && (
               <div className="flex gap-2 mt-3">
                 <button
-                  onClick={() => update(c.id, "APROVADO")}
+                  onClick={() => acao(c.id, "APROVAR")}
                   className="flex-1 bg-[#00A99D] hover:bg-[#009082] text-white text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1"
                 >
                   <Check size={13} strokeWidth={2.5} /> APROVAR
                 </button>
                 <button
-                  onClick={() => update(c.id, "REJEITADO")}
+                  onClick={() => acao(c.id, "REJEITAR")}
                   className="flex-1 border border-red-200 hover:bg-red-50 text-red-500 text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1"
                 >
                   <X size={13} strokeWidth={2.5} /> REJEITAR
@@ -100,7 +134,7 @@ export default function AdminClinicas() {
             )}
             {c.estadoVerificacao === "APROVADO" && (
               <button
-                onClick={() => update(c.id, "SUSPENSO")}
+                onClick={() => acao(c.id, "SUSPENDER")}
                 className="mt-2.5 w-full border border-gray-200 text-gray-400 hover:bg-gray-50 text-xs font-medium py-2 rounded-xl transition-colors flex items-center justify-center gap-1"
               >
                 <Ban size={13} strokeWidth={2} /> Suspender Clínica
@@ -108,7 +142,7 @@ export default function AdminClinicas() {
             )}
             {c.estadoVerificacao === "SUSPENSO" && (
               <button
-                onClick={() => update(c.id, "APROVADO")}
+                onClick={() => acao(c.id, "REATIVAR")}
                 className="mt-2.5 w-full bg-[#0B3C74]/10 hover:bg-[#0B3C74]/20 text-[#0B3C74] text-xs font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1"
               >
                 <RotateCcw size={13} strokeWidth={2} /> Reactivar Clínica
