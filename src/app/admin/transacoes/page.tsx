@@ -26,7 +26,7 @@ export default function AdminTransacoes() {
           <p className="text-xs text-gray-400 mt-0.5">Todos os tempos</p>
         </div>
         <div className="bg-white rounded-2xl border border-gray-100 p-4">
-          <p className="text-xs text-gray-400 mb-1">Comissão Planto (10%)</p>
+          <p className="text-xs text-gray-400 mb-1">Comissão Medfreela (10%)</p>
           <p className="text-lg font-bold text-purple-600">{formatAOA(adminStats.comissaoPlataforma)}</p>
           <p className="text-xs text-gray-400 mt-0.5">Todos os tempos</p>
         </div>

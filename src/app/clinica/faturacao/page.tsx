@@ -39,7 +39,7 @@ export default function FaturacaoClinica() {
 
       {/* Info comissão */}
       <div className="mx-4 mt-3 bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700 flex items-start gap-2">
-        <Info size={14} strokeWidth={2} className="shrink-0 mt-0.5" /> A Planto cobra <strong>10% de comissão</strong> sobre cada plantão. O valor é debitado automaticamente no momento da confirmação.
+        <Info size={14} strokeWidth={2} className="shrink-0 mt-0.5" /> A Medfreela cobra <strong>10% de comissão</strong> sobre cada plantão. O valor é debitado automaticamente no momento da confirmação.
       </div>
 
       {/* Histórico */}

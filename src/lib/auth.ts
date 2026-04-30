@@ -5,7 +5,7 @@
 
 export type UserRole = "ADMIN" | "MEDICO" | "CLINICA" | "PROFISSIONAL" | "PROPRIETARIO_SALA";
 
-export const COOKIE_NAME = "planto_session";
+export const COOKIE_NAME = "medfreela_session";
 export const COOKIE_MAX_AGE = 60 * 60 * 8; // 8 horas
 
 const encoder = new TextEncoder();

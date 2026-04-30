@@ -80,7 +80,7 @@ export default function AdminPlantoes() {
           </div>
           <div>
             <p className="text-sm font-bold text-purple-600">{formatAOA(totalComissao)}</p>
-            <p className="text-xs text-gray-400 mt-0.5">Comissão Planto</p>
+            <p className="text-xs text-gray-400 mt-0.5">Comissão Medfreela</p>
           </div>
         </div>
       </div>
