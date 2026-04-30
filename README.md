@@ -6,6 +6,7 @@ First, run the development server:
 cd /var/www/medfreela
 git pull origin main
 npm run build
+pm2 restart medfreela --update-env
 
 ```bash
 npm run dev

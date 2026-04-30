@@ -25,8 +25,13 @@ function fromHex(hex: string): ArrayBuffer {
 }
 
 async function getHmacKey(): Promise<CryptoKey> {
-  const secret =
-    process.env.AUTH_SECRET ?? "planto-secret-ALTERAR-em-producao-32chars+";
+  const secret = process.env.AUTH_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error(
+      "[auth] AUTH_SECRET não definida ou demasiado curta (mínimo 32 caracteres). " +
+        "Defina AUTH_SECRET no ficheiro .env do projecto."
+    );
+  }
   return crypto.subtle.importKey(
     "raw",
     encoder.encode(secret),
