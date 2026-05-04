@@ -6,12 +6,34 @@ import { ChevronLeft, Zap, Clock, CheckCircle, XCircle, ChevronRight, User, Buil
 
 type Filtro = "TODOS" | "EXPRESS" | "NORMAL";
 
+type DocumentoPendente = {
+  id: string;
+  tipo: string;
+  estado: string;
+  ficheiro: string;
+};
+
 type MedicoPendente = {
   id: string; nome: string; email: string; especialidade: string;
   numeroOrdem: string; tipoVerificacao: "EXPRESS" | "NORMAL"; criadoEm: string;
+  documentos: DocumentoPendente[];
+  rejeicaoMotivo: string;
 };
 type ClinicaPendente = {
   id: string; nome: string; email: string; morada: string; alvara: string; criadoEm: string;
+};
+
+type RejeicaoRazao =
+  | "DOCUMENTOS_ILEGIVEIS"
+  | "NUMERO_INCONSISTENTE"
+  | "DOCUMENTOS_EXPIRADOS"
+  | "OUTRO";
+
+const motivoLabels: Record<RejeicaoRazao, string> = {
+  DOCUMENTOS_ILEGIVEIS: "Documentos ilegíveis ou incompletos",
+  NUMERO_INCONSISTENTE: "Número de ordem profissional não confere",
+  DOCUMENTOS_EXPIRADOS: "Documentos expirados ou inválidos",
+  OUTRO: "Outro motivo",
 };
 
 function horasAtras(criadoEm: string): string {
@@ -46,6 +68,12 @@ function CardPendente({
   criadoEm,
   express,
   tipo,
+  documentos,
+  rejeicaoMotivo,
+  selectedRazao,
+  customRazao,
+  onSelectRazao,
+  onCustomRazaoChange,
   onAprovar,
   onRejeitar,
 }: {
@@ -56,6 +84,12 @@ function CardPendente({
   criadoEm: string;
   express?: boolean;
   tipo: "profissional" | "clinica";
+  documentos?: DocumentoPendente[];
+  rejeicaoMotivo?: string;
+  selectedRazao?: RejeicaoRazao;
+  customRazao?: string;
+  onSelectRazao?: (valor: RejeicaoRazao) => void;
+  onCustomRazaoChange?: (valor: string) => void;
   onAprovar: () => void;
   onRejeitar: () => void;
 }) {
@@ -96,10 +130,74 @@ function CardPendente({
             </div>
           </div>
 
+          {tipo === "profissional" && documentos && (
+            <div className="space-y-3 text-sm">
+              <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Documentos submetidos</div>
+              {documentos.length > 0 ? (
+                <div className="space-y-2">
+                  {documentos.map((doc) => (
+                    <div key={doc.id} className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2">
+                      <div className="min-w-0">
+                        <p className="text-xs text-gray-700 truncate">{doc.tipo.replaceAll("_", " ")}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {doc.ficheiro && (
+                          <a href={doc.ficheiro} target="_blank" rel="noreferrer" className="text-blue-600 text-xs font-semibold underline">
+                            Ver
+                          </a>
+                        )}
+                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                          doc.estado === "APROVADO" ? "bg-green-100 text-green-700" :
+                          doc.estado === "PENDENTE" ? "bg-yellow-100 text-yellow-700" :
+                          "bg-red-100 text-red-700"
+                        }`}>
+                          {doc.estado}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400">Nenhum documento submetido</p>
+              )}
+            </div>
+          )}
+
           <div className="bg-blue-50 rounded-xl px-3 py-2.5 text-xs text-blue-600 flex items-start gap-2">
             <AlertTriangle size={13} strokeWidth={2} className="shrink-0 mt-0.5" />
             <span>Verifique os documentos submetidos antes de aprovar.</span>
           </div>
+
+          {tipo === "profissional" && (
+            <div className="space-y-3">
+              <label className="text-xs font-semibold text-gray-600">Motivo da rejeição</label>
+              <select
+                value={selectedRazao ?? "DOCUMENTOS_ILEGIVEIS"}
+                onChange={(event) => onSelectRazao?.(event.target.value as RejeicaoRazao)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-[#0B3C74]"
+              >
+                {Object.entries(motivoLabels).map(([key, label]) => (
+                  <option key={key} value={key}>{label}</option>
+                ))}
+              </select>
+
+              {selectedRazao === "OUTRO" && (
+                <textarea
+                  value={customRazao ?? ""}
+                  onChange={(event) => onCustomRazaoChange?.(event.target.value)}
+                  placeholder="Detalhe o motivo de rejeição"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-[#0B3C74] resize-none"
+                  rows={3}
+                />
+              )}
+
+              {rejeicaoMotivo && (
+                <div className="rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-700">
+                  Motivo anterior: {rejeicaoMotivo}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex gap-2">
             <button
@@ -126,6 +224,8 @@ export default function AdminVerificacaoPage() {
   const [medicos, setMedicos] = useState<MedicoPendente[]>([]);
   const [clinicas, setClinicas] = useState<ClinicaPendente[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selecaoRazao, setSelecaoRazao] = useState<Record<string, RejeicaoRazao>>({});
+  const [textoRazao, setTextoRazao] = useState<Record<string, string>>({});
 
   useEffect(() => {
     Promise.all([
@@ -137,12 +237,21 @@ export default function AdminVerificacaoPage() {
     }).finally(() => setLoading(false));
   }, []);
 
+  const getMotivoRejeicao = (id: string) => {
+    const escolha = selecaoRazao[id] ?? "DOCUMENTOS_ILEGIVEIS";
+    if (escolha === "OUTRO") {
+      return textoRazao[id] || motivoLabels.OUTRO;
+    }
+    return motivoLabels[escolha];
+  };
+
   const aprovarMedico = async (id: string) => {
     await fetch(`/api/admin/medicos/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ acao: "APROVAR" }) });
     setMedicos((prev) => prev.filter((m) => m.id !== id));
   };
   const rejeitarMedico = async (id: string) => {
-    await fetch(`/api/admin/medicos/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ acao: "REJEITAR" }) });
+    const motivo = getMotivoRejeicao(id);
+    await fetch(`/api/admin/medicos/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ acao: "REJEITAR", motivo }) });
     setMedicos((prev) => prev.filter((m) => m.id !== id));
   };
   const aprovarClinica = async (id: string) => {
@@ -231,6 +340,12 @@ export default function AdminVerificacaoPage() {
                     criadoEm={m.criadoEm}
                     express
                     tipo="profissional"
+                    documentos={m.documentos}
+                    rejeicaoMotivo={m.rejeicaoMotivo}
+                    selectedRazao={selecaoRazao[m.id]}
+                    customRazao={textoRazao[m.id]}
+                    onSelectRazao={(valor) => setSelecaoRazao((prev) => ({ ...prev, [m.id]: valor }))}
+                    onCustomRazaoChange={(valor) => setTextoRazao((prev) => ({ ...prev, [m.id]: valor }))}
                     onAprovar={() => aprovarMedico(m.id)}
                     onRejeitar={() => rejeitarMedico(m.id)}
                   />
@@ -268,6 +383,12 @@ export default function AdminVerificacaoPage() {
                     email={m.email}
                     criadoEm={m.criadoEm}
                     tipo="profissional"
+                    documentos={m.documentos}
+                    rejeicaoMotivo={m.rejeicaoMotivo}
+                    selectedRazao={selecaoRazao[m.id]}
+                    customRazao={textoRazao[m.id]}
+                    onSelectRazao={(valor) => setSelecaoRazao((prev) => ({ ...prev, [m.id]: valor }))}
+                    onCustomRazaoChange={(valor) => setTextoRazao((prev) => ({ ...prev, [m.id]: valor }))}
                     onAprovar={() => aprovarMedico(m.id)}
                     onRejeitar={() => rejeitarMedico(m.id)}
                   />

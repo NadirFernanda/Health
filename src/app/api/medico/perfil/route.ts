@@ -25,6 +25,7 @@ export async function GET() {
     totalAvaliacoes: prof.totalAvaliacoes,
     totalPlantoes: prof.totalPlantoes,
     verified: prof.verified,
+    rejeicaoMotivo: prof.rejeicaoMotivo ?? "",
     saldoCarteira: prof.saldoCarteira,
     saldoCentavos: prof.saldoCarteiraCentavos.toString(),
     disponivelAgora: prof.disponivelAgora,

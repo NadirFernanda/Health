@@ -8,9 +8,16 @@ import {
   Pencil, X, Save, ToggleRight, ToggleLeft, Award,
 } from "lucide-react";
 
-type DocEstado = "APROVADO" | "PENDENTE" | "NAO_ENVIADO";
+type DocEstado = "APROVADO" | "PENDENTE" | "NAO_ENVIADO" | "REJEITADO";
+type DocTipo =
+  | "CEDULA_OMA"
+  | "BI_PASSAPORTE"
+  | "DIPLOMA_LICENCIATURA"
+  | "REGISTO_SINOME"
+  | "CERTIFICADO_ESPECIALIZACAO";
 
 interface Documento {
+  tipo: DocTipo;
   label: string;
   estado: DocEstado;
   ficheiro?: string;
@@ -30,9 +37,18 @@ interface PerfilData {
   totalAvaliacoes: number;
   totalPlantoes: number;
   verified: boolean;
+  rejeicaoMotivo: string;
   saldoCarteira: number;
   disponivelAgora: boolean;
 }
+
+const docTemplate: Documento[] = [
+  { tipo: "CEDULA_OMA", label: "Cédula da Ordem dos Médicos", estado: "NAO_ENVIADO" },
+  { tipo: "BI_PASSAPORTE", label: "Bilhete de Identidade", estado: "NAO_ENVIADO" },
+  { tipo: "DIPLOMA_LICENCIATURA", label: "Licenciatura em Medicina", estado: "NAO_ENVIADO" },
+  { tipo: "REGISTO_SINOME", label: "Registo SINOME / Ordem Profissional", estado: "NAO_ENVIADO" },
+  { tipo: "CERTIFICADO_ESPECIALIZACAO", label: "Certificado de Especialidade (opcional)", estado: "NAO_ENVIADO" },
+];
 
 export default function PerfilMedico() {
   const [perfil, setPerfil] = useState<PerfilData | null>(null);
@@ -46,36 +62,73 @@ export default function PerfilMedico() {
   const [subEsp, setSubEsp] = useState("");
   const [anos, setAnos] = useState("");
 
-  const [docs, setDocs] = useState<Documento[]>([
-    { label: "Cédula da Ordem dos Médicos", estado: "NAO_ENVIADO" },
-    { label: "Bilhete de Identidade", estado: "NAO_ENVIADO" },
-    { label: "Licenciatura em Medicina", estado: "NAO_ENVIADO" },
-    { label: "Carteira Profissional", estado: "NAO_ENVIADO" },
-    { label: "Certificado de Especialidade (opcional)", estado: "NAO_ENVIADO" },
-  ]);
+  const [docs, setDocs] = useState<Documento[]>(docTemplate);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  const mergeDocs = (data: Array<{ tipo: DocTipo; estado: DocEstado; ficheiro?: string }>) => {
+    return docTemplate.map((base) => {
+      const found = data.find((doc) => doc.tipo === base.tipo);
+      return {
+        ...base,
+        estado: found?.estado ?? "NAO_ENVIADO",
+        ficheiro: found?.ficheiro ?? undefined,
+      };
+    });
+  };
+
   useEffect(() => {
-    fetch("/api/medico/perfil")
-      .then((r) => r.json())
-      .then((data: PerfilData) => {
-        setPerfil(data);
-        setBio(data.bio ?? "");
-        setSubEsp(data.subEspecialidade ?? "");
-        setAnos(data.anosExperiencia ? String(data.anosExperiencia) : "");
-        setLoading(false);
+    Promise.all([
+      fetch("/api/medico/perfil").then((r) => r.json()),
+      fetch("/api/medico/documentos").then((r) => r.json()),
+    ])
+      .then(([profileData, docsData]: [PerfilData, Array<{ tipo: DocTipo; estado: DocEstado; ficheiro?: string }>]) => {
+        setPerfil(profileData);
+        setBio(profileData.bio ?? "");
+        setSubEsp(profileData.subEspecialidade ?? "");
+        setAnos(profileData.anosExperiencia ? String(profileData.anosExperiencia) : "");
+        setDocs(Array.isArray(docsData) ? mergeDocs(docsData) : docTemplate);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setDocs(docTemplate);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  const handleUpload = (index: number, file: File | undefined) => {
+  const carregarDocs = async () => {
+    const res = await fetch("/api/medico/documentos");
+    if (!res.ok) return;
+    const data: Array<{ tipo: DocTipo; estado: DocEstado; ficheiro?: string }> = await res.json();
+    setDocs(mergeDocs(data));
+  };
+
+  const handleUpload = async (index: number, file: File | undefined) => {
     if (!file) return;
+    const docType = docTemplate[index].tipo;
     setDocs((prev) =>
       prev.map((d, i) =>
         i === index ? { ...d, ficheiro: file.name, estado: "PENDENTE" } : d
       )
     );
+
+    const formData = new FormData();
+    formData.append("tipo", docType);
+    formData.append("file", file);
+
+    const res = await fetch("/api/medico/documentos", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (res.ok) {
+      await carregarDocs();
+    } else {
+      setDocs((prev) =>
+        prev.map((d, i) =>
+          i === index ? { ...d, estado: "NAO_ENVIADO" } : d
+        )
+      );
+    }
   };
 
   async function toggleDisponivel() {
@@ -112,9 +165,7 @@ export default function PerfilMedico() {
     APROVADO:    { cls: "text-green-500",  icon: <CheckCircle size={15} strokeWidth={2} />, label: "Verificado" },
     PENDENTE:    { cls: "text-yellow-500", icon: <Clock size={15} strokeWidth={2} />,       label: "Em análise" },
     NAO_ENVIADO: { cls: "text-gray-300",   icon: <Paperclip size={15} strokeWidth={2} />,   label: "Não enviado" },
-  };
-
-  if (loading) {
+  REJEITADO:   { cls: "text-red-500",    icon: <X size={15} strokeWidth={2} />,           label: "Rejeitado" },
     return (
       <div>
         <TopBar titulo="O meu Perfil" back="/medico" />
@@ -375,6 +426,13 @@ export default function PerfilMedico() {
         </div>
       )}
 
+      {!perfil.verified && perfil.rejeicaoMotivo && (
+        <div className="mx-4 mb-3 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p className="font-semibold">Verificação recusada</p>
+          <p className="mt-1 text-xs text-red-700">{perfil.rejeicaoMotivo}</p>
+        </div>
+      )}
+
       {/* Documentos */}
       <div className="mx-4 mb-3 bg-white rounded-2xl border border-gray-100 px-4 py-4">
         <div className="flex items-center justify-between mb-4">
@@ -392,7 +450,9 @@ export default function PerfilMedico() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-gray-800 truncate font-medium">{doc.label}</p>
                   {doc.ficheiro ? (
-                    <p className="text-xs text-gray-400 font-mono truncate">{doc.ficheiro}</p>
+                    <a href={doc.ficheiro} target="_blank" rel="noreferrer" className="text-xs text-blue-600 font-mono truncate underline">
+                      {doc.ficheiro}
+                    </a>
                   ) : (
                     <p className="text-xs text-gray-300">Nenhum ficheiro enviado</p>
                   )}

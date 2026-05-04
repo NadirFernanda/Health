@@ -11,7 +11,7 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await request.json();
-  const { acao } = body; // "APROVAR" | "REJEITAR" | "SUSPENDER" | "REATIVAR"
+  const { acao, motivo } = body as { acao: string; motivo?: string };
 
   if (!["APROVAR", "REJEITAR", "SUSPENDER", "REATIVAR"].includes(acao)) {
     return Response.json({ error: "Ação inválida" }, { status: 400 });
@@ -29,18 +29,39 @@ export async function PATCH(
     await prisma.$transaction([
       prisma.profissional.update({
         where: { id },
-        data: { verified: true, verificadoEm: new Date() },
+        data: { verified: true, verificadoEm: new Date(), rejeicaoMotivo: null },
       }),
       prisma.user.update({
         where: { id: profissional.userId },
         data: { isActive: true, verifiedAt: new Date() },
       }),
+      prisma.notificacao.create({
+        data: {
+          userId: profissional.userId,
+          tipo: "VERIFICACAO_CONCLUIDA",
+          titulo: "Verificação concluída",
+          corpo: "A sua verificação foi aprovada. Já pode candidatar-se a turnos e usar todas as funcionalidades da plataforma.",
+          href: "/medico/perfil",
+        },
+      }),
     ]);
   } else if (acao === "REJEITAR") {
-    await prisma.profissional.update({
-      where: { id },
-      data: { verified: false },
-    });
+    const motivoFinal = motivo?.trim() || "Documentos ou credenciais não estão em conformidade.";
+    await prisma.$transaction([
+      prisma.profissional.update({
+        where: { id },
+        data: { verified: false, rejeicaoMotivo: motivoFinal },
+      }),
+      prisma.notificacao.create({
+        data: {
+          userId: profissional.userId,
+          tipo: "VERIFICACAO_RECUSADA",
+          titulo: "Verificação recusada",
+          corpo: `A sua verificação foi recusada. Motivo: ${motivoFinal}`,
+          href: "/medico/perfil",
+        },
+      }),
+    ]);
   } else if (acao === "SUSPENDER") {
     await prisma.user.update({
       where: { id: profissional.userId },

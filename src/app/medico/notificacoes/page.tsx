@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
 import { CheckCircle, XCircle, CalendarClock, Building2, Star, Unlock, Wallet, Bell, type LucideIcon } from "lucide-react";
@@ -121,16 +121,55 @@ function tempoRelativo(iso: string): string {
 
 export default function Notificacoes() {
   const router = useRouter();
-  const [lista, setLista] = useState<Notificacao[]>(notificacoesMock);
+  const [lista, setLista] = useState<Notificacao[]>([]);
+  const [loading, setLoading] = useState(true);
   const naoLidas = lista.filter((n) => !n.lida).length;
 
-  const marcarTodasLidas = () => setLista((prev) => prev.map((n) => ({ ...n, lida: true })));
-  const marcarLida = (id: string) => setLista((prev) => prev.map((n) => n.id === id ? { ...n, lida: true } : n));
+  useEffect(() => {
+    fetch("/api/notificacoes")
+      .then((res) => res.ok ? res.json() : Promise.reject())
+      .then((data: Notificacao[]) => {
+        setLista(Array.isArray(data) ? data : notificacoesMock);
+      })
+      .catch(() => setLista(notificacoesMock))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const marcarTodasLidas = async () => {
+    await fetch("/api/notificacoes", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ all: true }),
+    });
+    setLista((prev) => prev.map((n) => ({ ...n, lida: true })));
+  };
+
+  const marcarLida = async (id: string) => {
+    await fetch("/api/notificacoes", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: [id] }),
+    });
+    setLista((prev) => prev.map((n) => n.id === id ? { ...n, lida: true } : n));
+  };
 
   const handleClick = (n: Notificacao) => {
-    marcarLida(n.id);
+    if (!n.lida) {
+      marcarLida(n.id);
+    }
     if (n.href) router.push(n.href);
   };
+
+  if (loading) {
+    return (
+      <div>
+        <TopBar titulo="Notificações" back="/medico" />
+        <div className="flex justify-center py-20">
+          <div className="w-8 h-8 border-2 border-[#0B3C74] border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

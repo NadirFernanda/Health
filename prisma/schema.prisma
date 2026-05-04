@@ -1,16 +1,387 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-// ─── Enums ───────────────────────────────────────────────────────────────────
+model User {
+  id                     String        @id @default(cuid())
+  email                  String        @unique
+  passwordHash           String
+  role                   Role
+  criadoEm               DateTime      @default(now())
+  isActive               Boolean       @default(true)
+  lastLoginAt            DateTime?
+  phone                  String?
+  updatedEm              DateTime      @updatedAt
+  verifiedAt             DateTime?
+  clinica                Clinica?
+  consultorio            Consultorio?
+  credenciaisVerificadas Credencial[]  @relation("CredencialVerificadaPor")
+  notificacoes           Notificacao[]
+  profissional           Profissional?
+}
+
+model Profissional {
+  id                    String              @id @default(cuid())
+  userId                String              @unique
+  nome                  String
+  tipo                  TipoProfissional    @default(MEDICO)
+  especialidade         String
+  numeroOrdem           String?
+  numeroSinome          String?             @unique(where: raw("(\"numeroSinome\" IS NOT NULL)"))
+  provincia             String              @default("Luanda")
+  foto                  String?
+  bio                   String?
+  rating                Float               @default(0)
+  totalAvaliacoes       Int                 @default(0)
+  totalPlantoes         Int                 @default(0)
+  verified              Boolean             @default(false)
+  verificadoEm          DateTime?
+  rejeicaoMotivo        String?
+  saldoCarteira         Int                 @default(0)
+  saldoCarteiraCentavos BigInt              @default(0)
+  disponivelAgora       Boolean             @default(false)
+  anosExperiencia       Int?
+  bairro                String?
+  cidade                String?
+  numeroOma             String?
+  subEspecialidade      String?
+  avaliacoesRecebidas   Avaliacao[]         @relation("AlvoMedicoAvaliacao")
+  avaliacoesFeitas      Avaliacao[]         @relation("AutorAvaliacao")
+  candidaturas          Candidatura[]
+  credenciais           Credencial[]
+  documentos            Documento[]
+  pagamentosRecebidos   Pagamento[]         @relation("PagamentoBeneficiario")
+  plantoesPublicados    Plantao[]           @relation("PlantaoPublicadoPorMedico")
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reservas              ReservaSala[]
+  transacoes            TransacaoCarteira[]
+
+  @@index([tipo])
+  @@index([especialidade])
+  @@index([verified])
+  @@index([disponivelAgora])
+}
+
+model Clinica {
+  id                  String      @id @default(cuid())
+  userId              String      @unique
+  nome                String
+  morada              String?
+  cidade              String?
+  provincia           String      @default("Luanda")
+  logo                String?
+  rating              Float       @default(0)
+  totalAvaliacoes     Int         @default(0)
+  verified            Boolean     @default(false)
+  alvara              String?
+  bairro              String?
+  contacto            String?
+  descricao           String?
+  latitude            Decimal?    @db.Decimal(10, 7)
+  longitude           Decimal?    @db.Decimal(10, 7)
+  updatedEm           DateTime    @updatedAt
+  website             String?
+  zonaLuanda          String?
+  criadoEm            DateTime    @default(now())
+  avaliacoesRecebidas Avaliacao[] @relation("AlvoClinicaAvaliacao")
+  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plantoes            Plantao[]
+  salas               Sala[]
+
+  @@index([zonaLuanda])
+  @@index([verified])
+}
+
+model Consultorio {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  nome            String
+  morada          String?
+  bairro          String?
+  zonaLuanda      String?
+  contacto        String?
+  cidade          String?
+  provincia       String   @default("Luanda")
+  descricao       String?
+  rating          Float    @default(0)
+  totalAvaliacoes Int      @default(0)
+  verified        Boolean  @default(false)
+  criadoEm        DateTime @default(now())
+  updatedEm       DateTime @default(now()) @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  salas           Sala[]
+
+  @@index([zonaLuanda])
+  @@index([verified])
+}
+
+model Plantao {
+  id                       String           @id @default(cuid())
+  clinicaId                String?
+  especialidade            String
+  dataInicio               DateTime
+  dataFim                  DateTime
+  valorKwanzas             Int
+  vagas                    Int
+  vagasPreenchidas         Int              @default(0)
+  estado                   EstadoPlantao    @default(ABERTO)
+  descricao                String?
+  maca                     Boolean          @default(false)
+  estetoscopio             Boolean          @default(false)
+  tensiometro              Boolean          @default(false)
+  termometro               Boolean          @default(false)
+  computador               Boolean          @default(false)
+  materiaisBasicos         Boolean          @default(true)
+  nebulizador              Boolean          @default(false)
+  oximetro                 Boolean          @default(false)
+  glucometro               Boolean          @default(false)
+  desfibrilador            Boolean          @default(false)
+  criadoEm                 DateTime         @default(now())
+  atualizadoEm             DateTime         @updatedAt
+  valorCentavos            BigInt?
+  salaId                   String?
+  tipoProfissional         TipoProfissional @default(MEDICO)
+  profissionalPublicadorId String?
+  publicadoPorMedico       Boolean          @default(false)
+  avaliacoes               Avaliacao[]
+  candidaturas             Candidatura[]
+  pagamentos               Pagamento[]
+  clinica                  Clinica?         @relation(fields: [clinicaId], references: [id])
+  profissionalPublicador   Profissional?    @relation("PlantaoPublicadoPorMedico", fields: [profissionalPublicadorId], references: [id])
+  sala                     Sala?            @relation(fields: [salaId], references: [id])
+
+  @@index([clinicaId])
+  @@index([especialidade])
+  @@index([tipoProfissional])
+  @@index([dataInicio])
+  @@index([estado])
+}
+
+model Candidatura {
+  id             String            @id @default(cuid())
+  plantaoId      String
+  profissionalId String
+  estado         EstadoCandidatura @default(PENDENTE)
+  criadoEm       DateTime          @default(now())
+  mensagem       String?
+  respondidoEm   DateTime?
+  plantao        Plantao           @relation(fields: [plantaoId], references: [id])
+  profissional   Profissional      @relation(fields: [profissionalId], references: [id])
+  pagamentos     Pagamento[]
+
+  @@unique([plantaoId, profissionalId])
+  @@index([plantaoId])
+  @@index([profissionalId])
+  @@index([estado])
+}
+
+model Sala {
+  id                   String                @id @default(cuid())
+  clinicaId            String?
+  nome                 String
+  tipo                 TipoSala
+  precoPorHora         Int
+  zona                 String
+  descricao            String?
+  fotos                String[]              @default([])
+  disponivel           Boolean               @default(true)
+  avaliacaoMedia       Float                 @default(0)
+  totalAvaliacoes      Int                   @default(0)
+  maca                 Boolean               @default(false)
+  estetoscopio         Boolean               @default(false)
+  tensiometro          Boolean               @default(false)
+  termometro           Boolean               @default(false)
+  computador           Boolean               @default(false)
+  materiaisBasicos     Boolean               @default(true)
+  nebulizador          Boolean               @default(false)
+  oximetro             Boolean               @default(false)
+  glucometro           Boolean               @default(false)
+  desfibrilador        Boolean               @default(false)
+  criadoEm             DateTime              @default(now())
+  ativo                Boolean               @default(true)
+  atualizadoEm         DateTime              @updatedAt
+  numero               String?
+  politicaCancel       String?
+  precoPorHoraCentavos BigInt?
+  consultorioId        String?
+  avaliacoes           Avaliacao[]           @relation("AlvoSalaAvaliacao")
+  disponibilidades     DisponibilidadeSala[]
+  plantoes             Plantao[]
+  reservas             ReservaSala[]
+  clinica              Clinica?              @relation(fields: [clinicaId], references: [id], onDelete: Restrict)
+  consultorio          Consultorio?          @relation(fields: [consultorioId], references: [id])
+
+  @@index([clinicaId])
+  @@index([tipo])
+  @@index([ativo])
+  @@index([consultorioId])
+}
+
+model ReservaSala {
+  id                 String        @id @default(cuid())
+  salaId             String
+  profissionalId     String
+  data               DateTime
+  horaInicio         String
+  duracaoHoras       Int
+  valorTotal         Int
+  estado             EstadoReserva @default(CONFIRMADA)
+  codigoQr           String        @default(cuid())
+  criadoEm           DateTime      @default(now())
+  atualizadoEm       DateTime      @updatedAt
+  canceladoEm        DateTime?
+  comissaoAoa        Int?
+  dataFim            DateTime?
+  motivoCancelamento String?
+  pagoEm             DateTime?
+  valorClinicaAoa    Int?
+  valorTotalCentavos BigInt?
+  pagamentos         Pagamento[]
+  profissional       Profissional  @relation(fields: [profissionalId], references: [id])
+  sala               Sala          @relation(fields: [salaId], references: [id])
+
+  @@index([salaId])
+  @@index([profissionalId])
+  @@index([estado])
+}
+
+model Avaliacao {
+  id              String         @id @default(cuid())
+  autorId         String?
+  alvoMedicoId    String?
+  alvoClinicaId   String?
+  salaId          String?
+  plantaoId       String?
+  estrelas        Int
+  comentario      String?
+  criadoEm        DateTime       @default(now())
+  avaliadoRole    String?
+  avaliadoUserId  String?
+  avaliadorUserId String?
+  tipo            AvaliacaoTipo?
+  alvoClinica     Clinica?       @relation("AlvoClinicaAvaliacao", fields: [alvoClinicaId], references: [id])
+  alvoMedico      Profissional?  @relation("AlvoMedicoAvaliacao", fields: [alvoMedicoId], references: [id])
+  autor           Profissional?  @relation("AutorAvaliacao", fields: [autorId], references: [id])
+  plantao         Plantao?       @relation(fields: [plantaoId], references: [id])
+  sala            Sala?          @relation("AlvoSalaAvaliacao", fields: [salaId], references: [id])
+
+  @@index([autorId])
+  @@index([alvoClinicaId])
+  @@index([alvoMedicoId])
+  @@index([plantaoId])
+}
+
+model Credencial {
+  id              String           @id @default(cuid())
+  profissionalId  String
+  tipo            CredencialTipo
+  ficheiroUrl     String?
+  ficheiroNome    String?
+  ficheiroTamanho Int?
+  estado          CredencialEstado @default(PENDENTE)
+  express         Boolean          @default(false)
+  comentario      String?
+  verificadoPorId String?
+  verificadoEm    DateTime?
+  criadoEm        DateTime         @default(now())
+  atualizadoEm    DateTime         @updatedAt
+  profissional    Profissional     @relation(fields: [profissionalId], references: [id], onDelete: Cascade)
+  verificadoPor   User?            @relation("CredencialVerificadaPor", fields: [verificadoPorId], references: [id])
+
+  @@index([profissionalId])
+  @@index([estado])
+}
+
+model DisponibilidadeSala {
+  id         String   @id @default(cuid())
+  salaId     String
+  diaSemana  Int
+  horaInicio String
+  horaFim    String
+  disponivel Boolean  @default(true)
+  criadoEm   DateTime @default(now())
+  sala       Sala     @relation(fields: [salaId], references: [id], onDelete: Cascade)
+
+  @@index([salaId, diaSemana])
+}
+
+model Pagamento {
+  id                         String          @id @default(cuid())
+  tipo                       PagamentoTipo
+  plantaoId                  String?
+  candidaturaId              String?
+  reservaSalaId              String?
+  valorBrutoAoa              Int
+  comissaoAoa                Int
+  valorLiquidoAoa            Int
+  metodo                     PagamentoMetodo
+  estado                     PagamentoEstado @default(PENDENTE)
+  referenciaExt              String?
+  webhookPayload             Json?
+  pagoEm                     DateTime?
+  liberadoEm                 DateTime?
+  criadoEm                   DateTime        @default(now())
+  atualizadoEm               DateTime        @updatedAt
+  beneficiarioProfissionalId String?
+  beneficiario               Profissional?   @relation("PagamentoBeneficiario", fields: [beneficiarioProfissionalId], references: [id])
+  candidatura                Candidatura?    @relation(fields: [candidaturaId], references: [id])
+  plantao                    Plantao?        @relation(fields: [plantaoId], references: [id])
+  reservaSala                ReservaSala?    @relation(fields: [reservaSalaId], references: [id])
+
+  @@index([candidaturaId])
+  @@index([reservaSalaId])
+  @@index([beneficiarioProfissionalId])
+  @@index([estado])
+  @@index([referenciaExt])
+}
+
+model Documento {
+  id             String          @id @default(cuid())
+  profissionalId String
+  tipo           String
+  ficheiro       String?
+  estado         EstadoDocumento @default(NAO_ENVIADO)
+  criadoEm       DateTime        @default(now())
+  atualizadoEm   DateTime        @updatedAt
+  profissional   Profissional    @relation(fields: [profissionalId], references: [id])
+}
+
+model TransacaoCarteira {
+  id             String          @id @default(cuid())
+  profissionalId String
+  tipo           TipoTransacao
+  descricao      String
+  estado         EstadoTransacao @default(PROCESSADO)
+  criadoEm       DateTime        @default(now())
+  valorCentavos  BigInt
+  referencia     String?
+  profissional   Profissional    @relation(fields: [profissionalId], references: [id])
+
+  @@index([profissionalId])
+  @@index([tipo])
+  @@index([criadoEm])
+}
+
+model Notificacao {
+  id       String   @id @default(cuid())
+  userId   String
+  tipo     String
+  titulo   String
+  corpo    String
+  href     String?
+  lida     Boolean  @default(false)
+  criadoEm DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([lida])
+}
 
 enum Role {
   ADMIN
@@ -56,9 +427,9 @@ enum TipoTransacao {
 
 enum EstadoTransacao {
   PENDENTE
+  PROCESSADO
   PROCESSANDO
   CONFIRMADO
-  PROCESSADO
   FALHOU
   REEMBOLSADO
 }
@@ -72,12 +443,12 @@ enum TipoSala {
 }
 
 enum EstadoReserva {
-  PENDENTE_PAGAMENTO
   CONFIRMADA
   CANCELADA
+  CONCLUIDA
+  PENDENTE_PAGAMENTO
   CANCELADA_PROFISSIONAL
   CANCELADA_CLINICA
-  CONCLUIDA
 }
 
 enum CredencialTipo {
@@ -119,389 +490,3 @@ enum AvaliacaoTipo {
   TURNO
   SALA
 }
-
-// ─── Models ──────────────────────────────────────────────────────────────────
-
-model User {
-  id           String        @id @default(cuid())
-  email        String        @unique
-  phone        String?
-  passwordHash String
-  role         Role
-  criadoEm    DateTime      @default(now())
-  updatedEm   DateTime      @updatedAt
-  isActive    Boolean       @default(true)
-  verifiedAt  DateTime?
-  lastLoginAt DateTime?
-
-  profissional Profissional?
-  clinica      Clinica?
-  consultorio  Consultorio?
-  notificacoes Notificacao[]
-  credenciaisVerificadas Credencial[] @relation("CredencialVerificadaPor")
-}
-
-model Profissional {
-  id                  String             @id @default(cuid())
-  userId              String             @unique
-  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  nome                String
-  tipo                TipoProfissional   @default(MEDICO)
-  especialidade       String
-  numeroOrdem         String?
-  numeroSinome        String?            @unique
-  numeroOma           String?
-  provincia           String             @default("Luanda")
-  cidade              String?
-  bairro              String?
-  foto                String?
-  bio                 String?
-  anosExperiencia     Int?
-  subEspecialidade    String?
-  rating              Float              @default(0)
-  totalAvaliacoes     Int                @default(0)
-  totalPlantoes       Int                @default(0)
-  verified            Boolean            @default(false)
-  verificadoEm        DateTime?
-  saldoCarteira       Int                @default(0)
-  saldoCarteiraCentavos BigInt           @default(0)
-  disponivelAgora     Boolean            @default(false)
-
-  candidaturas        Candidatura[]
-  documentos          Documento[]
-  credenciais         Credencial[]
-  avaliacoesFeitas    Avaliacao[]        @relation("AutorAvaliacao")
-  avaliacoesRecebidas Avaliacao[]        @relation("AlvoMedicoAvaliacao")
-  reservas            ReservaSala[]
-  transacoes          TransacaoCarteira[]
-  plantoesPublicados  Plantao[]          @relation("PlantaoPublicadoPorMedico")
-  pagamentosRecebidos Pagamento[]        @relation("PagamentoBeneficiario")
-
-  @@index([tipo])
-  @@index([especialidade])
-  @@index([verified])
-  @@index([disponivelAgora])
-}
-
-model Clinica {
-  id              String    @id @default(cuid())
-  userId          String    @unique
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  nome            String
-  alvara          String?
-  morada          String?
-  bairro          String?
-  zonaLuanda      String?
-  latitude        Decimal?   @db.Decimal(10, 7)
-  longitude       Decimal?   @db.Decimal(10, 7)
-  contacto        String?
-  website         String?
-  cidade          String?
-  provincia       String    @default("Luanda")
-  logo            String?
-  descricao       String?
-  rating          Float     @default(0)
-  totalAvaliacoes Int       @default(0)
-  verified        Boolean   @default(false)
-  criadoEm        DateTime  @default(now())
-  updatedEm       DateTime  @updatedAt
-
-  plantoes            Plantao[]
-  salas               Sala[]
-  avaliacoesRecebidas Avaliacao[] @relation("AlvoClinicaAvaliacao")
-
-  @@index([zonaLuanda])
-  @@index([verified])
-}
-
-model Consultorio {
-  id              String    @id @default(cuid())
-  userId          String    @unique
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  nome            String
-  morada          String?
-  bairro          String?
-  zonaLuanda      String?
-  contacto        String?
-  cidade          String?
-  provincia       String    @default("Luanda")
-  descricao       String?
-  rating          Float     @default(0)
-  totalAvaliacoes Int       @default(0)
-  verified        Boolean   @default(false)
-  criadoEm        DateTime  @default(now())
-  updatedEm       DateTime  @updatedAt
-
-  salas               Sala[]
-
-  @@index([zonaLuanda])
-  @@index([verified])
-}
-
-model Plantao {
-  id               String           @id @default(cuid())
-  clinicaId        String?
-  clinica          Clinica?         @relation(fields: [clinicaId], references: [id])
-  profissionalPublicadorId String?
-  profissionalPublicador   Profissional? @relation("PlantaoPublicadoPorMedico", fields: [profissionalPublicadorId], references: [id])
-  publicadoPorMedico       Boolean  @default(false)
-  salaId           String?
-  sala             Sala?            @relation(fields: [salaId], references: [id])
-  tipoProfissional TipoProfissional @default(MEDICO)
-  especialidade    String
-  dataInicio       DateTime
-  dataFim          DateTime
-  valorKwanzas     Int
-  valorCentavos    BigInt?
-  vagas            Int
-  vagasPreenchidas Int              @default(0)
-  estado           EstadoPlantao   @default(ABERTO)
-  descricao        String?
-
-  // Equipamentos
-  maca             Boolean @default(false)
-  estetoscopio     Boolean @default(false)
-  tensiometro      Boolean @default(false)
-  termometro       Boolean @default(false)
-  computador       Boolean @default(false)
-  materiaisBasicos Boolean @default(true)
-  nebulizador      Boolean @default(false)
-  oximetro         Boolean @default(false)
-  glucometro       Boolean @default(false)
-  desfibrilador    Boolean @default(false)
-
-  candidaturas Candidatura[]
-  pagamentos  Pagamento[]
-  avaliacoes   Avaliacao[]
-  criadoEm    DateTime      @default(now())
-  atualizadoEm DateTime     @updatedAt
-
-  @@index([clinicaId])
-  @@index([especialidade])
-  @@index([tipoProfissional])
-  @@index([dataInicio])
-  @@index([estado])
-}
-
-model Candidatura {
-  id             String            @id @default(cuid())
-  plantaoId      String
-  plantao        Plantao           @relation(fields: [plantaoId], references: [id])
-  profissionalId String
-  profissional   Profissional      @relation(fields: [profissionalId], references: [id])
-  estado         EstadoCandidatura @default(PENDENTE)
-  mensagem       String?
-  criadoEm      DateTime          @default(now())
-  respondidoEm  DateTime?
-  pagamentos    Pagamento[]
-
-  @@unique([plantaoId, profissionalId])
-  @@index([plantaoId])
-  @@index([profissionalId])
-  @@index([estado])
-}
-
-model Sala {
-  id               String    @id @default(cuid())
-  clinicaId        String?
-  clinica          Clinica?  @relation(fields: [clinicaId], references: [id])
-  consultorioId    String?
-  consultorio      Consultorio? @relation(fields: [consultorioId], references: [id])
-  nome             String
-  numero           String?
-  tipo             TipoSala
-  precoPorHora     Int
-  precoPorHoraCentavos BigInt?
-  zona             String
-  descricao        String?
-  fotos            String[]  @default([])
-  politicaCancel   String?
-  ativo            Boolean   @default(true)
-  disponivel       Boolean   @default(true)
-  avaliacaoMedia   Float     @default(0)
-  totalAvaliacoes  Int       @default(0)
-
-  // Equipamentos
-  maca             Boolean @default(false)
-  estetoscopio     Boolean @default(false)
-  tensiometro      Boolean @default(false)
-  termometro       Boolean @default(false)
-  computador       Boolean @default(false)
-  materiaisBasicos Boolean @default(true)
-  nebulizador      Boolean @default(false)
-  oximetro         Boolean @default(false)
-  glucometro       Boolean @default(false)
-  desfibrilador    Boolean @default(false)
-
-  reservas         ReservaSala[]
-  disponibilidades DisponibilidadeSala[]
-  avaliacoes       Avaliacao[]  @relation("AlvoSalaAvaliacao")
-  plantoes         Plantao[]
-  criadoEm         DateTime     @default(now())
-  atualizadoEm     DateTime     @updatedAt
-
-  @@index([clinicaId])
-  @@index([tipo])
-  @@index([ativo])
-}
-
-model ReservaSala {
-  id             String        @id @default(cuid())
-  salaId         String
-  sala           Sala          @relation(fields: [salaId], references: [id])
-  profissionalId String
-  profissional   Profissional  @relation(fields: [profissionalId], references: [id])
-  data           DateTime
-  dataFim        DateTime?
-  horaInicio     String
-  duracaoHoras   Int
-  valorTotal     Int
-  valorTotalCentavos BigInt?
-  comissaoAoa    Int?
-  valorClinicaAoa Int?
-  estado         EstadoReserva @default(CONFIRMADA)
-  codigoQr       String        @default(cuid())
-  pagoEm         DateTime?
-  canceladoEm    DateTime?
-  motivoCancelamento String?
-  criadoEm      DateTime      @default(now())
-  atualizadoEm  DateTime      @updatedAt
-  pagamentos    Pagamento[]
-
-  @@index([salaId])
-  @@index([profissionalId])
-  @@index([estado])
-}
-
-model Avaliacao {
-  id            String        @id @default(cuid())
-  tipo          AvaliacaoTipo?
-  autorId       String?
-  autor         Profissional? @relation("AutorAvaliacao", fields: [autorId], references: [id])
-  alvoMedicoId  String?
-  alvoMedico    Profissional? @relation("AlvoMedicoAvaliacao", fields: [alvoMedicoId], references: [id])
-  alvoClinicaId String?
-  alvoClinica   Clinica?      @relation("AlvoClinicaAvaliacao", fields: [alvoClinicaId], references: [id])
-  salaId        String?
-  sala          Sala?         @relation("AlvoSalaAvaliacao", fields: [salaId], references: [id])
-  plantaoId     String?
-  plantao       Plantao?      @relation(fields: [plantaoId], references: [id])
-  avaliadorUserId String?
-  avaliadoUserId String?
-  avaliadoRole  String?
-  estrelas      Int
-  comentario    String?
-  criadoEm     DateTime      @default(now())
-
-  @@index([autorId])
-  @@index([alvoClinicaId])
-  @@index([alvoMedicoId])
-  @@index([plantaoId])
-}
-
-model Credencial {
-  id               String           @id @default(cuid())
-  profissionalId   String
-  profissional     Profissional     @relation(fields: [profissionalId], references: [id], onDelete: Cascade)
-  tipo             CredencialTipo
-  ficheiroUrl      String?
-  ficheiroNome     String?
-  ficheiroTamanho  Int?
-  estado           CredencialEstado @default(PENDENTE)
-  express          Boolean          @default(false)
-  comentario       String?
-  verificadoPorId  String?
-  verificadoPor    User?            @relation("CredencialVerificadaPor", fields: [verificadoPorId], references: [id])
-  verificadoEm     DateTime?
-  criadoEm         DateTime         @default(now())
-  atualizadoEm     DateTime         @updatedAt
-
-  @@index([profissionalId])
-  @@index([estado])
-}
-
-model DisponibilidadeSala {
-  id          String   @id @default(cuid())
-  salaId      String
-  sala        Sala     @relation(fields: [salaId], references: [id], onDelete: Cascade)
-  diaSemana   Int
-  horaInicio  String
-  horaFim     String
-  disponivel  Boolean  @default(true)
-  criadoEm    DateTime @default(now())
-
-  @@index([salaId, diaSemana])
-}
-
-model Pagamento {
-  id                String          @id @default(cuid())
-  tipo              PagamentoTipo
-  plantaoId         String?
-  plantao           Plantao?        @relation(fields: [plantaoId], references: [id])
-  candidaturaId     String?
-  candidatura       Candidatura?    @relation(fields: [candidaturaId], references: [id])
-  reservaSalaId     String?
-  reservaSala       ReservaSala?    @relation(fields: [reservaSalaId], references: [id])
-  beneficiarioProfissionalId String?
-  beneficiario      Profissional?   @relation("PagamentoBeneficiario", fields: [beneficiarioProfissionalId], references: [id])
-  valorBrutoAoa     Int
-  comissaoAoa       Int
-  valorLiquidoAoa   Int
-  metodo            PagamentoMetodo
-  estado            PagamentoEstado @default(PENDENTE)
-  referenciaExt     String?
-  webhookPayload    Json?
-  pagoEm            DateTime?
-  liberadoEm        DateTime?
-  criadoEm          DateTime        @default(now())
-  atualizadoEm      DateTime        @updatedAt
-
-  @@index([candidaturaId])
-  @@index([reservaSalaId])
-  @@index([beneficiarioProfissionalId])
-  @@index([estado])
-  @@index([referenciaExt])
-}
-
-model Documento {
-  id             String          @id @default(cuid())
-  profissionalId String
-  profissional   Profissional    @relation(fields: [profissionalId], references: [id])
-  tipo           String
-  ficheiro       String?
-  estado         EstadoDocumento @default(NAO_ENVIADO)
-  criadoEm      DateTime        @default(now())
-  atualizadoEm  DateTime        @updatedAt
-}
-
-model TransacaoCarteira {
-  id             String          @id @default(cuid())
-  profissionalId String
-  profissional   Profissional    @relation(fields: [profissionalId], references: [id])
-  tipo           TipoTransacao
-  valorCentavos  BigInt
-  descricao      String
-  referencia     String?
-  estado         EstadoTransacao @default(PROCESSADO)
-  criadoEm      DateTime        @default(now())
-
-  @@index([profissionalId])
-  @@index([tipo])
-  @@index([criadoEm])
-}
-
-model Notificacao {
-  id       String   @id @default(cuid())
-  userId   String
-  user     User     @relation(fields: [userId], references: [id])
-  tipo     String
-  titulo   String
-  corpo    String
-  href     String?
-  lida     Boolean  @default(false)
-  criadoEm DateTime @default(now())
-
-  @@index([userId])
-  @@index([lida])
-}
-

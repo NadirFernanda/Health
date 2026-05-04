@@ -11,6 +11,7 @@ export async function GET() {
     include: {
       user: { select: { email: true, criadoEm: true, isActive: true } },
       credenciais: { select: { estado: true, express: true } },
+      documentos: { select: { id: true, tipo: true, ficheiro: true, estado: true } },
     },
   });
 
@@ -47,6 +48,13 @@ export async function GET() {
             : "APROVADO"
           : "PENDENTE",
         tipoVerificacao: temCredencialExpress ? "EXPRESS" : "NORMAL",
+        documentos: m.documentos.map((doc) => ({
+          id: doc.id,
+          tipo: doc.tipo,
+          estado: doc.estado,
+          ficheiro: doc.ficheiro ?? "",
+        })),
+        rejeicaoMotivo: m.rejeicaoMotivo ?? "",
         criadoEm: m.user.criadoEm.toISOString(),
       };
     })
