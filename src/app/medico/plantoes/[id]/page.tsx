@@ -159,7 +159,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
           </>
         )}
 
-        {(candidatura?.estado as string) === "CONTRATO_PENDENTE" && (
+        {candidatura?.estado === "CONTRATO_PENDENTE" && (
           <div className="space-y-2">
             <div className="bg-blue-50 border border-blue-100 rounded-2xl px-4 py-4 text-center">
               <FileText size={22} className="text-blue-500 mx-auto mb-2" strokeWidth={1.75} />

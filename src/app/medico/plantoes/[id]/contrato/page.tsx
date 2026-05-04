@@ -39,7 +39,7 @@ export default async function ContratoPage({
   });
 
   if (!candidatura) return notFound();
-  if ((candidatura.estado as string) !== "CONTRATO_PENDENTE") {
+  if (candidatura.estado !== "CONTRATO_PENDENTE") {
     redirect(`/medico/plantoes/${plantaoId}`);
   }
 

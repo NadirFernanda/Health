@@ -31,7 +31,7 @@ export async function POST(
 
   if (!candidatura) return Response.json({ error: "Não encontrado" }, { status: 404 });
 
-  if ((candidatura.estado as string) !== "CONTRATO_PENDENTE") {
+  if (candidatura.estado !== "CONTRATO_PENDENTE") {
     return Response.json({ error: "Contrato não está pendente de assinatura" }, { status: 409 });
   }
 

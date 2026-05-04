@@ -185,7 +185,7 @@ export default async function DetalhePlantaoClinica({
                     nomeMedico={c.profissional.nome}
                   />
                 )}
-                {(c.estado as string) === "CONTRATO_PENDENTE" && (
+                {c.estado === "CONTRATO_PENDENTE" && (
                   <span className="flex-1 flex items-center justify-center text-xs text-blue-600 font-semibold bg-blue-50 rounded-xl py-2.5 gap-1">
                     ⏳ A aguardar assinatura
                   </span>

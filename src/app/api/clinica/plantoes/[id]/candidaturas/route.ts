@@ -68,7 +68,7 @@ export async function PATCH(
       await tx.candidatura.update({
         where: { id: candidaturaId },
         data: {
-          estado: "CONTRATO_PENDENTE" as never,
+          estado: "CONTRATO_PENDENTE",
           contratoGeradoEm: new Date(),
         },
       });
