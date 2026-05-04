@@ -1,12 +1,13 @@
 ﻿import { prisma } from "@/lib/db";
+import { getAuthSession, getProfissionalFromSession } from "@/lib/api-auth";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MapPin, Star, Stethoscope, Calendar, Clock, Banknote, Users, CheckCircle, XCircle, BadgeCheck, AlertTriangle } from "lucide-react";
+import { MapPin, Star, Stethoscope, Calendar, Clock, Banknote, Users, CheckCircle, XCircle, BadgeCheck, AlertTriangle, MessageCircle, CheckCircle2, XCircle as XCircleIcon } from "lucide-react";
 
-function formatAOA(v: number) { return new Intl.NumberFormat("pt-AO").format(v) + " AOA"; }
-function formatData(d: Date) { return d.toLocaleDateString("pt-AO", { weekday: "long", day: "2-digit", month: "long", year: "numeric" }); }
-function formatHora(d: Date) { return d.toLocaleTimeString("pt-AO", { hour: "2-digit", minute: "2-digit" }); }
+function formatAOA(v: number) { return new Intl.NumberFormat("pt-PT").format(v) + " AOA"; }
+function formatData(d: Date) { return d.toLocaleDateString("pt-PT", { weekday: "long", day: "2-digit", month: "long", year: "numeric" }); }
+function formatHora(d: Date) { return d.toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" }); }
 function calcularDuracao(inicio: Date, fim: Date) {
   const h = Math.round((fim.getTime() - inicio.getTime()) / 3600000);
   return `${h}h`;
@@ -19,6 +20,25 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
     include: { clinica: true, profissionalPublicador: true },
   });
   if (!plantao) return notFound();
+
+  // Verificar candidatura do médico autenticado (se houver sessão)
+  let candidatura: { id: string; estado: string; naoLidas: number } | null = null;
+  const session = await getAuthSession();
+  if (session?.role === "MEDICO") {
+    const prof = await getProfissionalFromSession(session);
+    if (prof) {
+      const cand = await prisma.candidatura.findUnique({
+        where: { plantaoId_profissionalId: { plantaoId: id, profissionalId: prof.id } },
+        include: { _count: { select: { mensagens: true } } },
+      });
+      if (cand) {
+        const naoLidas = await prisma.mensagem.count({
+          where: { candidaturaId: cand.id, lida: false, autorUserId: { not: session.id } },
+        });
+        candidatura = { id: cand.id, estado: cand.estado, naoLidas };
+      }
+    }
+  }
 
   const { clinica, profissionalPublicador, especialidade, dataInicio, dataFim, valorKwanzas, vagas, vagasPreenchidas, descricao } = plantao;
 
@@ -111,17 +131,81 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
         </div>
       )}
 
-      {/* CTA */}
-      <div className="px-4 py-6">
-        <Link
-          href={`/medico/plantoes/${plantao.id}/confirmar`}
-          className="block w-full text-center bg-[#0B3C74] hover:bg-[#00A99D] text-white font-bold py-4 rounded-2xl transition-colors text-base"
-        >
-          CANDIDATAR-ME
-        </Link>
-        <p className="text-center text-xs text-gray-400 mt-2">
-          <span className="inline-flex items-center gap-1"><AlertTriangle size={13} strokeWidth={2} className="text-yellow-500" /> Só médicos com perfil verificado podem candidatar-se</span>
-        </p>
+      {/* CTA — varia conforme o estado da candidatura */}
+      <div className="px-4 py-6 space-y-3">
+        {!candidatura && plantao.estado === "ABERTO" && (
+          <>
+            <Link
+              href={`/medico/plantoes/${plantao.id}/confirmar`}
+              className="block w-full text-center bg-[#0B3C74] hover:bg-[#00A99D] text-white font-bold py-4 rounded-2xl transition-colors text-base"
+            >
+              CANDIDATAR-ME
+            </Link>
+            <p className="text-center text-xs text-gray-400">
+              <span className="inline-flex items-center gap-1">
+                <AlertTriangle size={13} strokeWidth={2} className="text-yellow-500" />
+                Só médicos com perfil verificado podem candidatar-se
+              </span>
+            </p>
+          </>
+        )}
+
+        {candidatura?.estado === "PENDENTE" && (
+          <div className="space-y-2">
+            <div className="bg-yellow-50 border border-yellow-100 rounded-2xl px-4 py-3 text-center">
+              <p className="text-sm font-bold text-yellow-700">Candidatura enviada</p>
+              <p className="text-xs text-yellow-600 mt-0.5">A aguardar resposta da clínica</p>
+            </div>
+            <Link
+              href={`/medico/plantoes/${plantao.id}/mensagens`}
+              className="relative flex items-center justify-center gap-2 w-full border border-gray-200 text-gray-700 font-semibold py-3 rounded-2xl text-sm"
+            >
+              <MessageCircle size={16} strokeWidth={2} />
+              Mensagens com a clínica
+              {candidatura.naoLidas > 0 && (
+                <span className="absolute right-4 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {candidatura.naoLidas}
+                </span>
+              )}
+            </Link>
+          </div>
+        )}
+
+        {candidatura?.estado === "ACEITE" && (
+          <div className="space-y-2">
+            <div className="bg-green-50 border border-green-100 rounded-2xl px-4 py-3 text-center">
+              <CheckCircle2 size={20} className="text-green-500 mx-auto mb-1" strokeWidth={2} />
+              <p className="text-sm font-bold text-green-700">Candidatura aceite!</p>
+              <p className="text-xs text-green-600 mt-0.5">Confirma presença no plantão</p>
+            </div>
+            <Link
+              href={`/medico/plantoes/${plantao.id}/mensagens`}
+              className="relative flex items-center justify-center gap-2 w-full border border-gray-200 text-gray-700 font-semibold py-3 rounded-2xl text-sm"
+            >
+              <MessageCircle size={16} strokeWidth={2} />
+              Mensagens com a clínica
+              {candidatura.naoLidas > 0 && (
+                <span className="absolute right-4 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {candidatura.naoLidas}
+                </span>
+              )}
+            </Link>
+          </div>
+        )}
+
+        {candidatura?.estado === "RECUSADO" && (
+          <div className="bg-red-50 border border-red-100 rounded-2xl px-4 py-3 text-center">
+            <XCircleIcon size={20} className="text-red-400 mx-auto mb-1" strokeWidth={2} />
+            <p className="text-sm font-semibold text-red-600">Candidatura não seleccionada</p>
+            <p className="text-xs text-red-400 mt-0.5">Continua a explorar outros plantões</p>
+          </div>
+        )}
+
+        {plantao.estado !== "ABERTO" && !candidatura && (
+          <div className="bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-center">
+            <p className="text-sm text-gray-500">Este plantão já não está disponível</p>
+          </div>
+        )}
       </div>
     </div>
   );
