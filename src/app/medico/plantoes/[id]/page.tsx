@@ -34,9 +34,10 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
         if (cand) {
           let naoLidas = 0;
           try {
-            naoLidas = await prisma.mensagem.count({
-              where: { candidaturaId: cand.id, lida: false, autorUserId: { not: session?.id } },
+            const msgs = await prisma.mensagem.findMany({
+              where: { candidaturaId: cand.id, lida: false },
             });
+            naoLidas = msgs.filter((m) => m.autorUserId !== session?.id).length;
           } catch (msgErr) {
             console.error("[Plantao Detail] Error counting messages:", msgErr);
           }
