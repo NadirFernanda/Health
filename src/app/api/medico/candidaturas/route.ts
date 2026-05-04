@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 function plantaoToJson(p: {
   id: string;
   clinica: { id: string; nome: string; morada: string | null; cidade: string | null; provincia: string; logo: string | null; rating: number; totalAvaliacoes: number; verified: boolean } | null;
-  profissionalPublicador: { id: string; nome: string; especialidade: string | null } | null;
+  profissionalPublicador: { id: string; nome: string; especialidade: string | null; verified: boolean } | null;
   especialidade: string; dataInicio: Date; dataFim: Date; valorKwanzas: number; vagas: number; vagasPreenchidas: number; estado: string; descricao: string | null;
   maca: boolean; estetoscopio: boolean; tensiometro: boolean; termometro: boolean; computador: boolean; materiaisBasicos: boolean; nebulizador: boolean; oximetro: boolean; glucometro: boolean; desfibrilador: boolean;
 }) {
@@ -37,7 +37,14 @@ export async function GET() {
 
   const candidaturas = await prisma.candidatura.findMany({
     where: { profissionalId: prof.id },
-    include: { plantao: { include: { clinica: true, profissionalPublicador: true } } },
+    include: {
+      plantao: {
+        include: {
+          clinica: true,
+          profissionalPublicador: true,
+        },
+      },
+    },
     orderBy: { criadoEm: "desc" },
   });
 
