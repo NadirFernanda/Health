@@ -27,15 +27,23 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
   if (session?.role === "MEDICO") {
     const prof = await getProfissionalFromSession(session);
     if (prof) {
-      const cand = await prisma.candidatura.findUnique({
-        where: { plantaoId_profissionalId: { plantaoId: id, profissionalId: prof.id } },
-        include: { _count: { select: { mensagens: true } } },
-      });
-      if (cand) {
-        const naoLidas = await prisma.mensagem.count({
-          where: { candidaturaId: cand.id, lida: false, autorUserId: { not: session.id } },
+      try {
+        const cand = await prisma.candidatura.findUnique({
+          where: { plantaoId_profissionalId: { plantaoId: id, profissionalId: prof.id } },
         });
-        candidatura = { id: cand.id, estado: cand.estado, naoLidas };
+        if (cand) {
+          let naoLidas = 0;
+          try {
+            naoLidas = await prisma.mensagem.count({
+              where: { candidaturaId: cand.id, lida: false, autorUserId: { not: session?.id } },
+            });
+          } catch (msgErr) {
+            console.error("[Plantao Detail] Error counting messages:", msgErr);
+          }
+          candidatura = { id: cand.id, estado: cand.estado, naoLidas };
+        }
+      } catch (candErr) {
+        console.error("[Plantao Detail] Error loading candidatura:", candErr);
       }
     }
   }
