@@ -63,7 +63,10 @@ export function PlantaoCard({
   const headerVerified = !publicadoPorMedico && clinica?.verified;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <Link
+      href={`${basePath}/${plantao.id}`}
+      className="block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden active:scale-[0.99] transition-transform"
+    >
       {/* Header */}
       <div className="px-4 pt-4 pb-3 flex items-start justify-between gap-2">
         <div className="flex items-center gap-3">
@@ -146,23 +149,17 @@ export function PlantaoCard({
             </span>
           )}
           {showCandidatarBtn && estado === "ABERTO" && (
-            <Link
-              href={`${basePath}/${plantao.id}`}
-              className="flex-1 text-center bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
-            >
+            <span className="flex-1 text-center bg-brand-500 text-white text-sm font-semibold py-2.5 rounded-xl">
               CANDIDATAR-ME
-            </Link>
+            </span>
           )}
           {showCandidatos && (
-            <Link
-              href={`${basePath}/${plantao.id}`}
-              className="flex-1 text-center bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
-            >
+            <span className="flex-1 text-center bg-brand-500 text-white text-sm font-semibold py-2.5 rounded-xl">
               VER DETALHES
-            </Link>
+            </span>
           )}
         </div>
       )}
-    </div>
+    </Link>
   );
 }
