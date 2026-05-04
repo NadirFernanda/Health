@@ -165,7 +165,10 @@ export default function PerfilMedico() {
     APROVADO:    { cls: "text-green-500",  icon: <CheckCircle size={15} strokeWidth={2} />, label: "Verificado" },
     PENDENTE:    { cls: "text-yellow-500", icon: <Clock size={15} strokeWidth={2} />,       label: "Em análise" },
     NAO_ENVIADO: { cls: "text-gray-300",   icon: <Paperclip size={15} strokeWidth={2} />,   label: "Não enviado" },
-  REJEITADO:   { cls: "text-red-500",    icon: <X size={15} strokeWidth={2} />,           label: "Rejeitado" },
+    REJEITADO:   { cls: "text-red-500",    icon: <X size={15} strokeWidth={2} />,           label: "Rejeitado" },
+  };
+
+  if (loading) {
     return (
       <div>
         <TopBar titulo="O meu Perfil" back="/medico" />
