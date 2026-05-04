@@ -169,10 +169,12 @@ model Candidatura {
   plantaoId      String
   profissionalId String
   estado         EstadoCandidatura @default(PENDENTE)
-  criadoEm       DateTime          @default(now())
-  mensagem       String?
-  respondidoEm   DateTime?
-  plantao        Plantao           @relation(fields: [plantaoId], references: [id])
+  criadoEm           DateTime          @default(now())
+  mensagem           String?
+  respondidoEm       DateTime?
+  contratoGeradoEm   DateTime?
+  contratoAssinadoEm DateTime?
+  plantao            Plantao           @relation(fields: [plantaoId], references: [id])
   profissional   Profissional      @relation(fields: [profissionalId], references: [id])
   pagamentos     Pagamento[]
   mensagens      Mensagem[]
@@ -424,6 +426,7 @@ enum EstadoPlantao {
 
 enum EstadoCandidatura {
   PENDENTE
+  CONTRATO_PENDENTE
   ACEITE
   RECUSADO
   CANCELADA

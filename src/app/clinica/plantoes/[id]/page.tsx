@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
-import { Calendar, Clock, Banknote, BadgeCheck, Star, MessageCircle, Users, CheckCircle2 } from "lucide-react";
+import { Calendar, BadgeCheck, Star, MessageCircle, Users, CheckCircle2 } from "lucide-react";
 import CandidaturaActions from "./CandidaturaActions";
 
 function formatAOA(v: number) {
@@ -32,26 +32,26 @@ export default async function DetalhePlantaoClinica({
 
   const candidaturas = await prisma.candidatura.findMany({
     where: { plantaoId: id },
-    include: {
-      profissional: true,
-      _count: { select: { mensagens: true } },
-    },
+    include: { profissional: true },
     orderBy: { criadoEm: "desc" },
   });
 
-  // Contar mensagens não lidas por candidatura
-  const naoLidasPorCandidatura = await prisma.mensagem.groupBy({
-    by: ["candidaturaId"],
-    where: {
-      candidaturaId: { in: candidaturas.map((c) => c.id) },
-      lida: false,
-      autorUserId: { not: session.id },
-    },
-    _count: { id: true },
-  });
-  const naoLidasMap = Object.fromEntries(
-    naoLidasPorCandidatura.map((r) => [r.candidaturaId, r._count.id])
-  );
+  // Contar mensagens não lidas por candidatura (defensive — Mensagem table may not exist yet)
+  let naoLidasMap: Record<string, number> = {};
+  try {
+    const naoLidasPorCandidatura = await prisma.mensagem.groupBy({
+      by: ["candidaturaId"],
+      where: {
+        candidaturaId: { in: candidaturas.map((c) => c.id) },
+        lida: false,
+        autorUserId: { not: session.id },
+      },
+      _count: { id: true },
+    });
+    naoLidasMap = Object.fromEntries(
+      naoLidasPorCandidatura.map((r) => [r.candidaturaId, r._count.id])
+    );
+  } catch { /* Mensagem table may not exist yet in production */ }
 
   const estadoMap: Record<string, { label: string; cls: string }> = {
     ABERTO:       { label: "Aberto",       cls: "bg-green-50 text-green-700" },
@@ -61,10 +61,11 @@ export default async function DetalhePlantaoClinica({
     CANCELADO:    { label: "Cancelado",    cls: "bg-red-50 text-red-600" },
   };
   const estadoCand: Record<string, { label: string; cls: string }> = {
-    PENDENTE:  { label: "Pendente",  cls: "bg-yellow-50 text-yellow-700" },
-    ACEITE:    { label: "Aceite",    cls: "bg-green-50 text-green-700" },
-    RECUSADO:  { label: "Recusado",  cls: "bg-red-50 text-red-600" },
-    CANCELADA: { label: "Cancelada", cls: "bg-gray-100 text-gray-500" },
+    PENDENTE:           { label: "Pendente",           cls: "bg-yellow-50 text-yellow-700" },
+    CONTRATO_PENDENTE:  { label: "Contrato enviado",   cls: "bg-blue-50 text-blue-700" },
+    ACEITE:             { label: "Aceite",             cls: "bg-green-50 text-green-700" },
+    RECUSADO:           { label: "Recusado",           cls: "bg-red-50 text-red-600" },
+    CANCELADA:          { label: "Cancelada",          cls: "bg-gray-100 text-gray-500" },
   };
 
   const estado = estadoMap[plantao.estado] ?? { label: plantao.estado, cls: "bg-gray-100 text-gray-600" };
@@ -183,6 +184,11 @@ export default async function DetalhePlantaoClinica({
                     plantaoId={id}
                     nomeMedico={c.profissional.nome}
                   />
+                )}
+                {(c.estado as string) === "CONTRATO_PENDENTE" && (
+                  <span className="flex-1 flex items-center justify-center text-xs text-blue-600 font-semibold bg-blue-50 rounded-xl py-2.5 gap-1">
+                    ⏳ A aguardar assinatura
+                  </span>
                 )}
               </div>
             </div>

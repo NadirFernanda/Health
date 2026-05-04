@@ -1,5 +1,5 @@
--- CreateTable Mensagem
-CREATE TABLE "Mensagem" (
+-- CreateTable Mensagem (idempotent)
+CREATE TABLE IF NOT EXISTS "Mensagem" (
     "id" TEXT NOT NULL,
     "candidaturaId" TEXT NOT NULL,
     "autorUserId" TEXT NOT NULL,
@@ -10,17 +10,19 @@ CREATE TABLE "Mensagem" (
     CONSTRAINT "Mensagem_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex Mensagem on candidaturaId
-CREATE INDEX "Mensagem_candidaturaId_idx" ON "Mensagem"("candidaturaId");
+-- CreateIndex (idempotent)
+CREATE INDEX IF NOT EXISTS "Mensagem_candidaturaId_idx" ON "Mensagem"("candidaturaId");
+CREATE INDEX IF NOT EXISTS "Mensagem_autorUserId_idx" ON "Mensagem"("autorUserId");
 
--- CreateIndex Mensagem on autorUserId
-CREATE INDEX "Mensagem_autorUserId_idx" ON "Mensagem"("autorUserId");
+-- AddForeignKey (idempotent via DO...EXCEPTION)
+DO $$ BEGIN
+  ALTER TABLE "Mensagem" ADD CONSTRAINT "Mensagem_candidaturaId_fkey"
+    FOREIGN KEY ("candidaturaId") REFERENCES "Candidatura"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
--- AddForeignKey Mensagem
-ALTER TABLE "Mensagem" ADD CONSTRAINT "Mensagem_candidaturaId_fkey" FOREIGN KEY ("candidaturaId") REFERENCES "Candidatura"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey Mensagem
-ALTER TABLE "Mensagem" ADD CONSTRAINT "Mensagem_autorUserId_fkey" FOREIGN KEY ("autorUserId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddColumn Profissional
-ALTER TABLE "Profissional" ADD COLUMN "rejeicaoMotivo" TEXT;
+DO $$ BEGIN
+  ALTER TABLE "Mensagem" ADD CONSTRAINT "Mensagem_autorUserId_fkey"
+    FOREIGN KEY ("autorUserId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

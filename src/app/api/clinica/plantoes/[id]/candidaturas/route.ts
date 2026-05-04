@@ -2,9 +2,6 @@ import { NextRequest } from "next/server";
 import { requireSession, getClinicaFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 
-// Comissão da plataforma: 10%
-const COMISSAO_PERCENTAGEM = 0.10;
-
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -55,73 +52,46 @@ export async function PATCH(
   const { id: plantaoId } = await params;
   const { candidaturaId, estado } = await request.json();
 
-  if (!candidaturaId || !["ACEITE", "RECUSADO"].includes(estado)) {
+  if (!candidaturaId || !["CONTRATO_PENDENTE", "RECUSADO"].includes(estado)) {
     return Response.json({ error: "Dados inválidos" }, { status: 400 });
   }
 
-  // Verificar que a candidatura pertence a um plantão desta clínica
   const candidatura = await prisma.candidatura.findFirst({
     where: { id: candidaturaId, plantaoId, plantao: { clinicaId: clinica.id } },
     include: { plantao: true, profissional: true },
   });
   if (!candidatura) return Response.json({ error: "Não encontrado" }, { status: 404 });
 
-  await prisma.$transaction(async (tx) => {
-    await tx.candidatura.update({
-      where: { id: candidaturaId },
-      data: { estado, respondidoEm: new Date() },
-    });
-
-    if (estado === "ACEITE") {
-      const valorBruto = candidatura.plantao.valorKwanzas;
-      const comissao = Math.round(valorBruto * COMISSAO_PERCENTAGEM);
-      const valorLiquido = valorBruto - comissao;
-
-      await tx.pagamento.create({
+  if (estado === "CONTRATO_PENDENTE") {
+    // Clinic accepts → send contract to doctor for signature
+    await prisma.$transaction(async (tx) => {
+      await tx.candidatura.update({
+        where: { id: candidaturaId },
         data: {
-          tipo: "TURNO",
-          plantaoId,
-          candidaturaId,
-          beneficiarioProfissionalId: candidatura.profissionalId,
-          valorBrutoAoa: valorBruto,
-          comissaoAoa: comissao,
-          valorLiquidoAoa: valorLiquido,
-          metodo: "TRANSFERENCIA_BANCARIA",
-          estado: "CONFIRMADO",
+          estado: "CONTRATO_PENDENTE" as never,
+          contratoGeradoEm: new Date(),
         },
       });
 
-      // Incrementar vagas preenchidas
-      const novasVagasPreenchidas = candidatura.plantao.vagasPreenchidas + 1;
-      const novoEstado = novasVagasPreenchidas >= candidatura.plantao.vagas ? "FECHADO" : "ABERTO";
-
-      await tx.plantao.update({
-        where: { id: plantaoId },
-        data: { vagasPreenchidas: { increment: 1 }, estado: novoEstado },
-      });
-
-      // Se o plantão ficou cheio, rejeitar automaticamente as candidaturas pendentes restantes
-      if (novoEstado === "FECHADO") {
-        await tx.candidatura.updateMany({
-          where: { plantaoId, estado: "PENDENTE", id: { not: candidaturaId } },
-          data: { estado: "RECUSADO", respondidoEm: new Date() },
-        });
-      }
-
-      // Notificar o médico aceite
       await tx.notificacao.create({
         data: {
           userId: candidatura.profissional.userId,
-          tipo: "CANDIDATURA",
-          titulo: "Candidatura aceite!",
-          corpo: `A tua candidatura para o plantão de ${candidatura.plantao.especialidade} foi aceite.`,
-          href: `/medico/plantoes/${plantaoId}`,
+          tipo: "CONTRATO",
+          titulo: "Contrato para assinar",
+          corpo: `A ${clinica.nome} aceitou a sua candidatura. Reveja e assine o contrato para confirmar o plantão de ${candidatura.plantao.especialidade}.`,
+          href: `/medico/plantoes/${plantaoId}/contrato`,
         },
       });
-    }
+    });
+  }
 
-    if (estado === "RECUSADO") {
-      // Notificar o médico recusado
+  if (estado === "RECUSADO") {
+    await prisma.$transaction(async (tx) => {
+      await tx.candidatura.update({
+        where: { id: candidaturaId },
+        data: { estado: "RECUSADO", respondidoEm: new Date() },
+      });
+
       await tx.notificacao.create({
         data: {
           userId: candidatura.profissional.userId,
@@ -131,8 +101,8 @@ export async function PATCH(
           href: "/medico/plantoes",
         },
       });
-    }
-  });
+    });
+  }
 
   return Response.json({ estado });
 }

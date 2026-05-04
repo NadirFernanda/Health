@@ -3,7 +3,7 @@ import { getAuthSession, getProfissionalFromSession } from "@/lib/api-auth";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MapPin, Star, Stethoscope, Calendar, Clock, Banknote, Users, CheckCircle, XCircle, BadgeCheck, AlertTriangle, MessageCircle, CheckCircle2, XCircle as XCircleIcon } from "lucide-react";
+import { MapPin, Star, Stethoscope, Calendar, Clock, Banknote, Users, CheckCircle, XCircle, BadgeCheck, AlertTriangle, MessageCircle, CheckCircle2, XCircle as XCircleIcon, FileText } from "lucide-react";
 
 function formatAOA(v: number) { return new Intl.NumberFormat("pt-PT").format(v) + " AOA"; }
 function formatData(d: Date) { return d.toLocaleDateString("pt-PT", { weekday: "long", day: "2-digit", month: "long", year: "numeric" }); }
@@ -157,6 +157,34 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
               </span>
             </p>
           </>
+        )}
+
+        {(candidatura?.estado as string) === "CONTRATO_PENDENTE" && (
+          <div className="space-y-2">
+            <div className="bg-blue-50 border border-blue-100 rounded-2xl px-4 py-4 text-center">
+              <FileText size={22} className="text-blue-500 mx-auto mb-2" strokeWidth={1.75} />
+              <p className="text-sm font-bold text-blue-800">Contrato para assinar</p>
+              <p className="text-xs text-blue-600 mt-0.5">A clínica aceitou a sua candidatura. Reveja e assine o contrato para confirmar.</p>
+            </div>
+            <Link
+              href={`/medico/plantoes/${plantao.id}/contrato`}
+              className="block w-full text-center bg-[#0B3C74] text-white font-bold py-4 rounded-2xl text-base active:scale-[0.99] transition-transform"
+            >
+              VER E ASSINAR CONTRATO
+            </Link>
+            <Link
+              href={`/medico/plantoes/${plantao.id}/mensagens`}
+              className="relative flex items-center justify-center gap-2 w-full border border-gray-200 text-gray-700 font-semibold py-3 rounded-2xl text-sm"
+            >
+              <MessageCircle size={16} strokeWidth={2} />
+              Mensagens com a clínica
+              {(candidatura?.naoLidas ?? 0) > 0 && (
+                <span className="absolute right-4 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {candidatura?.naoLidas}
+                </span>
+              )}
+            </Link>
+          </div>
         )}
 
         {candidatura?.estado === "PENDENTE" && (

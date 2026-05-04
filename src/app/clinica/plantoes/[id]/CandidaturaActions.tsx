@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { FileText } from "lucide-react";
 
 export default function CandidaturaActions({
   candidaturaId,
@@ -12,9 +13,9 @@ export default function CandidaturaActions({
   nomeMedico: string;
 }) {
   const router = useRouter();
-  const [loading, setLoading] = useState<"ACEITE" | "RECUSADO" | null>(null);
+  const [loading, setLoading] = useState<"CONTRATO_PENDENTE" | "RECUSADO" | null>(null);
 
-  async function handleAction(estado: "ACEITE" | "RECUSADO") {
+  async function handleAction(estado: "CONTRATO_PENDENTE" | "RECUSADO") {
     setLoading(estado);
     const res = await fetch(`/api/clinica/plantoes/${plantaoId}/candidaturas`, {
       method: "PATCH",
@@ -36,10 +37,11 @@ export default function CandidaturaActions({
       </button>
       <button
         disabled={!!loading}
-        onClick={() => handleAction("ACEITE")}
-        className="flex-1 bg-[#00A99D] text-white font-bold py-2.5 rounded-xl text-xs disabled:opacity-50"
+        onClick={() => handleAction("CONTRATO_PENDENTE")}
+        className="flex-1 bg-[#00A99D] text-white font-bold py-2.5 rounded-xl text-xs disabled:opacity-50 flex items-center justify-center gap-1"
       >
-        {loading === "ACEITE" ? "…" : "Aceitar"}
+        <FileText size={12} strokeWidth={2.5} />
+        {loading === "CONTRATO_PENDENTE" ? "…" : `Aceitar ${nomeMedico.split(" ")[0]}`}
       </button>
     </>
   );

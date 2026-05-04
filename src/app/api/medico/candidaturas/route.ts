@@ -41,7 +41,9 @@ export async function GET() {
       plantao: {
         include: {
           clinica: true,
-          profissionalPublicador: true,
+          profissionalPublicador: {
+            select: { id: true, nome: true, especialidade: true, verified: true },
+          },
         },
       },
     },
