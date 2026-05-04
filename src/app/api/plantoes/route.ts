@@ -3,60 +3,82 @@ import { prisma } from "@/lib/db";
 import { getAuthSession } from "@/lib/api-auth";
 import type { TipoProfissional } from "@/generated/prisma/enums";
 
+const PAGE_SIZE = 20;
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const especialidade = searchParams.get("especialidade");
   const zona = searchParams.get("zona");
   const valorMax = searchParams.get("valorMax");
+  const valorMin = searchParams.get("valorMin");
   const tipoProfissional = searchParams.get("tipoProfissional");
   const disponivelAgora = searchParams.get("disponivelAgora") === "true";
+  const pagina = Math.max(1, parseInt(searchParams.get("pagina") ?? "1", 10));
 
   const agora = new Date();
 
-  const plantoes = await prisma.plantao.findMany({
-    where: {
-      estado: "ABERTO",
-      ...(especialidade && { especialidade }),
-      ...(tipoProfissional && { tipoProfissional: tipoProfissional as TipoProfissional }),
-      ...(zona && { clinicaId: { not: null }, clinica: { cidade: { contains: zona } } }),
-      ...(valorMax && { valorKwanzas: { lte: parseInt(valorMax) } }),
-      ...(disponivelAgora && {
-        dataInicio: {
-          gte: agora,
-          lte: new Date(agora.getTime() + 4 * 60 * 60 * 1000),
-        },
-      }),
-    },
-    include: {
-      clinica: true,
-      profissionalPublicador: true,
-      _count: { select: { candidaturas: true } },
-    },
-    orderBy: { dataInicio: "asc" },
-  });
+  const where = {
+    estado: "ABERTO" as const,
+    ...(especialidade && { especialidade }),
+    ...(tipoProfissional && { tipoProfissional: tipoProfissional as TipoProfissional }),
+    ...(zona && { clinica: { cidade: { contains: zona, mode: "insensitive" as const } } }),
+    ...(valorMax || valorMin
+      ? {
+          valorKwanzas: {
+            ...(valorMax && { lte: parseInt(valorMax) }),
+            ...(valorMin && { gte: parseInt(valorMin) }),
+          },
+        }
+      : {}),
+    ...(disponivelAgora && {
+      dataInicio: {
+        gte: agora,
+        lte: new Date(agora.getTime() + 4 * 60 * 60 * 1000),
+      },
+    }),
+  };
 
-  return Response.json(
-    plantoes.map((p) => ({
+  const [plantoes, total] = await prisma.$transaction([
+    prisma.plantao.findMany({
+      where,
+      include: {
+        clinica: true,
+        profissionalPublicador: true,
+        _count: { select: { candidaturas: true } },
+      },
+      orderBy: { dataInicio: "asc" },
+      skip: (pagina - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+    }),
+    prisma.plantao.count({ where }),
+  ]);
+
+  return Response.json({
+    plantoes: plantoes.map((p) => ({
       id: p.id,
       publicadoPorMedico: p.publicadoPorMedico,
-      clinica: p.clinica ? {
-        id: p.clinica.id,
-        nome: p.clinica.nome,
-        morada: p.clinica.morada,
-        cidade: p.clinica.cidade,
-        provincia: p.clinica.provincia,
-        logo: p.clinica.logo ?? "",
-        rating: p.clinica.rating,
-        totalAvaliacoes: p.clinica.totalAvaliacoes,
-        verified: p.clinica.verified,
-      } : null,
-      profissionalPublicador: p.profissionalPublicador ? {
-        id: p.profissionalPublicador.id,
-        nome: p.profissionalPublicador.nome,
-        especialidade: p.profissionalPublicador.especialidade,
-        rating: p.profissionalPublicador.rating,
-        verified: p.profissionalPublicador.verified,
-      } : null,
+      clinica: p.clinica
+        ? {
+            id: p.clinica.id,
+            nome: p.clinica.nome,
+            morada: p.clinica.morada,
+            cidade: p.clinica.cidade,
+            provincia: p.clinica.provincia,
+            logo: p.clinica.logo ?? "",
+            rating: p.clinica.rating,
+            totalAvaliacoes: p.clinica.totalAvaliacoes,
+            verified: p.clinica.verified,
+          }
+        : null,
+      profissionalPublicador: p.profissionalPublicador
+        ? {
+            id: p.profissionalPublicador.id,
+            nome: p.profissionalPublicador.nome,
+            especialidade: p.profissionalPublicador.especialidade,
+            rating: p.profissionalPublicador.rating,
+            verified: p.profissionalPublicador.verified,
+          }
+        : null,
       tipoProfissional: p.tipoProfissional,
       especialidade: p.especialidade,
       dataInicio: p.dataInicio.toISOString(),
@@ -68,12 +90,25 @@ export async function GET(request: NextRequest) {
       descricao: p.descricao ?? "",
       candidatos: p._count.candidaturas,
       equipamentos: {
-        maca: p.maca, estetoscopio: p.estetoscopio, tensiometro: p.tensiometro,
-        termometro: p.termometro, computador: p.computador, materiaisBasicos: p.materiaisBasicos,
-        nebulizador: p.nebulizador, oximetro: p.oximetro, glucometro: p.glucometro, desfibrilador: p.desfibrilador,
+        maca: p.maca,
+        estetoscopio: p.estetoscopio,
+        tensiometro: p.tensiometro,
+        termometro: p.termometro,
+        computador: p.computador,
+        materiaisBasicos: p.materiaisBasicos,
+        nebulizador: p.nebulizador,
+        oximetro: p.oximetro,
+        glucometro: p.glucometro,
+        desfibrilador: p.desfibrilador,
       },
-    }))
-  );
+    })),
+    paginacao: {
+      pagina,
+      porPagina: PAGE_SIZE,
+      total,
+      totalPaginas: Math.ceil(total / PAGE_SIZE),
+    },
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -97,23 +132,34 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Campos obrigatórios em falta" }, { status: 400 });
   }
 
+  const inicio = new Date(dataInicio);
+  const fim = new Date(dataFim);
+  if (isNaN(inicio.getTime()) || isNaN(fim.getTime()) || fim <= inicio) {
+    return Response.json({ error: "Datas inválidas" }, { status: 400 });
+  }
+
   const plantao = await prisma.plantao.create({
     data: {
       clinicaId: clinica.id,
       tipoProfissional: tipoProfissional ?? "MEDICO",
       especialidade,
-      dataInicio: new Date(dataInicio),
-      dataFim: new Date(dataFim),
+      dataInicio: inicio,
+      dataFim: fim,
       valorKwanzas: parseInt(valorKwanzas),
       valorCentavos: BigInt(parseInt(valorKwanzas)) * 100n,
       vagas: parseInt(vagas),
       descricao: descricao ?? null,
       salaId: salaId ?? null,
-      maca: maca ?? false, estetoscopio: estetoscopio ?? false,
-      tensiometro: tensiometro ?? false, termometro: termometro ?? false,
-      computador: computador ?? false, materiaisBasicos: materiaisBasicos ?? true,
-      nebulizador: nebulizador ?? false, oximetro: oximetro ?? false,
-      glucometro: glucometro ?? false, desfibrilador: desfibrilador ?? false,
+      maca: maca ?? false,
+      estetoscopio: estetoscopio ?? false,
+      tensiometro: tensiometro ?? false,
+      termometro: termometro ?? false,
+      computador: computador ?? false,
+      materiaisBasicos: materiaisBasicos ?? true,
+      nebulizador: nebulizador ?? false,
+      oximetro: oximetro ?? false,
+      glucometro: glucometro ?? false,
+      desfibrilador: desfibrilador ?? false,
     },
   });
 

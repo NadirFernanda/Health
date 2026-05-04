@@ -46,11 +46,13 @@ export default async function PlantoesDaClinica() {
                   {p.dataFim.toLocaleTimeString("pt-AO", { hour: "2-digit", minute: "2-digit" })}
                 </p>
               </div>
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${
-                p.estado === "ABERTO" ? "bg-green-50 text-green-700" :
-                p.estado === "FECHADO" ? "bg-gray-100 text-gray-600" :
-                "bg-blue-50 text-blue-700"
-              }`}>{p.estado}</span>
+              {{
+                ABERTO:       <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 bg-green-50 text-green-700">Aberto</span>,
+                FECHADO:      <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 bg-gray-100 text-gray-600">Fechado</span>,
+                EM_ANDAMENTO: <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 bg-yellow-50 text-yellow-700">Em andamento</span>,
+                CONCLUIDO:    <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 bg-blue-50 text-blue-700">Concluído</span>,
+                CANCELADO:    <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 bg-red-50 text-red-600">Cancelado</span>,
+              }[p.estado] ?? <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 bg-gray-100 text-gray-600">{p.estado}</span>}
             </div>
             <div className="flex items-center gap-3 mt-3">
               <span className="text-[#0B3C74] font-bold text-sm">{formatAOA(p.valorKwanzas)}</span>

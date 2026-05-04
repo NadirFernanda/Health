@@ -1,9 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { PlantaoCard } from "@/components/plantao-card";
 import { TopBar } from "@/components/nav";
 import { EmptyState } from "@/components/empty-state";
-import { Search } from "lucide-react";
+import { Search, AlertCircle } from "lucide-react";
 
 type PlantaoAPI = {
   id: string; tipoProfissional: string; especialidade: string; dataInicio: string; dataFim: string;
@@ -26,38 +26,75 @@ const especialidades = [
   "Técnico de Análises Clínicas", "Técnico de Radiologia",
 ];
 
-const zonas = ["Centralidade Horizonte", "Talatona", "Miramar", "Alvalade", "Kilamba"];
+const zonas = [
+  "Centralidade Horizonte", "Talatona", "Miramar", "Alvalade", "Kilamba",
+  "Maianga", "Ingombota", "Rangel", "Cazenga", "Viana", "Cacuaco",
+];
+
+const VALOR_MAX: Record<string, number | undefined> = {
+  todos: undefined,
+  ate15: 15000,
+  "15a20": 20000,
+  mais20: undefined,
+};
+
+const VALOR_MIN: Record<string, number | undefined> = {
+  todos: undefined,
+  ate15: undefined,
+  "15a20": 15001,
+  mais20: 20001,
+};
 
 export default function BuscarPlantoes() {
   const [plantoes, setPlantoes] = useState<PlantaoAPI[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
   const [filtroEsp, setFiltroEsp] = useState<string>("Todas");
   const [filtroTipo, setFiltroTipo] = useState<string>("Todos");
   const [filtroValor, setFiltroValor] = useState<string>("todos");
   const [filtroZona, setFiltroZona] = useState<string>("Todas");
   const [disponivelAgora, setDisponivelAgora] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    // Cancelar fetch anterior para evitar race conditions
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+
+    setLoading(true);
+    setErro(null);
+
     const params = new URLSearchParams();
     if (filtroEsp !== "Todas") params.set("especialidade", filtroEsp);
     if (filtroTipo !== "Todos") params.set("tipoProfissional", filtroTipo);
     if (filtroZona !== "Todas") params.set("zona", filtroZona);
     if (disponivelAgora) params.set("disponivelAgora", "true");
-    fetch(`/api/plantoes?${params}`).then((r) => r.json()).then((d) => {
-      if (Array.isArray(d)) setPlantoes(d);
-    });
-  }, [filtroEsp, filtroTipo, filtroZona, disponivelAgora]);
 
-  const agora = new Date();
-  const plantoesFiltrados = plantoes.filter((p) => {
-    const valorOk =
-      filtroValor === "todos" ||
-      (filtroValor === "ate15" && p.valorKwanzas <= 15000) ||
-      (filtroValor === "15a20" && p.valorKwanzas > 15000 && p.valorKwanzas <= 20000) ||
-      (filtroValor === "mais20" && p.valorKwanzas > 20000);
-    const inicio = new Date(p.dataInicio);
-    const dispOk = !disponivelAgora || (inicio.getTime() - agora.getTime() < 4 * 60 * 60 * 1000 && inicio > agora);
-    return valorOk && p.estado === "ABERTO" && (!disponivelAgora || dispOk);
-  });
+    const maxValor = VALOR_MAX[filtroValor];
+    const minValor = VALOR_MIN[filtroValor];
+    if (maxValor !== undefined) params.set("valorMax", String(maxValor));
+    if (minValor !== undefined) params.set("valorMin", String(minValor));
+
+    fetch(`/api/plantoes?${params}`, { signal: ctrl.signal })
+      .then((r) => {
+        if (!r.ok) throw new Error(`Erro ${r.status}`);
+        return r.json();
+      })
+      .then((d) => {
+        // Suporta formato paginado { plantoes, paginacao } ou array legado
+        const lista = Array.isArray(d) ? d : (d.plantoes ?? []);
+        setPlantoes(lista);
+        setLoading(false);
+      })
+      .catch((e) => {
+        if (e.name === "AbortError") return;
+        setErro("Não foi possível carregar os plantões. Tenta novamente.");
+        setLoading(false);
+      });
+
+    return () => ctrl.abort();
+  }, [filtroEsp, filtroTipo, filtroZona, disponivelAgora, filtroValor]);
 
   return (
     <div>
@@ -164,22 +201,47 @@ export default function BuscarPlantoes() {
 
       {/* Resultados */}
       <div className="px-4 pt-4 pb-4">
-        <p className="text-xs text-gray-500 mb-3">{plantoesFiltrados.length} plantão(ões) encontrado(s)</p>
-        <div className="space-y-3">
-          {plantoesFiltrados.length === 0 ? (
-            <EmptyState
-              icon={Search}
-              title="Nenhum plantão encontrado"
-              description="Nenhum turno na sua zona agora. Novas publicações chegam todos os dias!"
-              actionLabel="Activar alertas"
-              actionHref="/medico/notificacoes"
-            />
-          ) : (
-            plantoesFiltrados.map((p) => (
-              <PlantaoCard key={p.id} plantao={p as never} showCandidatarBtn />
-            ))
-          )}
-        </div>
+        {loading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-3" />
+                <div className="h-3 bg-gray-100 rounded w-3/4 mb-2" />
+                <div className="h-3 bg-gray-100 rounded w-1/3" />
+              </div>
+            ))}
+          </div>
+        ) : erro ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+            <AlertCircle className="text-red-400" size={40} />
+            <p className="text-sm text-gray-600">{erro}</p>
+            <button
+              onClick={() => setFiltroEsp(filtroEsp)}
+              className="px-4 py-2 bg-[#0B3C74] text-white rounded-full text-sm font-semibold"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        ) : (
+          <>
+            <p className="text-xs text-gray-500 mb-3">{plantoes.length} plantão(ões) encontrado(s)</p>
+            <div className="space-y-3">
+              {plantoes.length === 0 ? (
+                <EmptyState
+                  icon={Search}
+                  title="Nenhum plantão encontrado"
+                  description="Nenhum turno na sua zona agora. Novas publicações chegam todos os dias!"
+                  actionLabel="Activar alertas"
+                  actionHref="/medico/notificacoes"
+                />
+              ) : (
+                plantoes.map((p) => (
+                  <PlantaoCard key={p.id} plantao={p as never} showCandidatarBtn />
+                ))
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

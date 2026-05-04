@@ -60,6 +60,11 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Ficheiro demasiado grande. Máximo 10 MB." }, { status: 400 });
   }
 
+  const allowedMimes = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+  if (!allowedMimes.includes(arquivo.type)) {
+    return Response.json({ error: "Formato não suportado. Use PDF, JPG ou PNG." }, { status: 400 });
+  }
+
   const safeName = arquivo.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
   const uploadsDir = path.join(process.cwd(), "public", "uploads", "medicos", prof.id);
   await fs.mkdir(uploadsDir, { recursive: true });

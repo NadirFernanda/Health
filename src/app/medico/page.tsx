@@ -30,8 +30,9 @@ export default function MedicoDashboard() {
     fetch("/api/medico/perfil").then((r) => r.ok ? r.json() : null).then((d) => {
       if (d?.nome) { setPerfil(d); setDisponivel(d.disponivelAgora ?? false); }
     }).catch(() => {});
-    fetch("/api/plantoes").then((r) => r.ok ? r.json() : []).then((d) => {
-      if (Array.isArray(d)) setPlantoes(d.filter((p: PlantaoAPI) => p.estado === "ABERTO").slice(0, 5));
+    fetch("/api/plantoes?pagina=1").then((r) => r.ok ? r.json() : {}).then((d: { plantoes?: PlantaoAPI[] } | PlantaoAPI[]) => {
+      const lista: PlantaoAPI[] = Array.isArray(d) ? d : ((d as { plantoes?: PlantaoAPI[] }).plantoes ?? []);
+      setPlantoes(lista.filter((p) => p.estado === "ABERTO").slice(0, 5));
     }).catch(() => {});
     fetch("/api/medico/candidaturas").then((r) => r.ok ? r.json() : []).then((d) => {
       if (Array.isArray(d)) {
