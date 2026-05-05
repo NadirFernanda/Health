@@ -168,6 +168,12 @@ export default async function DetalhePlantaoClinica({
               {/* Acções */}
               <div className="flex gap-2 mt-3">
                 <Link
+                  href={`/clinica/medicos/${c.profissional.id}`}
+                  className="flex items-center justify-center gap-1 border border-[#0B3C74]/20 text-[#0B3C74] font-semibold py-2.5 px-3 rounded-xl text-xs"
+                >
+                  Ver Perfil
+                </Link>
+                <Link
                   href={`/clinica/plantoes/${id}/mensagens/${c.id}`}
                   className="relative flex items-center justify-center gap-1.5 flex-1 border border-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl text-xs"
                 >

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { PlantaoCard } from "@/components/plantao-card";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bell, User, MapPin, BadgeCheck, ClipboardList, HeadphonesIcon } from "lucide-react";
+import { Bell, User, MapPin, BadgeCheck, ClipboardList, HeadphonesIcon, Stethoscope } from "lucide-react";
 
 function formatAOA(v: number) {
   return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
@@ -126,8 +126,15 @@ export default async function ClinicaDashboard() {
         </Link>
       </div>
 
-      {/* Suporte */}
-      <div className="px-4 pt-3">
+      {/* Médicos + Suporte */}
+      <div className="px-4 pt-3 space-y-2">
+        <Link href="/clinica/medicos" className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
+          <Stethoscope size={18} strokeWidth={1.75} className="text-[#0B3C74] shrink-0" />
+          <div>
+            <p className="font-bold text-sm text-[#0B3C74]">Médicos Disponíveis</p>
+            <p className="text-xs text-blue-600 mt-0.5">Pesquisa e avalia médicos registados na plataforma →</p>
+          </div>
+        </Link>
         <Link href="/support" className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
           <HeadphonesIcon size={18} strokeWidth={1.75} className="text-gray-500 shrink-0" />
           <div>
