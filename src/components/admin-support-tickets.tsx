@@ -1,27 +1,17 @@
-/**
- * Componente Admin para gerenciar support tickets
- */
-
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import Link from "next/link";
-import { PRIORITY_LABELS, STATUS_LABELS } from "@/lib/support-constants";
-
-interface User {
-  id: string;
-  email: string;
-}
+import { useEffect, useState } from "react";
+import { ChevronLeft, MessageCircle, Clock, Tag, CheckCircle, Circle, Send } from "lucide-react";
 
 interface Reply {
   id: string;
   corpo: string;
   isAdminReply: boolean;
   criadoEm: string;
-  autor: User;
+  autor: { id: string; email: string; role: string };
 }
 
-interface AdminTicket {
+interface Ticket {
   id: string;
   assunto: string;
   categoria: string;
@@ -29,375 +19,328 @@ interface AdminTicket {
   prioridade: string;
   criadoEm: string;
   atualizadoEm: string;
-  user: User;
-  userProvidedId?: string;
-  contactoEmail?: string;
+  user: { id: string; email: string };
   totalRespostas: number;
   ultimaResposta?: string;
 }
 
-interface AdminTicketDetail extends AdminTicket {
+interface TicketDetail extends Ticket {
   mensagem: string;
+  contactoEmail?: string;
+  contactoTelefone?: string;
   respostas: Reply[];
 }
 
+const estadoBadge: Record<string, { cls: string; label: string; icon: typeof Circle }> = {
+  ABERTO:       { cls: "bg-yellow-100 text-yellow-700", label: "Aberto",       icon: Circle },
+  EM_ANDAMENTO: { cls: "bg-blue-100 text-blue-700",    label: "Em Andamento",  icon: Clock },
+  FECHADO:      { cls: "bg-gray-100 text-gray-500",    label: "Fechado",       icon: CheckCircle },
+};
+
+const prioridadeBadge: Record<string, { cls: string; label: string }> = {
+  NORMAL:  { cls: "bg-gray-100 text-gray-500",      label: "Normal" },
+  ALTA:    { cls: "bg-orange-100 text-orange-600",   label: "Alta" },
+  URGENTE: { cls: "bg-red-100 text-red-600",         label: "Urgente" },
+};
+
+type Filtro = { estado: string; prioridade: string; search: string };
+
 export function AdminSupportTickets() {
-  const [tickets, setTickets] = useState<AdminTicket[]>([]);
-  const [selectedTicket, setSelectedTicket] = useState<AdminTicketDetail | null>(null);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [detail, setDetail] = useState<TicketDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingDetail, setLoadingDetail] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [newStatus, setNewStatus] = useState("");
-
-  // Filtros
-  const [estado, setEstado] = useState("");
-  const [categoria, setCategoria] = useState("");
-  const [prioridade, setPrioridade] = useState("");
-  const [search, setSearch] = useState("");
+  const [replyError, setReplyError] = useState<string | null>(null);
+  const [filtro, setFiltro] = useState<Filtro>({ estado: "", prioridade: "", search: "" });
 
   useEffect(() => {
-    fetchTickets();
-  }, [estado, categoria, prioridade, search]);
+    loadTickets();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtro]);
 
-  async function fetchTickets() {
+  async function loadTickets() {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (estado) params.append("estado", estado);
-      if (categoria) params.append("categoria", categoria);
-      if (prioridade) params.append("prioridade", prioridade);
-      if (search) params.append("search", search);
-
-      const response = await fetch(`/api/admin/support/tickets?${params}`);
-
-      if (!response.ok) {
-        throw new Error("Erro ao carregar tickets");
-      }
-
-      const data = await response.json();
-      setTickets(data.tickets);
-      setSelectedTicket(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro desconhecido");
+      const p = new URLSearchParams();
+      if (filtro.estado) p.set("estado", filtro.estado);
+      if (filtro.prioridade) p.set("prioridade", filtro.prioridade);
+      if (filtro.search) p.set("search", filtro.search);
+      const res = await fetch(`/api/admin/support/tickets?${p}`, { credentials: "include" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((data as { error?: string }).error ?? `HTTP ${res.status}`);
+      setTickets((data as { tickets: Ticket[] }).tickets ?? []);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
     }
   }
 
-  async function selectTicket(ticketId: string) {
+  async function openTicket(id: string) {
+    setLoadingDetail(true);
+    setReplyError(null);
     try {
-      const response = await fetch(`/api/admin/support/tickets/${ticketId}`);
-
-      if (!response.ok) {
-        throw new Error("Erro ao carregar ticket");
-      }
-
-      const data = await response.json();
-      setSelectedTicket(data.ticket);
-      setNewStatus(data.ticket.estado);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro desconhecido");
+      const res = await fetch(`/api/admin/support/tickets/${id}`, { credentials: "include" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((data as { error?: string }).error ?? `HTTP ${res.status}`);
+      setDetail((data as { ticket: TicketDetail }).ticket);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoadingDetail(false);
     }
   }
 
-  async function handleReply(e: FormEvent<HTMLFormElement>) {
+  async function handleReply(e: { preventDefault(): void }) {
     e.preventDefault();
-
-    if (!selectedTicket || !replyText.trim()) return;
-
+    if (!detail || !replyText.trim()) return;
     setSubmitting(true);
+    setReplyError(null);
     try {
-      const response = await fetch(`/api/support/tickets/${selectedTicket.id}/reply`, {
+      const res = await fetch(`/api/admin/support/tickets/${detail.id}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ corpo: replyText }),
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ corpo: replyText.trim() }),
       });
-
-      if (!response.ok) {
-        throw new Error("Erro ao enviar resposta");
-      }
-
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((data as { error?: string }).error ?? `HTTP ${res.status}`);
       setReplyText("");
-      await selectTicket(selectedTicket.id); // Recarregar ticket
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro desconhecido");
+      await openTicket(detail.id);
+      await loadTickets();
+    } catch (e: unknown) {
+      setReplyError(e instanceof Error ? e.message : String(e));
     } finally {
       setSubmitting(false);
     }
   }
 
-  async function handleStatusChange() {
-    if (!selectedTicket || newStatus === selectedTicket.estado) return;
-
+  async function updateEstado(estado: string) {
+    if (!detail) return;
     try {
-      const response = await fetch(`/api/admin/support/tickets/${selectedTicket.id}/status`, {
+      const res = await fetch(`/api/admin/support/tickets/${detail.id}/status`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ estado: newStatus }),
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ estado }),
       });
-
-      if (!response.ok) {
-        throw new Error("Erro ao atualizar status");
+      if (res.ok) {
+        setDetail((d) => d ? { ...d, estado } : d);
+        setTickets((prev) => prev.map((t) => t.id === detail.id ? { ...t, estado } : t));
       }
-
-      await selectTicket(selectedTicket.id);
-      await fetchTickets();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro desconhecido");
-    }
+    } catch { /* silent */ }
   }
 
-  // Contar tickets por estado
-  const estatisticas = {
-    total: tickets.length,
-    abertos: tickets.filter((t) => t.estado === "ABERTO").length,
-    andamento: tickets.filter((t) => t.estado === "EM_ANDAMENTO").length,
-    fechados: tickets.filter((t) => t.estado === "FECHADO").length,
-  };
+  // ── Detail view ──────────────────────────────────────────────────────────
+  if (loadingDetail) return (
+    <div className="flex justify-center pt-16">
+      <div className="w-8 h-8 border-2 border-[#0B3C74] border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
-  return (
-    <div className="grid grid-cols-3 gap-6 h-screen overflow-hidden">
-      {/* Painel Esquerdo - Lista de Tickets */}
-      <div className="col-span-1 bg-white border-r flex flex-col overflow-hidden">
-        <div className="p-6 border-b">
-          <h2 className="text-lg font-semibold text-gray-900">Support Tickets</h2>
-
-          {/* Estatísticas */}
-          <div className="grid grid-cols-2 gap-2 mt-4 text-xs">
-            <div className="bg-blue-50 p-2 rounded">
-              <p className="text-blue-700 font-semibold">{estatisticas.abertos}</p>
-              <p className="text-blue-600">Abertos</p>
-            </div>
-            <div className="bg-yellow-50 p-2 rounded">
-              <p className="text-yellow-700 font-semibold">{estatisticas.andamento}</p>
-              <p className="text-yellow-600">Em Andamento</p>
-            </div>
-            <div className="bg-gray-50 p-2 rounded col-span-2">
-              <p className="text-gray-700 font-semibold">{estatisticas.total} Total</p>
-            </div>
+  if (detail) {
+    const eb = estadoBadge[detail.estado] ?? estadoBadge.ABERTO;
+    const pb = prioridadeBadge[detail.prioridade] ?? prioridadeBadge.NORMAL;
+    return (
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3 shrink-0">
+          <button onClick={() => setDetail(null)} className="text-gray-400 hover:text-[#0B3C74]">
+            <ChevronLeft size={20} strokeWidth={2} />
+          </button>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-900 truncate">{detail.assunto}</p>
+            <p className="text-xs text-gray-400 truncate">{detail.user.email}</p>
           </div>
-        </div>
-
-        {/* Filtros */}
-        <div className="p-4 border-b space-y-3 bg-gray-50">
-          <input
-            type="text"
-            placeholder="Pesquisar..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-          />
-
+          {/* Estado selector */}
           <select
-            value={estado}
-            onChange={(e) => setEstado(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+            value={detail.estado}
+            onChange={(e) => updateEstado(e.target.value)}
+            className={`text-[10px] font-semibold px-2 py-1 rounded-full border-0 outline-none cursor-pointer ${eb.cls}`}
           >
-            <option value="">Todos os estados</option>
             <option value="ABERTO">Aberto</option>
             <option value="EM_ANDAMENTO">Em Andamento</option>
             <option value="FECHADO">Fechado</option>
           </select>
-
-          <select
-            value={prioridade}
-            onChange={(e) => setPrioridade(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-          >
-            <option value="">Todas as prioridades</option>
-            <option value="NORMAL">Normal</option>
-            <option value="ALTA">Alta</option>
-            <option value="URGENTE">Urgente</option>
-          </select>
         </div>
 
-        {/* Lista de Tickets */}
-        <div className="flex-1 overflow-y-auto">
-          {loading ? (
-            <div className="p-4 text-center text-gray-500 text-sm">Carregando...</div>
-          ) : tickets.length === 0 ? (
-            <div className="p-4 text-center text-gray-500 text-sm">Nenhum ticket encontrado</div>
-          ) : (
-            <div className="space-y-1 p-2">
-              {tickets.map((ticket) => (
-                <button
-                  key={ticket.id}
-                  onClick={() => selectTicket(ticket.id)}
-                  className={`w-full text-left p-3 rounded border transition text-sm ${
-                    selectedTicket?.id === ticket.id
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <div className="font-medium text-gray-900 truncate">{ticket.assunto}</div>
-                  <div className="text-xs text-gray-600 mt-1">
-                    {ticket.user.email}
-                  </div>
-                  <div className="flex gap-2 mt-2">
-                    <span className="text-xs px-2 py-1 bg-gray-100 rounded">
-                      {STATUS_LABELS[ticket.estado]}
-                    </span>
-                    <span className="text-xs px-2 py-1 bg-gray-100 rounded">
-                      {PRIORITY_LABELS[ticket.prioridade]}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
+        {/* Meta */}
+        <div className="bg-gray-50 px-4 py-2.5 flex flex-wrap gap-2 shrink-0 border-b border-gray-100">
+          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${pb.cls}`}>{pb.label}</span>
+          <span className="text-[10px] text-gray-400 flex items-center gap-1">
+            <Tag size={10} /> {detail.categoria}
+          </span>
+          <span className="text-[10px] text-gray-400 flex items-center gap-1">
+            <Clock size={10} /> {new Date(detail.criadoEm).toLocaleDateString("pt-AO", { day: "2-digit", month: "short", year: "numeric" })}
+          </span>
+          {detail.contactoEmail && (
+            <span className="text-[10px] text-gray-400">{detail.contactoEmail}</span>
           )}
         </div>
-      </div>
 
-      {/* Painel Direito - Detalhes do Ticket */}
-      <div className="col-span-2 bg-white flex flex-col overflow-hidden">
-        {selectedTicket ? (
-          <>
-            {/* Header */}
-            <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900">{selectedTicket.assunto}</h3>
-                  <p className="text-sm text-gray-600 mt-1">#{selectedTicket.id.slice(0, 8)}</p>
-                </div>
-                <div className="flex gap-2">
-                  <select
-                    value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded text-sm"
-                  >
-                    <option value="ABERTO">Aberto</option>
-                    <option value="EM_ANDAMENTO">Em Andamento</option>
-                    <option value="FECHADO">Fechado</option>
-                  </select>
-                  <button
-                    onClick={handleStatusChange}
-                    disabled={newStatus === selectedTicket.estado}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded text-sm font-medium transition"
-                  >
-                    Atualizar
-                  </button>
-                </div>
+        {/* Thread */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+          {/* Mensagem original */}
+          <div className="bg-white border border-gray-100 rounded-2xl p-4">
+            <p className="text-[10px] font-semibold text-gray-400 mb-1.5 uppercase tracking-wide">Mensagem original</p>
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">{detail.mensagem}</p>
+          </div>
+
+          {/* Respostas */}
+          {detail.respostas.map((r) => (
+            <div
+              key={r.id}
+              className={`rounded-2xl p-4 ${r.isAdminReply ? "bg-[#0B3C74]/5 border border-[#0B3C74]/10 ml-4" : "bg-white border border-gray-100 mr-4"}`}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <p className="text-[10px] font-semibold text-gray-500">
+                  {r.isAdminReply ? "Suporte" : r.autor.email}
+                </p>
+                <p className="text-[10px] text-gray-300">
+                  {new Date(r.criadoEm).toLocaleDateString("pt-AO", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                </p>
               </div>
-
-              <div className="grid grid-cols-4 gap-4 mt-4 text-sm">
-                <div>
-                  <span className="text-gray-600">Utilizador</span>
-                  <p className="font-medium text-gray-900">{selectedTicket.user.email}</p>
-                </div>
-                <div>
-                  <span className="text-gray-600">Categoria</span>
-                  <p className="font-medium text-gray-900">{selectedTicket.categoria}</p>
-                </div>
-                <div>
-                  <span className="text-gray-600">Criado em</span>
-                  <p className="font-medium text-gray-900">
-                    {new Date(selectedTicket.criadoEm).toLocaleDateString("pt-AO")}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-gray-600">Respostas</span>
-                  <p className="font-medium text-gray-900">{selectedTicket.totalRespostas}</p>
-                </div>
-              </div>
-
-              {/* Info de Contacto */}
-              {(selectedTicket.userProvidedId || selectedTicket.contactoEmail) && (
-                <div className="mt-4 pt-4 border-t border-blue-200">
-                  <p className="text-xs font-semibold text-gray-700 mb-2">INFORMAÇÕES DE CONTACTO:</p>
-                  <div className="flex gap-4 text-xs">
-                    {selectedTicket.userProvidedId && (
-                      <div>
-                        <span className="text-gray-600">ID:</span>
-                        <p className="font-medium">{selectedTicket.userProvidedId}</p>
-                      </div>
-                    )}
-                    {selectedTicket.contactoEmail && (
-                      <div>
-                        <span className="text-gray-600">Email:</span>
-                        <p className="font-medium">{selectedTicket.contactoEmail}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">{r.corpo}</p>
             </div>
+          ))}
+        </div>
 
-            {error && (
-              <div className="p-4 bg-red-50 border-b border-red-200 text-red-800 text-sm">
-                {error}
-              </div>
-            )}
-
-            {/* Conteúdo - Mensagem Original e Respostas */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {/* Mensagem Original */}
-              <div className="bg-gray-50 border rounded p-4">
-                <p className="text-sm font-medium text-gray-900 mb-2">Mensagem Original</p>
-                <p className="text-gray-700 text-sm whitespace-pre-wrap">{selectedTicket.mensagem}</p>
-              </div>
-
-              {/* Thread de Respostas */}
-              {selectedTicket.respostas.map((reply) => (
-                <div
-                  key={reply.id}
-                  className={`border rounded p-4 ${
-                    reply.isAdminReply ? "bg-blue-50 border-blue-200" : "bg-white"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-medium text-gray-900">
-                      {reply.isAdminReply ? "🔒 Suporte" : "👤 " + reply.autor.email}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(reply.criadoEm).toLocaleDateString("pt-AO", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
-                  <p className="text-gray-700 text-sm whitespace-pre-wrap">{reply.corpo}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Formulário de Resposta */}
-            {selectedTicket.estado !== "FECHADO" && (
-              <form
-                onSubmit={handleReply}
-                className="border-t p-6 space-y-3 bg-gray-50"
+        {/* Reply form */}
+        {detail.estado !== "FECHADO" && (
+          <form onSubmit={handleReply} className="border-t border-gray-100 bg-white px-4 py-3 shrink-0">
+            {replyError && <p className="text-xs text-red-500 mb-2">{replyError}</p>}
+            <div className="flex gap-2 items-end">
+              <textarea
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Escreve a tua resposta..."
+                rows={2}
+                className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#0B3C74] resize-none"
+              />
+              <button
+                type="submit"
+                disabled={submitting || !replyText.trim()}
+                className="shrink-0 bg-[#0B3C74] disabled:opacity-40 text-white p-3 rounded-xl transition-opacity"
               >
-                <label className="text-sm font-medium text-gray-900">Responder</label>
-                <textarea
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  placeholder="Escreva sua resposta..."
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                  minLength={5}
-                  maxLength={3000}
-                />
-                <button
-                  type="submit"
-                  disabled={submitting || !replyText.trim()}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium py-2 px-4 rounded text-sm transition"
-                >
-                  {submitting ? "Enviando..." : "Enviar Resposta"}
-                </button>
-              </form>
-            )}
-          </>
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500">Selecione um ticket para ver os detalhes</p>
+                <Send size={16} strokeWidth={2} />
+              </button>
+            </div>
+          </form>
+        )}
+        {detail.estado === "FECHADO" && (
+          <div className="border-t border-gray-100 bg-gray-50 px-4 py-3 text-center text-xs text-gray-400 shrink-0">
+            Ticket fechado · <button onClick={() => updateEstado("ABERTO")} className="text-[#0B3C74] font-semibold">Reabrir</button>
           </div>
         )}
       </div>
+    );
+  }
+
+  // ── List view ─────────────────────────────────────────────────────────────
+  return (
+    <div className="p-4 space-y-4 pb-10 max-w-2xl mx-auto">
+
+      {/* Header */}
+      <div className="flex items-center justify-between pt-1">
+        <h1 className="text-base font-bold text-gray-900">Tickets de Suporte</h1>
+        <span className="bg-teal-50 text-teal-700 text-xs font-bold px-2.5 py-1 rounded-full">
+          {tickets.length} total
+        </span>
+      </div>
+
+      {/* Filtros */}
+      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+        {(["", "ABERTO", "EM_ANDAMENTO", "FECHADO"] as const).map((e) => {
+          const labels: Record<string, string> = { "": "Todos", ABERTO: "Abertos", EM_ANDAMENTO: "Em Andamento", FECHADO: "Fechados" };
+          return (
+            <button
+              key={e}
+              onClick={() => setFiltro((f) => ({ ...f, estado: e }))}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${filtro.estado === e ? "bg-[#0B3C74] text-white" : "bg-gray-100 text-gray-600"}`}
+            >
+              {labels[e]}
+            </button>
+          );
+        })}
+        {(["", "NORMAL", "ALTA", "URGENTE"] as const).map((p) => {
+          if (!p) return null;
+          const pb = prioridadeBadge[p];
+          return (
+            <button
+              key={p}
+              onClick={() => setFiltro((f) => ({ ...f, prioridade: f.prioridade === p ? "" : p }))}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${filtro.prioridade === p ? pb.cls : "bg-gray-100 text-gray-600"}`}
+            >
+              {pb.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Pesquisa */}
+      <input
+        type="text"
+        placeholder="Pesquisar por assunto ou email..."
+        value={filtro.search}
+        onChange={(e) => setFiltro((f) => ({ ...f, search: e.target.value }))}
+        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#0B3C74]"
+      />
+
+      {/* Error */}
+      {error && (
+        <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-2xl p-4 text-center">{error}</div>
+      )}
+
+      {/* Loading */}
+      {loading && (
+        <div className="flex justify-center pt-8">
+          <div className="w-8 h-8 border-2 border-[#0B3C74] border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+
+      {/* Lista */}
+      {!loading && (
+        <div className="space-y-3">
+          {tickets.map((t) => {
+            const eb = estadoBadge[t.estado] ?? estadoBadge.ABERTO;
+            const pb = prioridadeBadge[t.prioridade] ?? prioridadeBadge.NORMAL;
+            return (
+              <button
+                key={t.id}
+                onClick={() => openTicket(t.id)}
+                className="w-full text-left bg-white rounded-2xl border border-gray-100 p-4 active:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm font-semibold text-gray-900 flex-1 truncate">{t.assunto}</p>
+                  <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${eb.cls}`}>{eb.label}</span>
+                </div>
+                <p className="text-xs text-gray-400 mt-0.5 truncate">{t.user.email}</p>
+                <div className="flex items-center gap-3 mt-2 text-[10px] text-gray-400">
+                  <span className={`font-semibold px-1.5 py-0.5 rounded-md ${pb.cls}`}>{pb.label}</span>
+                  <span className="flex items-center gap-1"><Tag size={10} /> {t.categoria}</span>
+                  {t.totalRespostas > 0 && (
+                    <span className="flex items-center gap-1"><MessageCircle size={10} /> {t.totalRespostas}</span>
+                  )}
+                  <span className="ml-auto flex items-center gap-1">
+                    <Clock size={10} />
+                    {new Date(t.criadoEm).toLocaleDateString("pt-AO", { day: "2-digit", month: "short" })}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+
+          {tickets.length === 0 && (
+            <div className="text-center py-14 text-gray-400 text-sm bg-white rounded-2xl border border-gray-100">
+              Nenhum ticket encontrado.
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
