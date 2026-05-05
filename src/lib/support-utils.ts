@@ -3,7 +3,6 @@
  */
 
 import { prisma } from "@/lib/db";
-import { sendPushToUser } from "@/lib/push";
 
 /**
  * Opções de categoria de ticket
@@ -102,12 +101,6 @@ export async function notifyUserNewReply(ticketId: string): Promise<void> {
       href: `/support/tickets/${ticket.id}`,
     },
   });
-  sendPushToUser(ticket.userId, {
-    title: `Resposta do Suporte: ${ticket.assunto}`,
-    body: "Um membro do suporte respondeu ao seu ticket",
-    href: `/support/tickets/${ticket.id}`,
-    tag: "SUPORTE",
-  }).catch(() => {});
 }
 
 /**

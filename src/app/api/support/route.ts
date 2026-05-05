@@ -4,9 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
-import { verifyAuth } from "@/lib/auth";
+import { requireSession } from "@/lib/api-auth";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import {
   isValidCategory,
@@ -32,18 +31,12 @@ const CreateTicketSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const headersList = headers();
-    const auth = await verifyAuth(headersList);
-
-    if (!auth) {
-      return NextResponse.json(
-        { error: "Não autorizado" },
-        { status: 401 }
-      );
-    }
+    const authResult = await requireSession();
+    if (authResult instanceof Response) return authResult;
+    const { session } = authResult;
 
     // Rate limiting: máximo 3 tickets a cada 10 minutos
-    const rateLimitKey = `support-ticket:${auth.id}`;
+    const rateLimitKey = `support-ticket:${session.id}`;
     const rateLimit = await checkRateLimit({
       key: rateLimitKey,
       maxRequests: 3,
@@ -74,7 +67,7 @@ export async function POST(request: NextRequest) {
     // Criar ticket
     const ticket = await prisma.supportTicket.create({
       data: {
-        userId: auth.id,
+        userId: session.id,
         categoria: data.categoria,
         assunto: data.assunto,
         mensagem: data.mensagem,
@@ -104,7 +97,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Dados inválidos", details: error.errors },
+        { error: "Dados inválidos", details: error.issues },
         { status: 400 }
       );
     }

@@ -4,24 +4,16 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
-import { verifyAuth } from "@/lib/auth";
+import { requireSession } from "@/lib/api-auth";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const headersList = headers();
-    const auth = await verifyAuth(headersList);
-
-    if (!auth || auth.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Acesso negado. Apenas admins" },
-        { status: 403 }
-      );
-    }
+    const authResult = await requireSession("ADMIN");
+    if (authResult instanceof Response) return authResult;
 
     const { id } = await params;
 

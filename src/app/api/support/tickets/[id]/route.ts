@@ -4,24 +4,17 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
-import { verifyAuth } from "@/lib/auth";
+import { requireSession } from "@/lib/api-auth";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const headersList = headers();
-    const auth = await verifyAuth(headersList);
-
-    if (!auth) {
-      return NextResponse.json(
-        { error: "Não autorizado" },
-        { status: 401 }
-      );
-    }
+    const authResult = await requireSession();
+    if (authResult instanceof Response) return authResult;
+    const { session: auth } = authResult;
 
     const { id } = await params;
 

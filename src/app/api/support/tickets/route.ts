@@ -4,21 +4,14 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
-import { verifyAuth } from "@/lib/auth";
+import { requireSession } from "@/lib/api-auth";
 
 export async function GET(request: NextRequest) {
   try {
-    const headersList = headers();
-    const auth = await verifyAuth(headersList);
-
-    if (!auth) {
-      return NextResponse.json(
-        { error: "Não autorizado" },
-        { status: 401 }
-      );
-    }
+    const authResult = await requireSession();
+    if (authResult instanceof Response) return authResult;
+    const { session } = authResult;
 
     // Parâmetros de query
     const searchParams = request.nextUrl.searchParams;
@@ -28,7 +21,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     // Filtrar por estado se fornecido
-    const where: any = { userId: auth.id };
+    const where: any = { userId: session.id };
     if (estado && ["ABERTO", "EM_ANDAMENTO", "FECHADO"].includes(estado)) {
       where.estado = estado;
     }

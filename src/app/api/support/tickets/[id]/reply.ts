@@ -4,14 +4,14 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
-import { verifyAuth } from "@/lib/auth";
+import { requireSession } from "@/lib/api-auth";
 import {
   reopenTicketIfClosed,
   markTicketAsInProgress,
   notifyUserNewReply,
 } from "@/lib/support-utils";
+import { sendPushToUser } from "@/lib/push";
 import { z } from "zod";
 
 const ReplySchema = z.object({
@@ -26,15 +26,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const headersList = headers();
-    const auth = await verifyAuth(headersList);
-
-    if (!auth) {
-      return NextResponse.json(
-        { error: "Não autorizado" },
-        { status: 401 }
-      );
-    }
+    const authResult = await requireSession();
+    if (authResult instanceof Response) return authResult;
+    const { session: auth } = authResult;
 
     const { id } = await params;
 
@@ -89,6 +83,12 @@ export async function POST(
     if (isAdmin) {
       await markTicketAsInProgress(id);
       await notifyUserNewReply(id);
+      sendPushToUser(ticket.userId, {
+        title: `Resposta do Suporte: ${ticket.assunto}`,
+        body: "Um membro do suporte respondeu ao seu ticket",
+        href: `/support/tickets/${id}`,
+        tag: "SUPORTE",
+      }).catch(() => {});
     } else {
       // Se é resposta do utilizador, notificar admins
       const admins = await prisma.user.findMany({
@@ -125,7 +125,7 @@ export async function POST(
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Dados inválidos", details: error.errors },
+        { error: "Dados inválidos", details: error.issues },
         { status: 400 }
       );
     }

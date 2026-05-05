@@ -4,9 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
-import { verifyAuth } from "@/lib/auth";
+import { requireSession } from "@/lib/api-auth";
 import { z } from "zod";
 import { sendPushToUser } from "@/lib/push";
 
@@ -19,15 +18,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const headersList = headers();
-    const auth = await verifyAuth(headersList);
-
-    if (!auth || auth.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Acesso negado. Apenas admins" },
-        { status: 403 }
-      );
-    }
+    const authResult = await requireSession("ADMIN");
+    if (authResult instanceof Response) return authResult;
 
     const { id } = await params;
 
@@ -87,7 +79,7 @@ export async function PUT(
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Dados inválidos", details: error.errors },
+        { error: "Dados inválidos", details: error.issues },
         { status: 400 }
       );
     }

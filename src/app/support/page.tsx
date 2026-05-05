@@ -88,15 +88,15 @@ export default function SupportPage() {
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li className="flex justify-between">
                     <span>Urgente:</span>
-                    <span className="font-medium">< 2 horas</span>
+                    <span className="font-medium">{'< 2 horas'}</span>
                   </li>
                   <li className="flex justify-between">
                     <span>Alta:</span>
-                    <span className="font-medium">< 4 horas</span>
+                    <span className="font-medium">{'< 4 horas'}</span>
                   </li>
                   <li className="flex justify-between">
                     <span>Normal:</span>
-                    <span className="font-medium">< 24 horas</span>
+                    <span className="font-medium">{'< 24 horas'}</span>
                   </li>
                 </ul>
               </div>
