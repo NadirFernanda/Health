@@ -17,8 +17,22 @@ export async function GET(request: NextRequest) {
 
   const agora = new Date();
 
+  // If logged in as MEDICO, exclude their own published plantões
+  let excluirProfissionalId: string | undefined;
+  const session = await getAuthSession();
+  if (session?.role === "MEDICO") {
+    const prof = await prisma.profissional.findUnique({
+      where: { userId: session.id },
+      select: { id: true },
+    });
+    if (prof) excluirProfissionalId = prof.id;
+  }
+
   const where = {
     estado: "ABERTO" as const,
+    ...(excluirProfissionalId
+      ? { NOT: { profissionalPublicadorId: excluirProfissionalId } }
+      : {}),
     ...(especialidade && { especialidade }),
     ...(tipoProfissional && { tipoProfissional: tipoProfissional as TipoProfissional }),
     ...(zona && { clinica: { cidade: { contains: zona, mode: "insensitive" as const } } }),
