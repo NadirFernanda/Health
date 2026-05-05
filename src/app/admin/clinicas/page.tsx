@@ -25,7 +25,7 @@ export default function AdminClinicas() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/admin/clinicas")
+    fetch("/api/admin/clinicas", { credentials: "include" })
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d)) setLista(d); })
       .finally(() => setLoading(false));

@@ -55,7 +55,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/admin/stats")
+    fetch("/api/admin/stats", { credentials: "include" })
       .then(async (r) => {
         if (!r.ok) throw new Error(`Stats error ${r.status}`);
         return r.json();
@@ -66,7 +66,7 @@ export default function AdminDashboard() {
         setError("Falha ao carregar o dashboard. Tente novamente mais tarde.");
       });
 
-    fetch("/api/admin/transacoes")
+    fetch("/api/admin/transacoes", { credentials: "include" })
       .then(async (r) => {
         if (!r.ok) throw new Error(`Transações error ${r.status}`);
         return r.json();

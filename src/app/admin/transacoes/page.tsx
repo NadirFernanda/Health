@@ -16,7 +16,7 @@ export default function AdminTransacoes() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/admin/transacoes")
+    fetch("/api/admin/transacoes", { credentials: "include" })
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d)) setTransacoes(d); })
       .finally(() => setLoading(false));

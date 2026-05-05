@@ -45,7 +45,7 @@ export default function AdminMedicos() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/admin/medicos")
+    fetch("/api/admin/medicos", { credentials: "include" })
       .then(async (r) => {
         if (!r.ok) throw new Error(`Medicos error ${r.status}`);
         return r.json();

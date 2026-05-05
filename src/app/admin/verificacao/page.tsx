@@ -229,12 +229,17 @@ export default function AdminVerificacaoPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/admin/medicos").then((r) => r.json()),
-      fetch("/api/admin/clinicas").then((r) => r.json()),
-    ]).then(([ms, cs]) => {
-      if (Array.isArray(ms)) setMedicos(ms.filter((m: { estadoVerificacao: string }) => m.estadoVerificacao === "PENDENTE"));
-      if (Array.isArray(cs)) setClinicas(cs.filter((c: { estadoVerificacao: string }) => c.estadoVerificacao === "PENDENTE"));
-    }).finally(() => setLoading(false));
+      fetch("/api/admin/medicos", { credentials: "include" }).then((r) => r.json()),
+      fetch("/api/admin/clinicas", { credentials: "include" }).then((r) => r.json()),
+    ])
+      .then(([ms, cs]) => {
+        if (Array.isArray(ms)) setMedicos(ms.filter((m: { estadoVerificacao: string }) => m.estadoVerificacao === "PENDENTE"));
+        if (Array.isArray(cs)) setClinicas(cs.filter((c: { estadoVerificacao: string }) => c.estadoVerificacao === "PENDENTE"));
+      })
+      .catch((err) => {
+        console.error(err);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const getMotivoRejeicao = (id: string) => {
