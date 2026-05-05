@@ -6,7 +6,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { STATUS_LABELS, PRIORITY_LABELS } from "@/lib/support-utils";
+import { STATUS_LABELS, PRIORITY_LABELS } from "@/lib/support-constants";
 
 interface TicketItem {
   id: string;

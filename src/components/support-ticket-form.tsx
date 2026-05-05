@@ -6,7 +6,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { TICKET_CATEGORIES } from "@/lib/support-utils";
+import { TICKET_CATEGORIES } from "@/lib/support-constants";
 
 interface CreateTicketFormProps {
   onSuccess?: (ticketId: string) => void;

@@ -5,7 +5,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { PRIORITY_LABELS, STATUS_LABELS } from "@/lib/support-utils";
+import { PRIORITY_LABELS, STATUS_LABELS } from "@/lib/support-constants";
 
 interface Author {
   id: string;

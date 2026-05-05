@@ -6,7 +6,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { PRIORITY_LABELS, STATUS_LABELS } from "@/lib/support-utils";
+import { PRIORITY_LABELS, STATUS_LABELS } from "@/lib/support-constants";
 
 interface User {
   id: string;

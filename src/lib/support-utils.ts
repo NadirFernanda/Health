@@ -4,51 +4,15 @@
 
 import { prisma } from "@/lib/db";
 
-/**
- * Opções de categoria de ticket
- */
-export const TICKET_CATEGORIES = [
-  { value: "pagamento", label: "Problema de Pagamento" },
-  { value: "tecnico", label: "Problema Técnico" },
-  { value: "agendamento", label: "Agendamento/Plantão" },
-  { value: "conta", label: "Problemas na Conta" },
-  { value: "verificacao", label: "Verificação de Credenciais" },
-  { value: "outro", label: "Outro" },
-] as const;
-
-export type TicketCategory = typeof TICKET_CATEGORIES[number]["value"];
-
-/**
- * Validar categoria de ticket
- */
-export function isValidCategory(category: string): category is TicketCategory {
-  return TICKET_CATEGORIES.some((c) => c.value === category);
-}
-
-/**
- * Obter label da categoria
- */
-export function getCategoryLabel(category: TicketCategory): string {
-  return TICKET_CATEGORIES.find((c) => c.value === category)?.label || category;
-}
-
-/**
- * Labels para prioridades
- */
-export const PRIORITY_LABELS: Record<string, string> = {
-  NORMAL: "Normal",
-  ALTA: "Alta",
-  URGENTE: "Urgente",
-};
-
-/**
- * Labels para estados
- */
-export const STATUS_LABELS: Record<string, string> = {
-  ABERTO: "Aberto",
-  EM_ANDAMENTO: "Em Andamento",
-  FECHADO: "Fechado",
-};
+// Re-export client-safe constants from the constants-only file
+export {
+  TICKET_CATEGORIES,
+  type TicketCategory,
+  isValidCategory,
+  getCategoryLabel,
+  PRIORITY_LABELS,
+  STATUS_LABELS,
+} from "@/lib/support-constants";
 
 /**
  * Enviar notificação para todos os admins sobre novo ticket
