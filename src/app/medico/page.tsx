@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { PlantaoCard } from "@/components/plantao-card";
 import Link from "next/link";
-import { Bell, User, BadgeCheck } from "lucide-react";
+import { Bell, User, BadgeCheck, HeadphonesIcon } from "lucide-react";
 
 type Perfil = { nome: string; verified: boolean; disponivelAgora: boolean; saldoCarteira: number };
 type PlantaoAPI = {
@@ -161,6 +161,13 @@ export default function MedicoDashboard() {
           <div>
             <p className="font-bold text-sm text-teal-800">Minhas Reservas de Salas</p>
             <p className="text-xs text-teal-600 mt-0.5">Ver e gerir as tuas reservas de consultórios →</p>
+          </div>
+        </Link>
+        <Link href="/support" className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
+          <HeadphonesIcon size={18} strokeWidth={1.75} className="text-gray-500 shrink-0" />
+          <div>
+            <p className="font-bold text-sm text-gray-700">Suporte</p>
+            <p className="text-xs text-gray-500 mt-0.5">Abre um ticket para a nossa equipa de suporte →</p>
           </div>
         </Link>
       </div>
