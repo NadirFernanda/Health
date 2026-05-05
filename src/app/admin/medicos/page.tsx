@@ -47,16 +47,23 @@ export default function AdminMedicos() {
   useEffect(() => {
     fetch("/api/admin/medicos", { credentials: "include" })
       .then(async (r) => {
-        if (!r.ok) throw new Error(`Medicos error ${r.status}`);
-        return r.json();
+        const body = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          const details = (body as { details?: string; error?: string }).details
+            ?? (body as { error?: string }).error
+            ?? `HTTP ${r.status}`;
+          throw new Error(details);
+        }
+        return body;
       })
       .then((d) => {
         if (Array.isArray(d)) setLista(d);
         else throw new Error("Resposta inesperada de médicos");
       })
-      .catch((err) => {
-        console.error(err);
-        setError("Falha ao carregar profissionais. Verifique o acesso ou tente novamente.");
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error("[admin/medicos]", msg);
+        setError(msg);
       })
       .finally(() => setLoading(false));
   }, []);
