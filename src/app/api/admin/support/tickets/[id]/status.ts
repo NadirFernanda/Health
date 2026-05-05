@@ -8,6 +8,7 @@ import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
 import { verifyAuth } from "@/lib/auth";
 import { z } from "zod";
+import { sendPushToUser } from "@/lib/push";
 
 const UpdateStatusSchema = z.object({
   estado: z.enum(["ABERTO", "EM_ANDAMENTO", "FECHADO"]),
@@ -66,16 +67,14 @@ export async function PUT(
         EM_ANDAMENTO: "em andamento",
         FECHADO: "fechado",
       };
+      const titulo = `Status do ticket #${ticket.id.slice(0, 8)} atualizado`;
+      const corpo = `Seu ticket foi marcado como ${estadoLabel[data.estado]}`;
+      const href = `/support/tickets/${ticket.id}`;
 
       await prisma.notificacao.create({
-        data: {
-          userId: ticket.userId,
-          tipo: "support_ticket_status_changed",
-          titulo: `Status do ticket #${ticket.id.slice(0, 8)} atualizado`,
-          corpo: `Seu ticket foi marcado como ${estadoLabel[data.estado]}`,
-          href: `/support/tickets/${ticket.id}`,
-        },
+        data: { userId: ticket.userId, tipo: "support_ticket_status_changed", titulo, corpo, href },
       });
+      sendPushToUser(ticket.userId, { title: titulo, body: corpo, href, tag: "SUPORTE" }).catch(() => {});
     }
 
     return NextResponse.json({

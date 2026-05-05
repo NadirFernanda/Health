@@ -27,6 +27,7 @@ model User {
   mensagens              Mensagem[]
   supportTickets         SupportTicket[]
   supportTicketReplies   SupportTicketReply[]
+  pushSubscriptions      PushSubscription[]
 }
 
 model Profissional {
@@ -437,6 +438,18 @@ model SupportTicketReply {
 
   @@index([ticketId])
   @@index([autorUserId])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  criadoEm DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 enum Role {

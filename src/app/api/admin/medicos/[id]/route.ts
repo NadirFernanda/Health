@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { requireSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
+import { sendPushToUser } from "@/lib/push";
 
 export async function PATCH(
   request: NextRequest,
@@ -45,6 +46,12 @@ export async function PATCH(
         },
       }),
     ]);
+    sendPushToUser(profissional.userId, {
+      title: "Verificação concluída",
+      body: "A sua verificação foi aprovada. Já pode candidatar-se a turnos.",
+      href: "/medico/perfil",
+      tag: "VERIFICACAO",
+    }).catch(() => {});
   } else if (acao === "REJEITAR") {
     const motivoFinal = motivo?.trim() || "Documentos ou credenciais não estão em conformidade.";
     await prisma.$transaction([
@@ -62,6 +69,12 @@ export async function PATCH(
         },
       }),
     ]);
+    sendPushToUser(profissional.userId, {
+      title: "Verificação recusada",
+      body: `Motivo: ${motivoFinal}`,
+      href: "/medico/perfil",
+      tag: "VERIFICACAO",
+    }).catch(() => {});
   } else if (acao === "SUSPENDER") {
     await prisma.user.update({
       where: { id: profissional.userId },

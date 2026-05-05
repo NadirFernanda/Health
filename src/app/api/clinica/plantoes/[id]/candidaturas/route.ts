@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { requireSession, getClinicaFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
+import { sendPushToUser } from "@/lib/push";
 
 export async function GET(
   _request: Request,
@@ -63,45 +64,53 @@ export async function PATCH(
   if (!candidatura) return Response.json({ error: "Não encontrado" }, { status: 404 });
 
   if (estado === "CONTRATO_PENDENTE") {
-    // Clinic accepts → send contract to doctor for signature
+    const pushData = {
+      userId: candidatura.profissional.userId,
+      title: "Contrato para assinar",
+      body: `A ${clinica.nome} aceitou a sua candidatura para o plantão de ${candidatura.plantao.especialidade}.`,
+      href: `/medico/plantoes/${plantaoId}/contrato`,
+    };
     await prisma.$transaction(async (tx) => {
       await tx.candidatura.update({
         where: { id: candidaturaId },
-        data: {
-          estado: "CONTRATO_PENDENTE",
-          contratoGeradoEm: new Date(),
-        },
+        data: { estado: "CONTRATO_PENDENTE", contratoGeradoEm: new Date() },
       });
-
       await tx.notificacao.create({
         data: {
-          userId: candidatura.profissional.userId,
+          userId: pushData.userId,
           tipo: "CONTRATO",
-          titulo: "Contrato para assinar",
+          titulo: pushData.title,
           corpo: `A ${clinica.nome} aceitou a sua candidatura. Reveja e assine o contrato para confirmar o plantão de ${candidatura.plantao.especialidade}.`,
-          href: `/medico/plantoes/${plantaoId}/contrato`,
+          href: pushData.href,
         },
       });
     });
+    sendPushToUser(pushData.userId, { title: pushData.title, body: pushData.body, href: pushData.href, tag: "CONTRATO" }).catch(() => {});
   }
 
   if (estado === "RECUSADO") {
+    const pushData = {
+      userId: candidatura.profissional.userId,
+      title: "Candidatura não seleccionada",
+      body: `A tua candidatura para o plantão de ${candidatura.plantao.especialidade} não foi seleccionada desta vez.`,
+      href: "/medico/plantoes",
+    };
     await prisma.$transaction(async (tx) => {
       await tx.candidatura.update({
         where: { id: candidaturaId },
         data: { estado: "RECUSADO", respondidoEm: new Date() },
       });
-
       await tx.notificacao.create({
         data: {
-          userId: candidatura.profissional.userId,
+          userId: pushData.userId,
           tipo: "CANDIDATURA",
-          titulo: "Candidatura não seleccionada",
-          corpo: `A tua candidatura para o plantão de ${candidatura.plantao.especialidade} não foi seleccionada desta vez.`,
-          href: "/medico/plantoes",
+          titulo: pushData.title,
+          corpo: pushData.body,
+          href: pushData.href,
         },
       });
     });
+    sendPushToUser(pushData.userId, { title: pushData.title, body: pushData.body, href: pushData.href, tag: "CANDIDATURA" }).catch(() => {});
   }
 
   return Response.json({ estado });

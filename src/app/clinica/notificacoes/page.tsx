@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
-import { UserRoundCheck, CalendarClock, Building2, Star, CreditCard, CheckCircle, Bell, type LucideIcon } from "lucide-react";
+import { UserRoundCheck, CalendarClock, Building2, Star, CreditCard, CheckCircle, Bell, BellRing, type LucideIcon } from "lucide-react";
+import { requestPushPermission } from "@/components/PushPermissionPrompt";
 
 type TipoNotif =
   | "CANDIDATURA_RECEBIDA"
@@ -110,7 +111,12 @@ function tempoRelativo(iso: string): string {
 export default function NotificacoesClinica() {
   const router = useRouter();
   const [lista, setLista] = useState<Notificacao[]>(notificacoesMock);
+  const [pushPermission, setPushPermission] = useState<NotificationPermission | null>(null);
   const naoLidas = lista.filter((n) => !n.lida).length;
+
+  useEffect(() => {
+    if ("Notification" in window) setPushPermission(Notification.permission);
+  }, []);
 
   const marcarTodasLidas = () => setLista((prev) => prev.map((n) => ({ ...n, lida: true })));
   const marcarLida = (id: string) => setLista((prev) => prev.map((n) => n.id === id ? { ...n, lida: true } : n));
@@ -133,6 +139,25 @@ export default function NotificacoesClinica() {
           ) : undefined
         }
       />
+
+      {pushPermission === "default" && (
+        <div className="mx-4 mt-3 flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-2xl px-4 py-3">
+          <BellRing size={18} className="text-blue-500 shrink-0 mt-0.5" strokeWidth={1.75} />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-blue-800">Recebe alertas de novas candidaturas</p>
+            <p className="text-xs text-blue-600 mt-0.5">Ativa para ser notificado quando um médico se candidatar.</p>
+          </div>
+          <button
+            onClick={async () => {
+              const ok = await requestPushPermission();
+              setPushPermission(ok ? "granted" : "denied");
+            }}
+            className="shrink-0 text-xs font-bold text-white bg-blue-600 px-3 py-1.5 rounded-xl"
+          >
+            Ativar
+          </button>
+        </div>
+      )}
 
       <div className="px-4 pt-3 pb-8 space-y-2">
         {lista.length === 0 ? (

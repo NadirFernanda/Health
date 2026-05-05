@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { requireSession, getProfissionalFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
+import { sendPushToUser } from "@/lib/push";
 
 const COMISSAO_PERCENTAGEM = 0.10;
 
@@ -36,19 +37,20 @@ export async function POST(
   }
 
   if (acao === "RECUSAR") {
+    let clinicaUserId: string | null = null;
     await prisma.$transaction(async (tx) => {
       await tx.candidatura.update({
         where: { id: candidaturaId },
         data: { estado: "RECUSADO", respondidoEm: new Date() },
       });
 
-      // Notify clinic that doctor declined the contract
       if (candidatura.plantao.clinicaId) {
         const clinicaUser = await tx.clinica.findUnique({
           where: { id: candidatura.plantao.clinicaId },
           select: { userId: true },
         });
         if (clinicaUser) {
+          clinicaUserId = clinicaUser.userId;
           await tx.notificacao.create({
             data: {
               userId: clinicaUser.userId,
@@ -61,6 +63,14 @@ export async function POST(
         }
       }
     });
+    if (clinicaUserId) {
+      sendPushToUser(clinicaUserId, {
+        title: "Contrato recusado",
+        body: `${prof.nome} recusou o contrato para o plantão de ${candidatura.plantao.especialidade}.`,
+        href: `/clinica/plantoes/${candidatura.plantaoId}`,
+        tag: "CONTRATO",
+      }).catch(() => {});
+    }
     return Response.json({ estado: "RECUSADO" });
   }
 
@@ -133,6 +143,12 @@ export async function POST(
             href: `/clinica/plantoes/${candidatura.plantaoId}`,
           },
         });
+        sendPushToUser(clinicaUser.userId, {
+          title: "Contrato assinado!",
+          body: `${prof.nome} assinou o contrato para o plantão de ${plantao.especialidade}.`,
+          href: `/clinica/plantoes/${candidatura.plantaoId}`,
+          tag: "CONTRATO",
+        }).catch(() => {});
       }
     }
   });

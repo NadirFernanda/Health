@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { getAuthSession, getClinicaFromSession, getProfissionalFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
+import { sendPushToUser } from "@/lib/push";
 
 /**
  * PATCH /api/plantoes/[id]/concluir
@@ -101,15 +102,22 @@ export async function PATCH(
         select: { userId: true },
       });
       if (prof) {
+        const corpo = `Recebeste ${pag.valorLiquidoAoa.toLocaleString()} AOA pelo plantão concluído. O valor está disponível na tua carteira.`;
         await tx.notificacao.create({
           data: {
             userId: prof.userId,
             tipo: "PAGAMENTO",
             titulo: "Pagamento recebido!",
-            corpo: `Recebeste ${pag.valorLiquidoAoa.toLocaleString()} AOA pelo plantão concluído. O valor está disponível na tua carteira.`,
+            corpo,
             href: "/medico/ganhos",
           },
         });
+        sendPushToUser(prof.userId, {
+          title: "Pagamento recebido!",
+          body: corpo,
+          href: "/medico/ganhos",
+          tag: "PAGAMENTO",
+        }).catch(() => {});
       }
     }
   });

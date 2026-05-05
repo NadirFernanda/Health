@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { requireSession, getClinicaFromSession, getProfissionalFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
+import { sendPushToUser } from "@/lib/push";
 
 async function getCandidaturaAndVerifyAccess(candidaturaId: string, session: { id: string; role: string }) {
   const candidatura = await prisma.candidatura.findUnique({
@@ -109,19 +110,27 @@ export async function POST(
       session.role === "CLINICA"
         ? (candidatura.plantao.clinica?.nome ?? "Clínica")
         : candidatura.profissional.nome;
+    const snippet = corpo.trim().slice(0, 80) + (corpo.trim().length > 80 ? "…" : "");
+    const href =
+      session.role === "CLINICA"
+        ? `/medico/plantoes/${candidatura.plantao.id}/mensagens`
+        : `/clinica/plantoes/${candidatura.plantao.id}/mensagens/${candidaturaId}`;
 
     await prisma.notificacao.create({
       data: {
         userId: destinatarioUserId,
         tipo: "MENSAGEM",
         titulo: `Nova mensagem de ${remetenteNome}`,
-        corpo: corpo.trim().slice(0, 80) + (corpo.trim().length > 80 ? "…" : ""),
-        href:
-          session.role === "CLINICA"
-            ? `/medico/plantoes/${candidatura.plantao.id}/mensagens`
-            : `/clinica/plantoes/${candidatura.plantao.id}/mensagens/${candidaturaId}`,
+        corpo: snippet,
+        href,
       },
     });
+    sendPushToUser(destinatarioUserId, {
+      title: `Nova mensagem de ${remetenteNome}`,
+      body: snippet,
+      href,
+      tag: "MENSAGEM",
+    }).catch(() => {});
   }
 
   return Response.json({

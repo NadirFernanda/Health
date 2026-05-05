@@ -2,7 +2,8 @@
 import { useEffect, useState } from "react";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
-import { CheckCircle, XCircle, CalendarClock, Building2, Star, Unlock, Wallet, Bell, type LucideIcon } from "lucide-react";
+import { CheckCircle, XCircle, CalendarClock, Building2, Star, Unlock, Wallet, Bell, BellRing, type LucideIcon } from "lucide-react";
+import { requestPushPermission } from "@/components/PushPermissionPrompt";
 
 type TipoNotif =
   | "CANDIDATURA_ACEITE"
@@ -123,7 +124,12 @@ export default function Notificacoes() {
   const router = useRouter();
   const [lista, setLista] = useState<Notificacao[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pushPermission, setPushPermission] = useState<NotificationPermission | null>(null);
   const naoLidas = lista.filter((n) => !n.lida).length;
+
+  useEffect(() => {
+    if ("Notification" in window) setPushPermission(Notification.permission);
+  }, []);
 
   useEffect(() => {
     fetch("/api/notificacoes")
@@ -184,6 +190,25 @@ export default function Notificacoes() {
           ) : undefined
         }
       />
+
+      {pushPermission === "default" && (
+        <div className="mx-4 mt-3 flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-2xl px-4 py-3">
+          <BellRing size={18} className="text-blue-500 shrink-0 mt-0.5" strokeWidth={1.75} />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-blue-800">Recebe notificações em tempo real</p>
+            <p className="text-xs text-blue-600 mt-0.5">Ativa para saber quando uma clínica responde à tua candidatura.</p>
+          </div>
+          <button
+            onClick={async () => {
+              const ok = await requestPushPermission();
+              setPushPermission(ok ? "granted" : "denied");
+            }}
+            className="shrink-0 text-xs font-bold text-white bg-blue-600 px-3 py-1.5 rounded-xl"
+          >
+            Ativar
+          </button>
+        </div>
+      )}
 
       <div className="px-4 pt-3 pb-8 space-y-2">
         {lista.length === 0 ? (

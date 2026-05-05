@@ -14,8 +14,10 @@ Importante:
 5. Contrato/acordo digital — termos antes da aceitação
 6. Testes automatizados — zero testes actualmente; fluxo de autenticação, candidatura e pagamento deveriam ser cobertos
 
+Implementado:
+7. ✅ Rate limiting persistente (Redis) — implementado para support tickets (3 tickets/10min por user)
+
 Nice-to-have:
-7. Rate limiting persistente (Redis) — actualmente perde-se ao reiniciar o servidor
 8. Push notifications — PWA manifest existe mas sem service worker
 9. Vista de calendário para shifts
 

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import PushPermissionPrompt from "@/components/PushPermissionPrompt";
 
 export const metadata: Metadata = {
   title: "MedFreela — Encontra o teu próximo turno",
@@ -32,7 +33,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <PushPermissionPrompt />
+        {children}
+      </body>
     </html>
   );
 }
