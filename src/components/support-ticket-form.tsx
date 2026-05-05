@@ -68,7 +68,7 @@ export function CreateTicketForm({ onSuccess }: CreateTicketFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
           {error}

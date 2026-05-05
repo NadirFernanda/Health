@@ -3,98 +3,87 @@
 import { useState } from "react";
 import { CreateTicketForm } from "@/components/support-ticket-form";
 import { TicketList } from "@/components/support-ticket-list";
+import { HeadphonesIcon, Plus, X, ChevronLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function SupportClient() {
   const [showForm, setShowForm] = useState(false);
-  const [selectedTicketId, setSelectedTicketId] = useState<string>();
   const [refreshKey, setRefreshKey] = useState(0);
 
-  function handleTicketCreated(ticketId: string) {
+  function handleTicketCreated() {
     setShowForm(false);
-    setSelectedTicketId(ticketId);
     setRefreshKey((k) => k + 1);
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Centro de Suporte</h1>
-              <p className="text-gray-600 mt-2">
-                Abra um ticket para receber ajuda da nossa equipa de suporte
-              </p>
-            </div>
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition"
-            >
-              {showForm ? "Cancelar" : "+ Novo Ticket"}
-            </button>
+      <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] px-5 pt-6 pb-6">
+        <div className="flex justify-center mb-4">
+          <div className="bg-white rounded-xl px-4 py-2 shadow-lg shadow-black/20">
+            <img
+              src="/Imagens/LOGO_MED_FREELA.png"
+              alt="MedFreela"
+              className="object-contain h-11 w-auto"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-3 mt-1">
+          <Link href="/" className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0">
+            <ChevronLeft size={16} strokeWidth={2} />
+          </Link>
+          <div>
+            <p className="text-blue-200 text-xs">Ajuda</p>
+            <h1 className="text-white font-bold text-lg flex items-center gap-2">
+              <HeadphonesIcon size={16} strokeWidth={1.75} />
+              Centro de Suporte
+            </h1>
           </div>
         </div>
       </div>
 
       {/* Conteúdo */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Coluna Esquerda - Formulário ou Lista */}
-          <div className="lg:col-span-2">
-            {showForm ? (
-              <div className="bg-white rounded-2xl border shadow-lg p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Novo Ticket de Suporte</h2>
-                <CreateTicketForm onSuccess={handleTicketCreated} />
-              </div>
-            ) : (
-              <div className="bg-white rounded-2xl border shadow-lg p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Meus Tickets</h2>
-                <TicketList key={refreshKey} selectedTicketId={selectedTicketId} />
-              </div>
-            )}
+      <div className="px-4 pt-4 pb-10 space-y-4">
+        {/* Botão novo ticket */}
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className={`w-full flex items-center justify-center gap-2 font-bold py-4 rounded-2xl transition-colors ${
+            showForm
+              ? "bg-gray-200 text-gray-700"
+              : "bg-[#00A99D] hover:bg-[#009082] text-white"
+          }`}
+        >
+          {showForm ? <><X size={16} strokeWidth={2} /> Cancelar</> : <><Plus size={16} strokeWidth={2} /> Novo Ticket</>}
+        </button>
+
+        {/* Formulário */}
+        {showForm && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-5">
+            <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-4">Abrir novo ticket</h2>
+            <CreateTicketForm onSuccess={handleTicketCreated} />
           </div>
+        )}
 
-          {/* Coluna Direita - Informações Úteis */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl border shadow-lg p-6 sticky top-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Dicas Úteis</h3>
-              <ul className="space-y-3 text-sm text-gray-700">
-                <li className="flex gap-3">
-                  <span className="text-blue-600 font-semibold">1</span>
-                  <span>Descreva o seu problema o máximo possível</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-blue-600 font-semibold">2</span>
-                  <span>Indique a prioridade correctamente</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-blue-600 font-semibold">3</span>
-                  <span>Forneça contactos válidos para resposta rápida</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-blue-600 font-semibold">4</span>
-                  <span>Acompanhe o seu ticket e responda rapidamente</span>
-                </li>
-              </ul>
+        {/* Lista de tickets */}
+        {!showForm && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-4">
+            <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-3">Os meus tickets</h2>
+            <TicketList key={refreshKey} />
+          </div>
+        )}
 
-              <div className="mt-6 pt-6 border-t">
-                <h3 className="font-semibold text-gray-900 mb-3">Tempo de Resposta</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex justify-between">
-                    <span>Urgente:</span>
-                    <span className="font-medium">{'< 2 horas'}</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span>Alta:</span>
-                    <span className="font-medium">{'< 4 horas'}</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span>Normal:</span>
-                    <span className="font-medium">{'< 24 horas'}</span>
-                  </li>
-                </ul>
-              </div>
+        {/* Dicas */}
+        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
+          <p className="text-xs font-bold text-blue-700 uppercase tracking-wide mb-3">Tempos de resposta</p>
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs text-blue-800">
+              <span>Urgente</span><span className="font-semibold">{'< 2 horas'}</span>
+            </div>
+            <div className="flex justify-between text-xs text-blue-800">
+              <span>Alta</span><span className="font-semibold">{'< 4 horas'}</span>
+            </div>
+            <div className="flex justify-between text-xs text-blue-800">
+              <span>Normal</span><span className="font-semibold">{'< 24 horas'}</span>
             </div>
           </div>
         </div>
