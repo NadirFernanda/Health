@@ -60,7 +60,7 @@ export default function MinhasCandidaturas() {
 
   return (
     <div>
-      <TopBar title="As Minhas Candidaturas" />
+      <TopBar titulo="As Minhas Candidaturas" />
 
       <div className="px-4 pt-4 space-y-4 pb-10">
 
