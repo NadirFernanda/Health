@@ -10,7 +10,11 @@ export async function GET() {
   const auth = await requireSession("ADMIN");
   if (auth instanceof Response) return auth;
 
-  await processDuePaymentRetries();
+  try {
+    await processDuePaymentRetries();
+  } catch (error) {
+    console.error("Falha ao processar retries de pagamento durante stats:", error);
+  }
 
   const now = new Date();
   const currentStart = startOfMonth(now);

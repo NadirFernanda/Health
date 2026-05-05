@@ -52,17 +52,43 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
 
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    fetch("/api/admin/stats").then((r) => r.json()).then(setStats).catch(() => {});
-    fetch("/api/admin/transacoes").then((r) => r.json()).then((d) => {
-      if (Array.isArray(d)) setTransacoes(d.slice(0, 4));
-    }).catch(() => {});
+    fetch("/api/admin/stats")
+      .then(async (r) => {
+        if (!r.ok) throw new Error(`Stats error ${r.status}`);
+        return r.json();
+      })
+      .then(setStats)
+      .catch((err) => {
+        console.error(err);
+        setError("Falha ao carregar o dashboard. Tente novamente mais tarde.");
+      });
+
+    fetch("/api/admin/transacoes")
+      .then(async (r) => {
+        if (!r.ok) throw new Error(`Transações error ${r.status}`);
+        return r.json();
+      })
+      .then((d) => {
+        if (Array.isArray(d)) setTransacoes(d.slice(0, 4));
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   }, []);
 
   if (!stats) {
     return (
-      <div className="p-4 pt-10 flex justify-center">
-        <div className="w-8 h-8 border-2 border-[#0B3C74] border-t-transparent rounded-full animate-spin" />
+      <div className="p-4 pt-10 flex flex-col items-center gap-3">
+        {error ? (
+          <div className="max-w-xl text-center text-sm text-red-600 bg-red-50 border border-red-100 rounded-2xl p-4">
+            {error}
+          </div>
+        ) : (
+          <div className="w-8 h-8 border-2 border-[#0B3C74] border-t-transparent rounded-full animate-spin" />
+        )}
       </div>
     );
   }

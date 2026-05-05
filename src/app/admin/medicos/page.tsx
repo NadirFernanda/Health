@@ -42,10 +42,22 @@ export default function AdminMedicos() {
   const [lista, setLista]   = useState<Medico[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     fetch("/api/admin/medicos")
-      .then((r) => r.json())
-      .then((d) => { if (Array.isArray(d)) setLista(d); })
+      .then(async (r) => {
+        if (!r.ok) throw new Error(`Medicos error ${r.status}`);
+        return r.json();
+      })
+      .then((d) => {
+        if (Array.isArray(d)) setLista(d);
+        else throw new Error("Resposta inesperada de médicos");
+      })
+      .catch((err) => {
+        console.error(err);
+        setError("Falha ao carregar profissionais. Verifique o acesso ou tente novamente.");
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -73,6 +85,14 @@ export default function AdminMedicos() {
   if (loading) return (
     <div className="p-4 pt-10 flex justify-center">
       <div className="w-8 h-8 border-2 border-[#0B3C74] border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  if (error) return (
+    <div className="p-4 pt-10 flex justify-center">
+      <div className="max-w-xl text-sm text-red-600 bg-red-50 border border-red-100 rounded-2xl p-4 text-center">
+        {error}
+      </div>
     </div>
   );
 
