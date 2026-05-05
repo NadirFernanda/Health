@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Home, Search, Building2, Wallet, User,
-  ClipboardList, CreditCard, ChevronLeft, DoorOpen,
+  ClipboardList, CreditCard, ChevronLeft, DoorOpen, PlusCircle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,7 +25,7 @@ const medicoNav: NavItem[] = [
 const clinicaNav: NavItem[] = [
   { href: "/clinica",            label: "Início",    icon: Home },
   { href: "/clinica/plantoes",   label: "Plantões",  icon: ClipboardList },
-  { href: "/clinica/salas",      label: "Salas",     icon: Building2 },
+  { href: "/clinica/publicar",   label: "Publicar",  icon: PlusCircle },
   { href: "/clinica/faturacao",  label: "Faturação", icon: CreditCard },
   { href: "/clinica/conta",      label: "Conta",     icon: User },
 ];
