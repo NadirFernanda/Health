@@ -4,6 +4,7 @@ import { TopBar } from "@/components/nav";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin, Star, Stethoscope, Calendar, Clock, Banknote, Users, CheckCircle, XCircle, BadgeCheck, AlertTriangle, MessageCircle, CheckCircle2, XCircle as XCircleIcon, FileText } from "lucide-react";
+import { DisputaButton } from "./DisputaButton";
 
 function formatAOA(v: number) { return new Intl.NumberFormat("pt-PT").format(v) + " AOA"; }
 function formatData(d: Date) { return d.toLocaleDateString("pt-PT", { weekday: "long", day: "2-digit", month: "long", year: "numeric" }); }
@@ -227,6 +228,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
                 </span>
               )}
             </Link>
+            <DisputaButton candidaturaId={candidatura.id} />
           </div>
         )}
 

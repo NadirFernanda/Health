@@ -5,6 +5,7 @@ import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { Calendar, BadgeCheck, Star, MessageCircle, Users, CheckCircle2 } from "lucide-react";
 import CandidaturaActions from "./CandidaturaActions";
+import { DisputaClinicaButton } from "./DisputaClinicaButton";
 
 function formatAOA(v: number) {
   return new Intl.NumberFormat("pt-PT").format(v) + " AOA";
@@ -189,6 +190,11 @@ export default async function DetalhePlantaoClinica({
                   <span className="flex-1 flex items-center justify-center text-xs text-blue-600 font-semibold bg-blue-50 rounded-xl py-2.5 gap-1">
                     ⏳ A aguardar assinatura
                   </span>
+                )}
+                {c.estado === "ACEITE" && (
+                  <div className="flex-1">
+                    <DisputaClinicaButton candidaturaId={c.id} />
+                  </div>
                 )}
               </div>
             </div>

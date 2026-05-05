@@ -28,6 +28,8 @@ model User {
   supportTickets         SupportTicket[]
   supportTicketReplies   SupportTicketReply[]
   pushSubscriptions      PushSubscription[]
+  disputasAbertas        Disputa[]            @relation("DisputasAbertas")
+  disputasMensagens      DisputaMensagem[]
 }
 
 model Profissional {
@@ -181,6 +183,7 @@ model Candidatura {
   profissional   Profissional      @relation(fields: [profissionalId], references: [id])
   pagamentos     Pagamento[]
   mensagens      Mensagem[]
+  disputas       Disputa[]
 
   @@unique([plantaoId, profissionalId])
   @@index([plantaoId])
@@ -571,4 +574,52 @@ enum SupportTicketPrioridade {
   NORMAL
   ALTA
   URGENTE
+}
+
+model Disputa {
+  id             String        @id @default(cuid())
+  candidaturaId  String
+  iniciadoPorId  String
+  tipo           DisputaTipo
+  descricao      String
+  estado         DisputaEstado @default(ABERTA)
+  resolucaoNota  String?
+  ajusteValorKz  Int?
+  ajusteParaId   String?
+  criadoEm       DateTime      @default(now())
+  resolvidoEm    DateTime?
+  candidatura    Candidatura   @relation(fields: [candidaturaId], references: [id])
+  iniciadoPor    User          @relation("DisputasAbertas", fields: [iniciadoPorId], references: [id])
+  mensagens      DisputaMensagem[]
+
+  @@index([candidaturaId])
+  @@index([estado])
+  @@index([criadoEm])
+}
+
+model DisputaMensagem {
+  id        String   @id @default(cuid())
+  disputaId String
+  autorId   String
+  corpo     String
+  criadoEm DateTime @default(now())
+  disputa   Disputa  @relation(fields: [disputaId], references: [id], onDelete: Cascade)
+  autor     User     @relation(fields: [autorId], references: [id])
+
+  @@index([disputaId])
+}
+
+enum DisputaTipo {
+  NAO_COMPARECEU
+  NAO_PAGOU
+  QUALIDADE
+  CANCELAMENTO
+  OUTRO
+}
+
+enum DisputaEstado {
+  ABERTA
+  EM_ANALISE
+  RESOLVIDA
+  ENCERRADA
 }
