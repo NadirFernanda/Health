@@ -1,15 +1,15 @@
-import { requireSession } from "@/lib/api-auth";
+import { requireAdminAccess } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 
 export async function GET() {
   try {
-    const auth = await requireSession("ADMIN");
+    const auth = await requireAdminAccess("financeiro", "read");
     if (auth instanceof Response) {
       console.warn("[GET /api/admin/transacoes] Falha de autenticação");
       return auth;
     }
 
-    console.log("[GET /api/admin/transacoes] Autenticado como ADMIN");
+    console.log("[GET /api/admin/transacoes] Permissão de leitura financeiro validada");
 
     const transacoes = await prisma.pagamento.findMany({
       orderBy: { criadoEm: "desc" },

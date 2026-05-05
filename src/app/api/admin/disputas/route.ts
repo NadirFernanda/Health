@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireSession } from "@/lib/api-auth";
+import { requireAdminAccess } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
-  const auth = await requireSession("ADMIN");
+  const auth = await requireAdminAccess("disputas", "read");
   if (auth instanceof Response) return auth;
 
   const estado = req.nextUrl.searchParams.get("estado");

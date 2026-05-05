@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import fs from "fs/promises";
 import path from "path";
-import { requireSession } from "@/lib/api-auth";
+import { requireAdminAccess } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 
 function getMimeType(filename: string) {
@@ -30,7 +30,7 @@ export async function GET(
   { params }: { params: Promise<{ documentoId: string }> }
 ) {
   const resolvedParams = await params;
-  const auth = await requireSession("ADMIN");
+  const auth = await requireAdminAccess("profissionais", "read");
   if (auth instanceof Response) return auth;
 
   const documento = await prisma.documento.findUnique({

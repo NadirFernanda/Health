@@ -1,15 +1,15 @@
-import { requireSession } from "@/lib/api-auth";
+import { requireAdminAccess } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 
 export async function GET() {
   try {
-    const auth = await requireSession("ADMIN");
+    const auth = await requireAdminAccess("profissionais", "read");
     if (auth instanceof Response) {
       console.warn("[GET /api/admin/clinicas] Falha de autenticação");
       return auth;
     }
 
-    console.log("[GET /api/admin/clinicas] Autenticado como ADMIN");
+    console.log("[GET /api/admin/clinicas] Permissão de leitura de profissionais validada");
 
     const clinicas = await prisma.clinica.findMany({
       orderBy: { criadoEm: "desc" },

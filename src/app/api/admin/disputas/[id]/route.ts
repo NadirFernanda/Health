@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireSession } from "@/lib/api-auth";
+import { requireAdminAccess } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { criarNotificacaoComPush } from "@/lib/push";
@@ -14,7 +14,7 @@ const resolveSchema = z.object({
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const auth = await requireSession("ADMIN");
+  const auth = await requireAdminAccess("disputas", "read");
   if (auth instanceof Response) return auth;
 
   const disputa = await prisma.disputa.findUnique({
@@ -46,7 +46,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const auth = await requireSession("ADMIN");
+  const auth = await requireAdminAccess("disputas", "write");
   if (auth instanceof Response) return auth;
   const { session } = auth;
 

@@ -1,9 +1,9 @@
-import { requireSession } from "@/lib/api-auth";
+import { requireAdminAccess } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 
 export async function GET() {
   try {
-    const auth = await requireSession("ADMIN");
+    const auth = await requireAdminAccess("profissionais", "read");
     if (auth instanceof Response) return auth;
 
     const consultorios = await prisma.consultorio.findMany({

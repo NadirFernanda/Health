@@ -4,22 +4,29 @@ import { usePathname } from "next/navigation";
 import { logoutAction } from "@/app/actions/auth";
 import {
   BarChart2, Stethoscope, Building2, Building, ClipboardList, Wallet, Headphones, AlertTriangle,
-  ChevronLeft, type LucideIcon,
+  Users, ChevronLeft, type LucideIcon,
 } from "lucide-react";
+import type { AdminModule, AccessLevel } from "@/lib/admin-permissions";
 
-const navItems: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] = [
-  { href: "/admin",                 label: "Dashboard",      icon: BarChart2,    exact: true },
-  { href: "/admin/medicos",         label: "Profissionais",  icon: Stethoscope },
-  { href: "/admin/clinicas",        label: "Clínicas",       icon: Building2 },
-  { href: "/admin/consultorios",    label: "Consultórios",   icon: Building },
-  { href: "/admin/plantoes",        label: "Plantões",       icon: ClipboardList },
-  { href: "/admin/transacoes", label: "Finanças",     icon: Wallet },
-  { href: "/admin/disputas",   label: "Disputas",     icon: AlertTriangle },
-  { href: "/admin/support",    label: "Suporte",      icon: Headphones },
+const navItems: { href: string; label: string; icon: LucideIcon; module: AdminModule; exact?: boolean }[] = [
+  { href: "/admin",                 label: "Dashboard",      icon: BarChart2,    module: "dashboard", exact: true },
+  { href: "/admin/medicos",         label: "Profissionais",  icon: Stethoscope, module: "profissionais" },
+  { href: "/admin/clinicas",        label: "Clínicas",       icon: Building2,   module: "profissionais" },
+  { href: "/admin/consultorios",    label: "Consultórios",   icon: Building,    module: "profissionais" },
+  { href: "/admin/plantoes",        label: "Plantões",       icon: ClipboardList, module: "plantoes" },
+  { href: "/admin/transacoes",      label: "Finanças",      icon: Wallet,      module: "financeiro" },
+  { href: "/admin/disputas",        label: "Disputas",       icon: AlertTriangle, module: "disputas" },
+  { href: "/admin/support",         label: "Suporte",        icon: Headphones,  module: "suporte" },
+  { href: "/admin/admins",          label: "Admins",         icon: Users,       module: "admins" },
 ];
 
-export function AdminNav() {
+export function AdminNav({ accessibleModules }: { accessibleModules: Partial<Record<AdminModule, AccessLevel>> }) {
   const pathname = usePathname();
+  const navItemsToShow = navItems.filter((item) => {
+    const level = accessibleModules[item.module] ?? "none";
+    return level !== "none";
+  });
+
   return (
     <header className="bg-[#062855] text-white shrink-0 shadow-lg">
       {/* Top bar */}
@@ -57,7 +64,7 @@ export function AdminNav() {
 
       {/* Nav tabs */}
       <nav className="flex overflow-x-auto no-scrollbar">
-        {navItems.map((item) => {
+        {navItemsToShow.map((item) => {
           const active = item.exact
             ? pathname === item.href
             : pathname.startsWith(item.href);

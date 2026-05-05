@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { requireSession } from "@/lib/api-auth";
+import { requireAdminAccess } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { sendPushToUser } from "@/lib/push";
 
@@ -7,7 +7,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await requireSession("ADMIN");
+  const auth = await requireAdminAccess("profissionais", "write");
   if (auth instanceof Response) return auth;
 
   const { id } = await params;

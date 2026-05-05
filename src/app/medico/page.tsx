@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { PlantaoCard } from "@/components/plantao-card";
 import Link from "next/link";
 import { Bell, User, BadgeCheck, HeadphonesIcon } from "lucide-react";
@@ -126,7 +125,7 @@ export default function MedicoDashboard() {
         <div className="px-4 pt-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">As minhas candidaturas</h2>
-            <Link href="/medico/buscar" className="text-xs text-[#0B3C74] font-semibold">Ver todas</Link>
+            <Link href="/medico/candidaturas" className="text-xs text-[#0B3C74] font-semibold">Ver todas</Link>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {candidaturas.map((c) => {

@@ -5,14 +5,14 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireSession } from "@/lib/api-auth";
+import { requireAdminAccess } from "@/lib/api-auth";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authResult = await requireSession("ADMIN");
+    const authResult = await requireAdminAccess("suporte", "read");
     if (authResult instanceof Response) return authResult;
 
     const { id } = await params;

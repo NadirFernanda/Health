@@ -31,6 +31,13 @@ model User {
   auditLogs              AuditLog[]
   disputasAbertas        Disputa[]            @relation("DisputasAbertas")
   disputasMensagens      DisputaMensagem[]
+  adminRole              AdminRole?
+  adminEmail             String?
+  adminCargo             String?
+  adminPhone             String?
+  adminPermissions       AdminPermission[]
+  adminSecurity          AdminSecurity?
+  adminNotifications     AdminNotification?
 }
 
 model Profissional {
@@ -641,4 +648,61 @@ enum DisputaEstado {
   EM_ANALISE
   RESOLVIDA
   ENCERRADA
+}
+
+enum AdminRole {
+  FINANCEIRO
+  GESTOR
+  SUPORTE
+  ANALISTA
+}
+
+enum AdminAccessLevel {
+  NONE
+  READ
+  WRITE
+  FULL
+}
+
+enum AdminNotificationChannel {
+  EMAIL
+  SYSTEM
+  BOTH
+}
+
+model AdminPermission {
+  id     String           @id @default(cuid())
+  userId String
+  module String
+  access AdminAccessLevel @default(NONE)
+  user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, module])
+  @@index([userId])
+}
+
+model AdminSecurity {
+  id                    String  @id @default(cuid())
+  userId                String  @unique
+  twoFactorRequired     Boolean @default(false)
+  ipRestriction         Boolean @default(false)
+  allowedIps            Json    @default("[]")
+  sessionTimeoutEnabled Boolean @default(false)
+  sessionTimeoutMinutes Int     @default(30)
+  forcePasswordChange   Boolean @default(false)
+  user                  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AdminNotification {
+  id                         String                   @id @default(cuid())
+  userId                     String                   @unique
+  notifyNewUser              Boolean                  @default(true)
+  notifyNewDispute           Boolean                  @default(true)
+  notifyKycPending           Boolean                  @default(true)
+  notifyPayoutRequest        Boolean                  @default(true)
+  notifyHighValueTransaction Boolean                  @default(false)
+  notifySystemError          Boolean                  @default(true)
+  notifyDailyReport          Boolean                  @default(false)
+  channel                    AdminNotificationChannel @default(SYSTEM)
+  user                       User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

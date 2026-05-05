@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { requireSession } from "@/lib/api-auth";
+import { requireAdminAccess } from "@/lib/api-auth";
 import { z } from "zod";
 import { adjustWalletOrRevenue } from "@/lib/payment-service";
 
@@ -11,7 +11,7 @@ const adjustmentSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const auth = await requireSession("ADMIN");
+  const auth = await requireAdminAccess("financeiro", "write");
   if (auth instanceof Response) return auth;
 
   const body = await request.json().catch(() => null);

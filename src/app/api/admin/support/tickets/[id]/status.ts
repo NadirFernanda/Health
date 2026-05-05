@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireSession } from "@/lib/api-auth";
+import { requireAdminAccess } from "@/lib/api-auth";
 import { z } from "zod";
 import { sendPushToUser } from "@/lib/push";
 
@@ -18,7 +18,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authResult = await requireSession("ADMIN");
+    const authResult = await requireAdminAccess("suporte", "write");
     if (authResult instanceof Response) return authResult;
 
     const { id } = await params;

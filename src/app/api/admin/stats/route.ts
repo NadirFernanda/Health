@@ -1,4 +1,4 @@
-import { requireSession } from "@/lib/api-auth";
+import { requireAdminAccess } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { processDuePaymentRetries } from "@/lib/payment-service";
 
@@ -8,13 +8,13 @@ function startOfMonth(date: Date) {
 
 export async function GET() {
   try {
-    const auth = await requireSession("ADMIN");
+    const auth = await requireAdminAccess("dashboard", "read");
     if (auth instanceof Response) {
       console.warn("[GET /api/admin/stats] Falha de autenticação");
       return auth;
     }
 
-    console.log("[GET /api/admin/stats] Autenticado como ADMIN");
+    console.log("[GET /api/admin/stats] Permissão de leitura de dashboard validada");
 
     await processDuePaymentRetries();
   } catch (error) {
