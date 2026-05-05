@@ -48,12 +48,14 @@ export async function GET() {
             : "APROVADO"
           : "PENDENTE",
         tipoVerificacao: temCredencialExpress ? "EXPRESS" : "NORMAL",
-        documentos: m.documentos.map((doc) => ({
-          id: doc.id,
-          tipo: doc.tipo,
-          estado: doc.estado,
-          ficheiro: doc.ficheiro ?? "",
-        })),
+        documentos: m.documentos
+          .filter((doc) => doc.ficheiro && doc.estado !== "NAO_ENVIADO")
+          .map((doc) => ({
+            id: doc.id,
+            tipo: doc.tipo,
+            estado: doc.estado,
+            ficheiro: doc.ficheiro!,
+          })),
         rejeicaoMotivo: m.rejeicaoMotivo ?? "",
         saldoCarteira: m.saldoCarteira,
         criadoEm: m.user.criadoEm.toISOString(),
