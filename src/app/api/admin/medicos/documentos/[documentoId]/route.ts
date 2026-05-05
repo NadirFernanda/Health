@@ -27,13 +27,14 @@ function getMimeType(filename: string) {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { documentoId: string } }
+  { params }: { params: Promise<{ documentoId: string }> }
 ) {
+  const resolvedParams = await params;
   const auth = await requireSession("ADMIN");
   if (auth instanceof Response) return auth;
 
   const documento = await prisma.documento.findUnique({
-    where: { id: params.documentoId },
+    where: { id: resolvedParams.documentoId },
   });
 
   if (!documento || !documento.ficheiro) {
