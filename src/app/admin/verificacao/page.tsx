@@ -142,7 +142,7 @@ function CardPendente({
                       </div>
                       <div className="flex items-center gap-2">
                         {doc.ficheiro && (
-                          <a href={doc.ficheiro} target="_blank" rel="noreferrer" className="text-blue-600 text-xs font-semibold underline">
+                          <a href={`/api/admin/medicos/documentos/${doc.id}`} target="_blank" rel="noreferrer" className="text-blue-600 text-xs font-semibold underline">
                             Ver
                           </a>
                         )}

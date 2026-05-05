@@ -148,7 +148,7 @@ export default function AdminMedicos() {
                   return (
                     <a
                       key={doc.id}
-                      href={doc.ficheiro}
+                      href={`/api/admin/medicos/documentos/${doc.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-between gap-2 bg-gray-50 hover:bg-gray-100 rounded-xl px-3 py-2 transition-colors group"
