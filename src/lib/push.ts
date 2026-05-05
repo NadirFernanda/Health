@@ -1,11 +1,18 @@
 import webpush from "web-push";
 import { prisma } from "@/lib/db";
 
-webpush.setVapidDetails(
-  process.env.VAPID_EMAIL!,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+let vapidConfigured = false;
+function getWebPush() {
+  if (!vapidConfigured) {
+    const email = process.env.VAPID_EMAIL;
+    const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    const privateKey = process.env.VAPID_PRIVATE_KEY;
+    if (!email || !publicKey || !privateKey) return null;
+    webpush.setVapidDetails(email, publicKey, privateKey);
+    vapidConfigured = true;
+  }
+  return webpush;
+}
 
 interface PushPayload {
   title: string;
@@ -15,6 +22,9 @@ interface PushPayload {
 }
 
 export async function sendPushToUser(userId: string, payload: PushPayload) {
+  const wp = getWebPush();
+  if (!wp) return;
+
   const subscriptions = await prisma.pushSubscription.findMany({
     where: { userId },
   });
@@ -24,7 +34,7 @@ export async function sendPushToUser(userId: string, payload: PushPayload) {
   await Promise.allSettled(
     subscriptions.map(async (sub) => {
       try {
-        await webpush.sendNotification(
+        await wp.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
           JSON.stringify(payload)
         );
