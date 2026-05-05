@@ -11,7 +11,6 @@ type PlantaoAPI = {
   descricao: string; clinica: { id: string; nome: string; morada: string; cidade: string; provincia: string; logo: string; rating: number; totalAvaliacoes: number; verified: boolean };
   equipamentos: Record<string, boolean>;
 };
-type Candidatura = { id: string; estado: string; plantao: { clinica: { nome: string } | null; profissionalPublicador?: { nome: string } | null } };
 
 function formatAOA(v: number) {
   return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
@@ -21,7 +20,6 @@ export default function MedicoDashboard() {
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [disponivel, setDisponivel] = useState(false);
   const [plantoes, setPlantoes] = useState<PlantaoAPI[]>([]);
-  const [candidaturas, setCandidaturas] = useState<Candidatura[]>([]);
   const [ganhosMes, setGanhosMes] = useState(0);
   const [plantoesMes, setPlantoesMes] = useState(0);
 
@@ -35,8 +33,7 @@ export default function MedicoDashboard() {
     }).catch(() => {});
     fetch("/api/medico/candidaturas").then((r) => r.ok ? r.json() : []).then((d) => {
       if (Array.isArray(d)) {
-        setCandidaturas(d.slice(0, 5));
-        setPlantoesMes(d.filter((c: Candidatura) => c.estado === "ACEITE").length);
+        setPlantoesMes(d.filter((c: { estado: string }) => c.estado === "ACEITE").length);
       }
     }).catch(() => {});
     fetch("/api/medico/ganhos").then((r) => r.ok ? r.json() : null).then((d) => {
@@ -120,30 +117,14 @@ export default function MedicoDashboard() {
         </div>
       </div>
 
-      {/* Candidaturas recentes */}
-      {candidaturas.length > 0 && (
-        <div className="px-4 pt-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">As minhas candidaturas</h2>
-            <Link href="/medico/candidaturas" className="text-xs text-[#0B3C74] font-semibold">Ver todas</Link>
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {candidaturas.map((c) => {
-              const cor = c.estado === "ACEITE" ? "bg-green-50 text-green-700 border-green-200"
-                : c.estado === "RECUSADO" ? "bg-red-50 text-red-600 border-red-200"
-                : "bg-yellow-50 text-yellow-700 border-yellow-200";
-              return (
-                <div key={c.id} className={`shrink-0 border rounded-xl px-3 py-2 text-xs font-semibold ${cor}`}>
-                  {c.plantao.clinica?.nome ?? c.plantao.profissionalPublicador?.nome ?? "Plantão"}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Acção rápida: publicar substituto */}
+      {/* Acções rápidas */}
       <div className="px-4 pt-4 space-y-2">
+        <Link href="/medico/candidaturas" className="flex items-center justify-between bg-[#0B3C74]/5 border border-[#0B3C74]/20 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
+          <div>
+            <p className="font-bold text-sm text-[#0B3C74]">As minhas candidaturas</p>
+            <p className="text-xs text-[#0B3C74]/70 mt-0.5">Ver todos os plantões aos quais te candidataste →</p>
+          </div>
+        </Link>
         <Link href="/medico/publicar-plantao" className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
           <div>
             <p className="font-bold text-sm text-amber-800">Tens um plantão que não podes fazer?</p>
