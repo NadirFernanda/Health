@@ -1,14 +1,31 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Check, X, Star, ClipboardList, MessageCircle, Ban, RotateCcw, Wallet } from "lucide-react";
+import { Check, X, Star, ClipboardList, MessageCircle, Ban, RotateCcw, Wallet, FileText, ExternalLink } from "lucide-react";
 
 type EstadoVerificacao = "APROVADO" | "PENDENTE" | "REJEITADO" | "SUSPENSO";
 type Filtro = "TODOS" | "PENDENTE" | "APROVADO" | "REJEITADO" | "SUSPENSO";
+
+type Documento = { id: string; tipo: string; estado: string; ficheiro: string };
 
 type Medico = {
   id: string; userId: string; nome: string; email: string; especialidade: string; provincia: string;
   numeroOrdem: string; rating: number; totalAvaliacoes: number; totalPlantoes: number;
   verified: boolean; estadoVerificacao: EstadoVerificacao; saldoCarteira: number; criadoEm: string;
+  documentos: Documento[];
+};
+
+const DOC_LABELS: Record<string, string> = {
+  CEDULA_OMA:                 "Cédula OMA",
+  BI_PASSAPORTE:              "BI / Passaporte",
+  DIPLOMA_LICENCIATURA:       "Diploma",
+  REGISTO_SINOME:             "Registo SINOME",
+  CERTIFICADO_ESPECIALIZACAO: "Cert. Especialização",
+};
+
+const DOC_ESTADO: Record<string, { cls: string; label: string }> = {
+  PENDENTE:  { cls: "bg-yellow-100 text-yellow-700", label: "Pendente"  },
+  APROVADO:  { cls: "bg-green-100 text-green-700",   label: "Aprovado"  },
+  REJEITADO: { cls: "bg-red-100 text-red-600",       label: "Rejeitado" },
 };
 
 function formatAOA(v: number) {
@@ -122,6 +139,35 @@ export default function AdminMedicos() {
                 <Wallet size={11} strokeWidth={1.75} /> {formatAOA(m.saldoCarteira)}
               </span>
             </div>
+
+            {/* Documentos */}
+            {m.documentos?.length > 0 && (
+              <div className="mt-3 pt-2.5 border-t border-gray-50 space-y-1.5">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Documentos</p>
+                {m.documentos.map((doc) => {
+                  const est = DOC_ESTADO[doc.estado] ?? DOC_ESTADO.PENDENTE;
+                  const isImage = /\.(jpe?g|png|webp)$/i.test(doc.ficheiro);
+                  return (
+                    <a
+                      key={doc.id}
+                      href={doc.ficheiro}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between gap-2 bg-gray-50 hover:bg-gray-100 rounded-xl px-3 py-2 transition-colors group"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileText size={13} strokeWidth={1.75} className="text-gray-400 shrink-0" />
+                        <span className="text-xs text-gray-700 truncate">{DOC_LABELS[doc.tipo] ?? doc.tipo}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${est.cls}`}>{est.label}</span>
+                        <ExternalLink size={11} strokeWidth={2} className="text-gray-300 group-hover:text-gray-500 transition-colors" />
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Acções */}
             {m.estadoVerificacao === "PENDENTE" && (
