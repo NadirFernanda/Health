@@ -1,11 +1,16 @@
 -- Add missing metrics column to Profissional (was in schema but missing from migrations)
 ALTER TABLE "Profissional" ADD COLUMN IF NOT EXISTS "metrics" JSONB DEFAULT '{}';
 
--- CreateEnum
-CREATE TYPE IF NOT EXISTS "DisputaTipo" AS ENUM ('NAO_COMPARECEU', 'NAO_PAGOU', 'QUALIDADE', 'CANCELAMENTO', 'OUTRO');
+-- CreateEnum (idempotent via DO...EXCEPTION for PG < 14 compatibility)
+DO $$ BEGIN
+  CREATE TYPE "DisputaTipo" AS ENUM ('NAO_COMPARECEU', 'NAO_PAGOU', 'QUALIDADE', 'CANCELAMENTO', 'OUTRO');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
--- CreateEnum
-CREATE TYPE IF NOT EXISTS "DisputaEstado" AS ENUM ('ABERTA', 'EM_ANALISE', 'RESOLVIDA', 'ENCERRADA');
+DO $$ BEGIN
+  CREATE TYPE "DisputaEstado" AS ENUM ('ABERTA', 'EM_ANALISE', 'RESOLVIDA', 'ENCERRADA');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- CreateTable
 CREATE TABLE IF NOT EXISTS "Disputa" (
