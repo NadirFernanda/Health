@@ -45,6 +45,10 @@ export function TicketList({ selectedTicketId }: TicketListProps) {
 
       const response = await fetch(`/api/support/tickets?${params}`);
 
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok) {
         throw new Error("Erro ao carregar tickets");
       }
