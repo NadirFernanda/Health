@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { requireSession, getProfissionalFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
+import { createEscrowPayment, processPaymentEscrow } from "@/lib/payment-service";
 
 // Comissão da plataforma: 10%
 const COMISSAO_PERCENTAGEM = 0.10;
@@ -82,13 +83,14 @@ export async function PATCH(
   });
 
   // Ao aceitar: criar registo de pagamento retido (escrow)
+  let pagamento;
   if (estado === "ACEITE") {
     const valorBruto = candidatura.plantao.valorKwanzas;
     const comissao = Math.round(valorBruto * COMISSAO_PERCENTAGEM);
     const valorLiquido = valorBruto - comissao;
 
-    await prisma.pagamento.create({
-      data: {
+    pagamento = await createEscrowPayment(
+      {
         tipo: "TURNO",
         plantaoId,
         candidaturaId,
@@ -97,9 +99,13 @@ export async function PATCH(
         comissaoAoa: comissao,
         valorLiquidoAoa: valorLiquido,
         metodo: "TRANSFERENCIA_BANCARIA",
-        estado: "CONFIRMADO", // retido na plataforma
       },
-    });
+      prisma
+    );
+  }
+
+  if (pagamento) {
+    await processPaymentEscrow(pagamento.id);
   }
 
   return Response.json({ id: updated.id, estado: updated.estado });

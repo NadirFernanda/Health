@@ -28,6 +28,7 @@ model User {
   supportTickets         SupportTicket[]
   supportTicketReplies   SupportTicketReply[]
   pushSubscriptions      PushSubscription[]
+  auditLogs              AuditLog[]
   disputasAbertas        Disputa[]            @relation("DisputasAbertas")
   disputasMensagens      DisputaMensagem[]
 }
@@ -53,6 +54,7 @@ model Profissional {
   saldoCarteiraCentavos BigInt              @default(0)
   disponivelAgora       Boolean             @default(false)
   anosExperiencia       Int?
+  metrics               Json?               @default("{}")
   bairro                String?
   cidade                String?
   numeroOma             String?
@@ -350,6 +352,9 @@ model Pagamento {
   webhookPayload             Json?
   pagoEm                     DateTime?
   liberadoEm                 DateTime?
+  retryAttempts              Int              @default(0)
+  nextRetryAt                DateTime?
+  falhaMotivo                String?
   criadoEm                   DateTime        @default(now())
   atualizadoEm               DateTime        @updatedAt
   beneficiarioProfissionalId String?
@@ -405,6 +410,20 @@ model Notificacao {
 
   @@index([userId])
   @@index([lida])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  entity    String
+  entityId  String?
+  action    String
+  detalhes  Json
+  usuarioId String?
+  criadoEm  DateTime @default(now())
+  usuario   User?    @relation(fields: [usuarioId], references: [id])
+
+  @@index([entity, entityId])
+  @@index([usuarioId])
 }
 
 model SupportTicket {

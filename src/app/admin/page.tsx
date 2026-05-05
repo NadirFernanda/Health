@@ -10,11 +10,19 @@ function formatAOA(v: number) {
   return new Intl.NumberFormat("pt-AO", { style: "currency", currency: "AOA", maximumFractionDigits: 0 }).format(v);
 }
 
+type FinancialAlert = {
+  level: "danger" | "warning" | "success";
+  message: string;
+  currentRevenue: number;
+  previousRevenue: number;
+} | null;
+
 type Stats = {
   totalMedicos: number; medicosVerificados: number; medicosPendentes: number;
   totalClinicas: number; clinicasVerificadas: number; clinicasPendentes: number;
   totalPlantoes: number; plantoesAbertos: number; plantoesConcluidos: number;
   comissaoPlataforma: number; receitaPlataforma: number;
+  financialAlert: FinancialAlert;
 };
 type Transacao = { id: string; descricao: string; valorBruto: number; data: string; };
 
@@ -73,6 +81,22 @@ export default function AdminDashboard() {
           })}
         </p>
       </div>
+
+      {stats.financialAlert && (
+        <div className={`rounded-2xl border p-4 ${
+          stats.financialAlert.level === "danger"
+            ? "bg-red-50 border-red-200 text-red-700"
+            : stats.financialAlert.level === "warning"
+            ? "bg-yellow-50 border-yellow-200 text-yellow-700"
+            : "bg-emerald-50 border-emerald-200 text-emerald-700"
+        }`}>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-2">Alerta Financeiro</p>
+          <p className="text-sm font-semibold">{stats.financialAlert.message}</p>
+          <p className="text-xs mt-1 text-current opacity-80">
+            {`Receita atual: ${formatAOA(stats.financialAlert.currentRevenue)} · Mês anterior: ${formatAOA(stats.financialAlert.previousRevenue)}`}
+          </p>
+        </div>
+      )}
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-3">

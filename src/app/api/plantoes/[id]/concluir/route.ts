@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { getAuthSession, getClinicaFromSession, getProfissionalFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { sendPushToUser } from "@/lib/push";
+import { recalculateRevenueForProfessional } from "@/lib/payment-service";
 
 /**
  * PATCH /api/plantoes/[id]/concluir
@@ -95,6 +96,8 @@ export async function PATCH(
           estado: "PROCESSADO",
         },
       });
+
+      await recalculateRevenueForProfessional(pag.beneficiarioProfissionalId, tx as any);
 
       // Notificar o médico
       const prof = await tx.profissional.findUnique({

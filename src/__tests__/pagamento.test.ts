@@ -9,6 +9,7 @@
  *  - Payment for different valorKwanzas values (boundary: 1 AOA, large value)
  */
 import { vi, describe, it, expect, beforeAll, afterAll } from "vitest";
+import type { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import {
@@ -39,7 +40,7 @@ async function fullCycle(
   plantaoId: string
 ): Promise<{ candidaturaId: string }> {
   mockAuthAs(medicoToken);
-  const r1 = await submitCandidatura(jsonReq({ plantaoId }));
+  const r1 = await submitCandidatura(jsonReq({ plantaoId }) as unknown as NextRequest);
   const { id: candidaturaId } = await r1.json();
 
   mockAuthAs(clinicaToken);
@@ -48,12 +49,12 @@ async function fullCycle(
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ candidaturaId, estado: "CONTRATO_PENDENTE" }),
-    }),
+    }) as unknown as NextRequest,
     { params: Promise.resolve({ id: plantaoId }) }
   );
 
   mockAuthAs(medicoToken);
-  await handleContrato(jsonReq({ acao: "ASSINAR" }), {
+  await handleContrato(jsonReq({ acao: "ASSINAR" }) as unknown as NextRequest, {
     params: Promise.resolve({ candidaturaId }),
   });
 
@@ -164,7 +165,7 @@ describe("Pagamento — commission & record creation", () => {
 
     // Submit + clinic accepts
     mockAuthAs(medicoData.token);
-    const r1 = await submitCandidatura(jsonReq({ plantaoId: plantao.id }));
+    const r1 = await submitCandidatura(jsonReq({ plantaoId: plantao.id }) as unknown as NextRequest);
     const { id: candidaturaId } = await r1.json();
 
     mockAuthAs(clinicaData.token);
@@ -173,13 +174,13 @@ describe("Pagamento — commission & record creation", () => {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ candidaturaId, estado: "CONTRATO_PENDENTE" }),
-      }),
+      }) as unknown as NextRequest,
       { params: Promise.resolve({ id: plantao.id }) }
     );
 
     // Doctor rejects
     mockAuthAs(medicoData.token);
-    await handleContrato(jsonReq({ acao: "RECUSAR" }), {
+    await handleContrato(jsonReq({ acao: "RECUSAR" }) as unknown as NextRequest, {
       params: Promise.resolve({ candidaturaId }),
     });
 

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { requireSession, getProfissionalFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { sendPushToUser } from "@/lib/push";
+import { createEscrowPayment, processPaymentEscrow } from "@/lib/payment-service";
 
 const COMISSAO_PERCENTAGEM = 0.10;
 
@@ -75,6 +76,7 @@ export async function POST(
   }
 
   // ASSINAR: finalise the contract → ACEITE
+  let pagamento: any = null;
   await prisma.$transaction(async (tx) => {
     const plantao = candidatura.plantao;
 
@@ -87,13 +89,13 @@ export async function POST(
       },
     });
 
-    // Create payment record
+    // Create payment record in escrow with pending status
     const valorBruto = plantao.valorKwanzas;
     const comissao = Math.round(valorBruto * COMISSAO_PERCENTAGEM);
     const valorLiquido = valorBruto - comissao;
 
-    await tx.pagamento.create({
-      data: {
+    pagamento = await createEscrowPayment(
+      {
         tipo: "TURNO",
         plantaoId: candidatura.plantaoId,
         candidaturaId,
@@ -102,9 +104,9 @@ export async function POST(
         comissaoAoa: comissao,
         valorLiquidoAoa: valorLiquido,
         metodo: "TRANSFERENCIA_BANCARIA",
-        estado: "CONFIRMADO",
       },
-    });
+      tx
+    );
 
     // Increment vacancies filled
     const novasVagasPreenchidas = plantao.vagasPreenchidas + 1;
@@ -152,6 +154,10 @@ export async function POST(
       }
     }
   });
+
+  if (pagamento) {
+    await processPaymentEscrow(pagamento.id);
+  }
 
   return Response.json({ estado: "ACEITE" });
 }

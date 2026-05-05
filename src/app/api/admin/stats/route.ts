@@ -1,9 +1,21 @@
 import { requireSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
+import { processDuePaymentRetries } from "@/lib/payment-service";
+
+function startOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0);
+}
 
 export async function GET() {
   const auth = await requireSession("ADMIN");
   if (auth instanceof Response) return auth;
+
+  await processDuePaymentRetries();
+
+  const now = new Date();
+  const currentStart = startOfMonth(now);
+  const previousStart = startOfMonth(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+  const currentEnd = now;
 
   const [
     totalMedicos,
@@ -15,6 +27,8 @@ export async function GET() {
     plantoesConcluidos,
     comissaoAgg,
     receitaAgg,
+    currentRevenueAgg,
+    previousRevenueAgg,
   ] = await Promise.all([
     prisma.profissional.count(),
     prisma.profissional.count({ where: { verified: true } }),
@@ -31,7 +45,50 @@ export async function GET() {
       _sum: { valorBrutoAoa: true },
       where: { estado: "CONFIRMADO" },
     }),
+    prisma.transacaoCarteira.aggregate({
+      _sum: { valorCentavos: true },
+      where: {
+        tipo: "CREDITO",
+        estado: "PROCESSADO",
+        criadoEm: { gte: currentStart, lte: currentEnd },
+      },
+    }),
+    prisma.transacaoCarteira.aggregate({
+      _sum: { valorCentavos: true },
+      where: {
+        tipo: "CREDITO",
+        estado: "PROCESSADO",
+        criadoEm: { gte: previousStart, lt: currentStart },
+      },
+    }),
   ]);
+
+  const currentRevenue = Number(currentRevenueAgg._sum.valorCentavos ?? 0n) / 100;
+  const previousRevenue = Number(previousRevenueAgg._sum.valorCentavos ?? 0n) / 100;
+  let financialAlert = null;
+
+  if (currentRevenue < 10000) {
+    financialAlert = {
+      level: "warning",
+      message: "Receita mensal abaixo de 10 000 AOA — atenção necessária.",
+      currentRevenue,
+      previousRevenue,
+    };
+  } else if (previousRevenue > 0 && currentRevenue < previousRevenue * 0.5) {
+    financialAlert = {
+      level: "danger",
+      message: "Receita caiu mais de 50% em relação ao mês anterior.",
+      currentRevenue,
+      previousRevenue,
+    };
+  } else if (previousRevenue > 0 && currentRevenue > previousRevenue * 2) {
+    financialAlert = {
+      level: "success",
+      message: "Receita subiu mais de 100% em relação ao mês anterior.",
+      currentRevenue,
+      previousRevenue,
+    };
+  }
 
   return Response.json({
     totalMedicos,
@@ -45,5 +102,6 @@ export async function GET() {
     plantoesConcluidos,
     comissaoPlataforma: comissaoAgg._sum.comissaoAoa ?? 0,
     receitaPlataforma: receitaAgg._sum.valorBrutoAoa ?? 0,
+    financialAlert,
   });
 }

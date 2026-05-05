@@ -21,6 +21,7 @@
  * Requires a live DATABASE_URL (the development DB or a dedicated test DB).
  */
 import { vi, describe, it, expect, beforeAll, afterAll } from "vitest";
+import type { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import {
@@ -50,19 +51,19 @@ function jsonRequest(method: string, body: unknown) {
 }
 
 async function postCandidatura(plantaoId: string) {
-  return submitCandidatura(jsonRequest("POST", { plantaoId }));
+  return submitCandidatura(jsonRequest("POST", { plantaoId }) as unknown as NextRequest);
 }
 
 async function patchClinica(plantaoId: string, body: unknown) {
   return reviewCandidatura(
-    jsonRequest("PATCH", body),
+    jsonRequest("PATCH", body) as unknown as NextRequest,
     { params: Promise.resolve({ id: plantaoId }) }
   );
 }
 
 async function postContrato(candidaturaId: string, acao: "ASSINAR" | "RECUSAR") {
   return handleContrato(
-    jsonRequest("POST", { acao }),
+    jsonRequest("POST", { acao }) as unknown as NextRequest,
     { params: Promise.resolve({ candidaturaId }) }
   );
 }
@@ -182,7 +183,7 @@ describe("Candidatura — contract rejection", () => {
 
     // Set up: submit + accept
     mockAuthAs(medicoData.token);
-    const sub = await submitCandidatura(jsonRequest("POST", { plantaoId: plantao.id }));
+    const sub = await submitCandidatura(jsonRequest("POST", { plantaoId: plantao.id }) as unknown as NextRequest);
     const data = await sub.json();
     candidaturaId = data.id;
 
