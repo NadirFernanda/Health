@@ -55,6 +55,7 @@ export async function GET() {
           ficheiro: doc.ficheiro ?? "",
         })),
         rejeicaoMotivo: m.rejeicaoMotivo ?? "",
+        saldoCarteira: m.saldoCarteira,
         criadoEm: m.user.criadoEm.toISOString(),
       };
     })

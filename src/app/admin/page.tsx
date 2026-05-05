@@ -154,6 +154,7 @@ export default function AdminDashboard() {
           { href: "/admin/clinicas",   label: "Clínicas",      color: "bg-green-50 text-green-700" },
           { href: "/admin/plantoes",   label: "Plantões",      color: "bg-orange-50 text-orange-700" },
           { href: "/admin/transacoes", label: "Finanças",      color: "bg-purple-50 text-purple-700" },
+          { href: "/admin/support",    label: "Suporte",       color: "bg-gray-50 text-gray-700" },
         ].map((l) => (
           <Link key={l.href} href={l.href}
             className={`${l.color} rounded-2xl p-3.5 text-sm font-semibold flex items-center justify-between`}>

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/app/actions/auth";
 import {
-  BarChart2, Stethoscope, Building2, ClipboardList, Wallet,
+  BarChart2, Stethoscope, Building2, ClipboardList, Wallet, Headphones,
   ChevronLeft, type LucideIcon,
 } from "lucide-react";
 
@@ -13,6 +13,7 @@ const navItems: { href: string; label: string; icon: LucideIcon; exact?: boolean
   { href: "/admin/clinicas",   label: "Clínicas",     icon: Building2 },
   { href: "/admin/plantoes",   label: "Plantões",     icon: ClipboardList },
   { href: "/admin/transacoes", label: "Finanças",     icon: Wallet },
+  { href: "/admin/support",    label: "Suporte",      icon: Headphones },
 ];
 
 export function AdminNav() {

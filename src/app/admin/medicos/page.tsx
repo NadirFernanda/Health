@@ -1,15 +1,19 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Check, X, Star, ClipboardList, MessageCircle, Ban, RotateCcw } from "lucide-react";
+import { Check, X, Star, ClipboardList, MessageCircle, Ban, RotateCcw, Wallet } from "lucide-react";
 
 type EstadoVerificacao = "APROVADO" | "PENDENTE" | "REJEITADO" | "SUSPENSO";
 type Filtro = "TODOS" | "PENDENTE" | "APROVADO" | "REJEITADO" | "SUSPENSO";
 
 type Medico = {
-  id: string; nome: string; email: string; especialidade: string; provincia: string;
+  id: string; userId: string; nome: string; email: string; especialidade: string; provincia: string;
   numeroOrdem: string; rating: number; totalAvaliacoes: number; totalPlantoes: number;
-  verified: boolean; estadoVerificacao: EstadoVerificacao; criadoEm: string;
+  verified: boolean; estadoVerificacao: EstadoVerificacao; saldoCarteira: number; criadoEm: string;
 };
+
+function formatAOA(v: number) {
+  return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
+}
 
 const badgeMap: Record<EstadoVerificacao, { cls: string; label: string }> = {
   APROVADO:  { cls: "bg-green-100 text-green-700",   label: "Verificado" },
@@ -105,14 +109,19 @@ export default function AdminMedicos() {
               </div>
             </div>
 
-            {/* Estatísticas (se já fez plantões) */}
-            {m.totalPlantoes > 0 && (
-              <div className="flex gap-4 mt-3 pt-2.5 border-t border-gray-50">
-                <span className="flex items-center gap-1 text-xs text-gray-500"><Star size={11} strokeWidth={1.75} /> {m.rating}</span>
-                <span className="flex items-center gap-1 text-xs text-gray-500"><ClipboardList size={11} strokeWidth={1.75} /> {m.totalPlantoes} plantões</span>
-                <span className="flex items-center gap-1 text-xs text-gray-500"><MessageCircle size={11} strokeWidth={1.75} /> {m.totalAvaliacoes} avaliações</span>
-              </div>
-            )}
+            {/* Estatísticas + carteira */}
+            <div className="flex flex-wrap items-center gap-3 mt-3 pt-2.5 border-t border-gray-50">
+              {m.totalPlantoes > 0 && (
+                <>
+                  <span className="flex items-center gap-1 text-xs text-gray-500"><Star size={11} strokeWidth={1.75} /> {m.rating}</span>
+                  <span className="flex items-center gap-1 text-xs text-gray-500"><ClipboardList size={11} strokeWidth={1.75} /> {m.totalPlantoes} plantões</span>
+                  <span className="flex items-center gap-1 text-xs text-gray-500"><MessageCircle size={11} strokeWidth={1.75} /> {m.totalAvaliacoes} avaliações</span>
+                </>
+              )}
+              <span className="flex items-center gap-1 text-xs font-semibold text-[#00A99D] ml-auto">
+                <Wallet size={11} strokeWidth={1.75} /> {formatAOA(m.saldoCarteira)}
+              </span>
+            </div>
 
             {/* Acções */}
             {m.estadoVerificacao === "PENDENTE" && (
