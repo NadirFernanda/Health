@@ -8,6 +8,21 @@ git pull origin main
 npm run build
 pm2 restart medfreela --update-env
 
+
+Importante:
+4. Sistema de mensagens — clínica ↔ médico antes de aceitar candidatura
+5. Contrato/acordo digital — termos antes da aceitação
+6. Testes automatizados — zero testes actualmente; fluxo de autenticação, candidatura e pagamento deveriam ser cobertos
+
+Nice-to-have:
+7. Rate limiting persistente (Redis) — actualmente perde-se ao reiniciar o servidor
+8. Push notifications — PWA manifest existe mas sem service worker
+9. Vista de calendário para shifts
+
+Queres que avance com algum destes pontos?
+
+
+
 ```bash
 npm run dev
 # or

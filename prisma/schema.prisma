@@ -25,6 +25,8 @@ model User {
   notificacoes           Notificacao[]
   profissional           Profissional?
   mensagens              Mensagem[]
+  supportTickets         SupportTicket[]
+  supportTicketReplies   SupportTicketReply[]
 }
 
 model Profissional {
@@ -401,6 +403,42 @@ model Notificacao {
   @@index([lida])
 }
 
+model SupportTicket {
+  id               String                  @id @default(cuid())
+  userId           String
+  categoria        String
+  assunto          String
+  mensagem         String
+  estado           SupportTicketEstado     @default(ABERTO)
+  prioridade       SupportTicketPrioridade @default(NORMAL)
+  userProvidedId   String?
+  contactoEmail    String?
+  contactoTelefone String?
+  criadoEm         DateTime                @default(now())
+  atualizadoEm     DateTime                @updatedAt
+  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  respostas        SupportTicketReply[]
+
+  @@index([userId])
+  @@index([estado])
+  @@index([prioridade])
+  @@index([criadoEm])
+}
+
+model SupportTicketReply {
+  id              String    @id @default(cuid())
+  ticketId        String
+  autorUserId     String
+  corpo           String
+  isAdminReply    Boolean   @default(false)
+  criadoEm        DateTime  @default(now())
+  ticket          SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  autor           User      @relation(fields: [autorUserId], references: [id])
+
+  @@index([ticketId])
+  @@index([autorUserId])
+}
+
 enum Role {
   ADMIN
   MEDICO
@@ -508,4 +546,16 @@ enum PagamentoEstado {
 enum AvaliacaoTipo {
   TURNO
   SALA
+}
+
+enum SupportTicketEstado {
+  ABERTO
+  EM_ANDAMENTO
+  FECHADO
+}
+
+enum SupportTicketPrioridade {
+  NORMAL
+  ALTA
+  URGENTE
 }
