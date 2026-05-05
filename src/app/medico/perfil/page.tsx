@@ -11,10 +11,7 @@ import {
 type DocEstado = "APROVADO" | "PENDENTE" | "NAO_ENVIADO" | "REJEITADO";
 type DocTipo =
   | "CEDULA_OMA"
-  | "BI_PASSAPORTE"
-  | "DIPLOMA_LICENCIATURA"
-  | "REGISTO_SINOME"
-  | "CERTIFICADO_ESPECIALIZACAO";
+  | "BI_PASSAPORTE";
 
 interface Documento {
   tipo: DocTipo;
@@ -43,11 +40,8 @@ interface PerfilData {
 }
 
 const docTemplate: Documento[] = [
-  { tipo: "CEDULA_OMA", label: "Cédula da Ordem dos Médicos", estado: "NAO_ENVIADO" },
-  { tipo: "BI_PASSAPORTE", label: "Bilhete de Identidade", estado: "NAO_ENVIADO" },
-  { tipo: "DIPLOMA_LICENCIATURA", label: "Licenciatura em Medicina", estado: "NAO_ENVIADO" },
-  { tipo: "REGISTO_SINOME", label: "Registo SINOME / Ordem Profissional", estado: "NAO_ENVIADO" },
-  { tipo: "CERTIFICADO_ESPECIALIZACAO", label: "Certificado de Especialidade (opcional)", estado: "NAO_ENVIADO" },
+  { tipo: "CEDULA_OMA", label: "Carteira Profissional (OMA)", estado: "NAO_ENVIADO" },
+  { tipo: "BI_PASSAPORTE", label: "Bilhete de Identidade / Passaporte", estado: "NAO_ENVIADO" },
 ];
 
 export default function PerfilMedico() {

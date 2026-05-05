@@ -15,11 +15,8 @@ type Medico = {
 };
 
 const DOC_LABELS: Record<string, string> = {
-  CEDULA_OMA:                 "Cédula OMA",
-  BI_PASSAPORTE:              "BI / Passaporte",
-  DIPLOMA_LICENCIATURA:       "Diploma",
-  REGISTO_SINOME:             "Registo SINOME",
-  CERTIFICADO_ESPECIALIZACAO: "Cert. Especialização",
+  CEDULA_OMA:    "Carteira OMA",
+  BI_PASSAPORTE: "BI / Passaporte",
 };
 
 const DOC_ESTADO: Record<string, { cls: string; label: string }> = {

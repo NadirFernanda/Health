@@ -7,9 +7,6 @@ import { prisma } from "@/lib/db";
 const allowedTipos = [
   "CEDULA_OMA",
   "BI_PASSAPORTE",
-  "DIPLOMA_LICENCIATURA",
-  "REGISTO_SINOME",
-  "CERTIFICADO_ESPECIALIZACAO",
 ] as const;
 
 type TipoDocumento = (typeof allowedTipos)[number];
