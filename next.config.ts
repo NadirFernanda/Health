@@ -26,6 +26,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false, // Remove X-Powered-By: Next.js (fingerprinting)
+  // Keep Node.js-only packages out of the Turbopack bundle — resolved at runtime
+  serverExternalPackages: ["web-push", "ioredis", "pg", "pg-connection-string", "pgpass"],
   async headers() {
     return [
       {
