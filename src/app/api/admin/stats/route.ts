@@ -7,10 +7,15 @@ function startOfMonth(date: Date) {
 }
 
 export async function GET() {
-  const auth = await requireSession("ADMIN");
-  if (auth instanceof Response) return auth;
-
   try {
+    const auth = await requireSession("ADMIN");
+    if (auth instanceof Response) {
+      console.warn("[GET /api/admin/stats] Falha de autenticação");
+      return auth;
+    }
+
+    console.log("[GET /api/admin/stats] Autenticado como ADMIN");
+
     await processDuePaymentRetries();
   } catch (error) {
     console.error("Falha ao processar retries de pagamento durante stats:", error);

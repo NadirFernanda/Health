@@ -2,10 +2,15 @@ import { requireSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 
 export async function GET() {
-  const auth = await requireSession("ADMIN");
-  if (auth instanceof Response) return auth;
-
   try {
+    const auth = await requireSession("ADMIN");
+    if (auth instanceof Response) {
+      console.warn("[GET /api/admin/medicos] Falha de autenticação");
+      return auth;
+    }
+
+    console.log("[GET /api/admin/medicos] Autenticado como ADMIN");
+
     const medicos = await prisma.profissional.findMany({
       orderBy: { user: { criadoEm: "desc" } },
       include: {
@@ -15,48 +20,56 @@ export async function GET() {
       },
     });
 
-    return Response.json(
-      medicos.map((m) => {
-        const temCredencialExpress = m.credenciais.some((c) => c.express);
-        const credencialPendente = m.credenciais.some(
-          (c) => c.estado === "PENDENTE" || c.estado === "EXPRESS_PENDENTE"
-        );
+    console.log(`[GET /api/admin/medicos] Encontrados ${medicos.length} profissionais`);
 
-        return {
-          id: m.id,
-          userId: m.userId,
-          nome: m.nome,
-          email: m.user.email,
-          especialidade: m.especialidade,
-          provincia: m.provincia,
-          numeroOrdem: m.numeroOrdem ?? "",
-          rating: m.rating,
-          totalAvaliacoes: m.totalAvaliacoes,
-          totalPlantoes: m.totalPlantoes,
-          verified: m.verified,
-          isActive: m.user.isActive,
-          estadoVerificacao: m.verified
-            ? !m.user.isActive
-              ? "SUSPENSO"
-              : "APROVADO"
-            : "PENDENTE",
-          tipoVerificacao: temCredencialExpress ? "EXPRESS" : "NORMAL",
-          documentos: m.documentos
-            .filter((doc) => doc.ficheiro && doc.estado !== "NAO_ENVIADO")
-            .map((doc) => ({
-              id: doc.id,
-              tipo: doc.tipo,
-              estado: doc.estado,
-              ficheiro: doc.ficheiro!,
-            })),
-          rejeicaoMotivo: m.rejeicaoMotivo ?? "",
-          saldoCarteira: m.saldoCarteira,
-          criadoEm: m.user.criadoEm.toISOString(),
-        };
-      })
-    );
+    const result = medicos.map((m) => {
+      const temCredencialExpress = m.credenciais.some((c) => c.express);
+      const credencialPendente = m.credenciais.some(
+        (c) => c.estado === "PENDENTE" || c.estado === "EXPRESS_PENDENTE"
+      );
+
+      return {
+        id: m.id,
+        userId: m.userId,
+        nome: m.nome,
+        email: m.user.email,
+        especialidade: m.especialidade,
+        provincia: m.provincia,
+        numeroOrdem: m.numeroOrdem ?? "",
+        rating: m.rating,
+        totalAvaliacoes: m.totalAvaliacoes,
+        totalPlantoes: m.totalPlantoes,
+        verified: m.verified,
+        isActive: m.user.isActive,
+        estadoVerificacao: m.verified
+          ? !m.user.isActive
+            ? "SUSPENSO"
+            : "APROVADO"
+          : "PENDENTE",
+        tipoVerificacao: temCredencialExpress ? "EXPRESS" : "NORMAL",
+        documentos: m.documentos
+          .filter((doc) => doc.ficheiro && doc.estado !== "NAO_ENVIADO")
+          .map((doc) => ({
+            id: doc.id,
+            tipo: doc.tipo,
+            estado: doc.estado,
+            ficheiro: doc.ficheiro!,
+          })),
+        rejeicaoMotivo: m.rejeicaoMotivo ?? "",
+        saldoCarteira: m.saldoCarteira,
+        criadoEm: m.user.criadoEm.toISOString(),
+      };
+    });
+
+    console.log("[GET /api/admin/medicos] Resposta mapeada com sucesso");
+    return Response.json(result);
   } catch (error) {
-    console.error("Erro ao listar médicos para admin:", error);
-    return Response.json({ error: "Falha interna ao carregar profissionais." }, { status: 500 });
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+    console.error("[GET /api/admin/medicos] Erro interno:", { errorMsg, stack });
+    return Response.json(
+      { error: "Falha interna ao carregar profissionais.", details: errorMsg },
+      { status: 500 }
+    );
   }
 }
