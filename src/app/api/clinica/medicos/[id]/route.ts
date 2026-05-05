@@ -32,6 +32,8 @@ export async function GET(
       anosExperiencia: true,
       disponivelAgora: true,
       numeroOrdem: true,
+      numeroSinome: true,
+      numeroOma: true,
       credenciais: {
         select: { tipo: true, comentario: true, estado: true, criadoEm: true },
         where: { estado: "APROVADO" },

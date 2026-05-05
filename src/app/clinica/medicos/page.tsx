@@ -1,8 +1,12 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { TopBar } from "@/components/nav";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Star, BadgeCheck, Search, MapPin, Zap, SlidersHorizontal, X, ChevronDown } from "lucide-react";
+import { BottomNav } from "@/components/nav";
+import {
+  Star, BadgeCheck, Search, MapPin, Zap,
+  SlidersHorizontal, X, ChevronDown, ChevronLeft, Stethoscope,
+} from "lucide-react";
 
 type Medico = {
   id: string; nome: string; tipo: string; especialidade: string;
@@ -42,16 +46,15 @@ const ORDENAR_OPTS = [
 ];
 
 export default function ClinicaMedicos() {
+  const router = useRouter();
   const [lista, setLista] = useState<Medico[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Meta
   const [especialidades, setEspecialidades] = useState<string[]>([]);
   const [provincias, setProvincias] = useState<string[]>([]);
 
-  // Filters
   const [q, setQ] = useState("");
   const [tipo, setTipo] = useState("");
   const [especialidade, setEspecialidade] = useState("");
@@ -62,7 +65,6 @@ export default function ClinicaMedicos() {
   const [expMin, setExpMin] = useState(0);
   const [ordenar, setOrdenar] = useState("rating");
 
-  // Load meta (specialties + provinces for dropdowns)
   useEffect(() => {
     fetch("/api/clinica/medicos?meta=1", { credentials: "include" })
       .then((r) => r.json())
@@ -118,48 +120,84 @@ export default function ClinicaMedicos() {
   }
 
   return (
-    <div className="pb-28">
-      <TopBar titulo="Médicos Disponíveis" back="/clinica" />
+    <div className="pb-28 bg-gray-50 min-h-screen">
 
-      <div className="px-4 pt-4 space-y-3">
-
-        {/* Pesquisa + botão filtros */}
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" strokeWidth={2} />
-            <input
-              type="text"
-              placeholder="Nome, especialidade, cidade..."
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#0B3C74]"
-            />
-          </div>
+      {/* Header com gradiente */}
+      <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] px-5 pt-6 pb-6">
+        <div className="flex items-center gap-3 mb-5">
           <button
-            onClick={() => setShowFilters((v) => !v)}
-            className={`relative flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold border transition-colors ${
-              showFilters || activeFilterCount > 0
-                ? "bg-[#0B3C74] text-white border-[#0B3C74]"
-                : "bg-white text-gray-700 border-gray-200"
+            onClick={() => router.back()}
+            className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"
+          >
+            <ChevronLeft size={18} strokeWidth={2.5} />
+          </button>
+          <div className="flex-1">
+            <h1 className="text-white font-bold text-xl">Médicos</h1>
+            <p className="text-blue-200 text-xs mt-0.5">
+              {loading ? "A carregar..." : `${total} profissional${total !== 1 ? "is" : ""} encontrado${total !== 1 ? "s" : ""}`}
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+            <Stethoscope size={20} strokeWidth={1.75} className="text-white" />
+          </div>
+        </div>
+
+        {/* Pesquisa */}
+        <div className="relative">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" strokeWidth={2} />
+          <input
+            type="text"
+            placeholder="Nome, especialidade, cidade..."
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 bg-white rounded-xl text-sm outline-none shadow-sm placeholder:text-gray-400"
+          />
+        </div>
+
+        {/* Filtros rápidos */}
+        <div className="flex gap-2 mt-3">
+          <button
+            onClick={() => setVerificado((v) => !v)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+              verificado ? "bg-white text-[#0B3C74]" : "bg-white/20 text-white"
             }`}
           >
-            <SlidersHorizontal size={15} strokeWidth={2} />
+            <BadgeCheck size={12} strokeWidth={2} /> Verificados
+          </button>
+          <button
+            onClick={() => setDisponivel((v) => !v)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+              disponivel ? "bg-white text-green-600" : "bg-white/20 text-white"
+            }`}
+          >
+            <Zap size={12} strokeWidth={2} /> Disponível agora
+          </button>
+          <button
+            onClick={() => setShowFilters((v) => !v)}
+            className={`relative ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+              showFilters || activeFilterCount > 0 ? "bg-white text-[#0B3C74]" : "bg-white/20 text-white"
+            }`}
+          >
+            <SlidersHorizontal size={12} strokeWidth={2} />
             Filtros
             {activeFilterCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                 {activeFilterCount}
               </span>
             )}
           </button>
         </div>
+      </div>
 
-        {/* Painel de filtros colapsável */}
+      <div className="px-4 pt-4 space-y-3">
+
+        {/* Painel de filtros avançados */}
         {showFilters && (
           <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-4 shadow-sm">
 
             {/* Tipo */}
             <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Tipo de profissional</p>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Tipo de profissional</p>
               <div className="flex gap-2 flex-wrap">
                 {TIPO_OPTS.map((opt) => (
                   <button
@@ -178,7 +216,7 @@ export default function ClinicaMedicos() {
             {/* Especialidade */}
             {especialidades.length > 0 && (
               <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Especialidade</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Especialidade</p>
                 <div className="relative">
                   <select
                     value={especialidade}
@@ -198,7 +236,7 @@ export default function ClinicaMedicos() {
             {/* Província */}
             {provincias.length > 0 && (
               <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Província</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Província</p>
                 <div className="relative">
                   <select
                     value={provincia}
@@ -215,10 +253,10 @@ export default function ClinicaMedicos() {
               </div>
             )}
 
-            {/* Rating mínimo + Experiência */}
+            {/* Rating + Experiência */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Rating mín.</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Rating mín.</p>
                 <div className="relative">
                   <select
                     value={ratingMin}
@@ -233,7 +271,7 @@ export default function ClinicaMedicos() {
                 </div>
               </div>
               <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Experiência</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Experiência</p>
                 <div className="relative">
                   <select
                     value={expMin}
@@ -251,7 +289,7 @@ export default function ClinicaMedicos() {
 
             {/* Ordenar */}
             <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Ordenar por</p>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Ordenar por</p>
               <div className="relative">
                 <select
                   value={ordenar}
@@ -266,48 +304,17 @@ export default function ClinicaMedicos() {
               </div>
             </div>
 
-            {/* Toggles */}
-            <div className="flex gap-2 flex-wrap">
-              <button
-                onClick={() => setVerificado((v) => !v)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                  verificado ? "bg-[#00A99D] text-white" : "bg-gray-100 text-gray-600"
-                }`}
-              >
-                <BadgeCheck size={12} strokeWidth={2} /> Só verificados
-              </button>
-              <button
-                onClick={() => setDisponivel((v) => !v)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                  disponivel ? "bg-green-500 text-white" : "bg-gray-100 text-gray-600"
-                }`}
-              >
-                <Zap size={12} strokeWidth={2} /> Disponível agora
-              </button>
-            </div>
-
-            {/* Limpar filtros */}
             {activeFilterCount > 0 && (
-              <button
-                onClick={clearFilters}
-                className="flex items-center gap-1.5 text-xs text-red-500 font-semibold"
-              >
-                <X size={12} strokeWidth={2.5} /> Limpar filtros
+              <button onClick={clearFilters} className="flex items-center gap-1.5 text-xs text-red-500 font-semibold">
+                <X size={12} strokeWidth={2.5} /> Limpar todos os filtros
               </button>
             )}
           </div>
         )}
 
-        {/* Contador */}
-        {!loading && (
-          <p className="text-xs text-gray-400">
-            {total === 0 ? "Nenhum resultado" : `${total} médico${total !== 1 ? "s" : ""} encontrado${total !== 1 ? "s" : ""}`}
-          </p>
-        )}
-
         {/* Loading */}
         {loading && (
-          <div className="flex justify-center pt-10">
+          <div className="flex justify-center pt-12">
             <div className="w-7 h-7 border-2 border-[#0B3C74] border-t-transparent rounded-full animate-spin" />
           </div>
         )}
@@ -317,46 +324,65 @@ export default function ClinicaMedicos() {
           <div className="space-y-3">
             {lista.map((m) => {
               const iniciais = m.nome.trim().split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+              const tipoLabel = m.tipo === "MEDICO" ? "Médico" : m.tipo === "ENFERMEIRO" ? "Enfermeiro" : "Técnico";
               return (
                 <Link
                   key={m.id}
                   href={`/clinica/medicos/${m.id}`}
-                  className="block bg-white rounded-2xl border border-gray-100 p-4 active:bg-gray-50 transition-colors"
+                  className="block bg-white rounded-2xl border border-gray-100 p-4 active:bg-gray-50 transition-colors shadow-sm"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center font-bold text-[#0B3C74] text-lg shrink-0 overflow-hidden">
+                    {/* Avatar */}
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center font-bold text-[#0B3C74] text-lg shrink-0 overflow-hidden">
                       {m.foto
                         ? <img src={m.foto} alt={m.nome} className="w-full h-full object-cover" />
                         : iniciais}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <p className="font-semibold text-sm text-gray-900 truncate">{m.nome}</p>
-                        {m.verified && <BadgeCheck size={13} strokeWidth={2} className="text-[#00A99D] shrink-0" />}
+                      {/* Nome + badges */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                          <p className="font-bold text-sm text-gray-900 truncate">{m.nome}</p>
+                          {m.verified && <BadgeCheck size={14} strokeWidth={2} className="text-[#00A99D] shrink-0" />}
+                        </div>
                         {m.disponivelAgora && (
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full">Disponível</span>
+                          <span className="text-[9px] font-bold px-2 py-1 bg-green-100 text-green-700 rounded-full shrink-0 whitespace-nowrap">
+                            Disponível
+                          </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-500 mt-0.5">{m.especialidade}{m.subEspecialidade ? ` · ${m.subEspecialidade}` : ""}</p>
+
+                      {/* Especialidade + tipo */}
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {m.especialidade}{m.subEspecialidade ? ` · ${m.subEspecialidade}` : ""}
+                        <span className="text-gray-300 mx-1">·</span>
+                        <span className="text-gray-400">{tipoLabel}</span>
+                      </p>
+
+                      {/* Localização */}
                       {(m.cidade || m.provincia) && (
                         <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
                           <MapPin size={10} strokeWidth={1.75} className="shrink-0" />
                           {m.cidade ? `${m.cidade}, ` : ""}{m.provincia}
                         </p>
                       )}
-                      <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
-                        <span className="flex items-center gap-0.5 text-yellow-500">
+
+                      {/* Stats */}
+                      <div className="flex items-center gap-3 mt-2 pt-2 border-t border-gray-50">
+                        <span className="flex items-center gap-1 text-yellow-500 text-xs font-semibold">
                           <Star size={11} strokeWidth={1.75} fill="currentColor" />
                           {m.rating.toFixed(1)}
-                          <span className="text-gray-400 ml-0.5">({m.totalAvaliacoes})</span>
+                          <span className="text-gray-300 font-normal">({m.totalAvaliacoes})</span>
                         </span>
-                        <span>{m.totalPlantoes} plantões</span>
-                        {m.anosExperiencia ? <span>{m.anosExperiencia}a exp.</span> : null}
-                        <span className="text-gray-300">·</span>
-                        <span className="capitalize text-gray-400 text-[10px]">
-                          {m.tipo === "MEDICO" ? "Médico" : m.tipo === "ENFERMEIRO" ? "Enfermeiro" : "Técnico"}
-                        </span>
+                        <span className="text-gray-300 text-xs">·</span>
+                        <span className="text-gray-500 text-xs">{m.totalPlantoes} plantões</span>
+                        {m.anosExperiencia ? (
+                          <>
+                            <span className="text-gray-300 text-xs">·</span>
+                            <span className="text-gray-500 text-xs">{m.anosExperiencia}a exp.</span>
+                          </>
+                        ) : null}
                       </div>
                     </div>
                   </div>
@@ -365,10 +391,12 @@ export default function ClinicaMedicos() {
             })}
 
             {lista.length === 0 && (
-              <div className="text-center py-14 text-gray-400 text-sm bg-white rounded-2xl border border-gray-100">
-                <p>Nenhum médico encontrado com esses critérios.</p>
+              <div className="text-center py-16 text-gray-400 bg-white rounded-2xl border border-gray-100">
+                <Stethoscope size={36} className="mx-auto mb-3 text-gray-200" strokeWidth={1.25} />
+                <p className="text-sm font-medium">Nenhum médico encontrado</p>
+                <p className="text-xs text-gray-300 mt-1">Tenta ajustar os filtros de pesquisa</p>
                 {activeFilterCount > 0 && (
-                  <button onClick={clearFilters} className="mt-2 text-xs text-[#0B3C74] font-semibold underline">
+                  <button onClick={clearFilters} className="mt-3 text-xs text-[#0B3C74] font-semibold underline">
                     Limpar filtros
                   </button>
                 )}
@@ -377,6 +405,8 @@ export default function ClinicaMedicos() {
           </div>
         )}
       </div>
+
+      <BottomNav role="clinica" />
     </div>
   );
 }
