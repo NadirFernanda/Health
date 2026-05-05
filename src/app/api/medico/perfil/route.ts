@@ -43,6 +43,7 @@ export async function PATCH(request: NextRequest) {
     where: { id: prof.id },
     data: {
       ...(typeof body.disponivelAgora === "boolean" && { disponivelAgora: body.disponivelAgora }),
+      ...(body.nome && typeof body.nome === "string" && body.nome.trim().length >= 3 && { nome: body.nome.trim() }),
       ...(body.bio !== undefined && { bio: body.bio }),
       ...(body.subEspecialidade !== undefined && { subEspecialidade: body.subEspecialidade }),
       ...(body.anosExperiencia !== undefined && { anosExperiencia: parseInt(body.anosExperiencia) }),

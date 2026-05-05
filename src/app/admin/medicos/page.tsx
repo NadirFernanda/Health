@@ -17,6 +17,7 @@ type Medico = {
 const DOC_LABELS: Record<string, string> = {
   CEDULA_OMA:    "Carteira OMA",
   BI_PASSAPORTE: "BI / Passaporte",
+  CURRICULO:     "Currículo",
 };
 
 const DOC_ESTADO: Record<string, { cls: string; label: string }> = {

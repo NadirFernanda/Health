@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 const allowedTipos = [
   "CEDULA_OMA",
   "BI_PASSAPORTE",
+  "CURRICULO",
 ] as const;
 
 type TipoDocumento = (typeof allowedTipos)[number];
@@ -57,9 +58,21 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Ficheiro demasiado grande. Máximo 10 MB." }, { status: 400 });
   }
 
-  const allowedMimes = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
-  if (!allowedMimes.includes(arquivo.type)) {
-    return Response.json({ error: "Formato não suportado. Use PDF, JPG ou PNG." }, { status: 400 });
+  const allowedMimes = [
+    "application/pdf", "image/jpeg", "image/png", "image/webp",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
+  const isCurriculo = tipo === "CURRICULO";
+  const allowedForTipo = isCurriculo
+    ? allowedMimes
+    : ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+  if (!allowedForTipo.includes(arquivo.type)) {
+    return Response.json({
+      error: isCurriculo
+        ? "Formato não suportado. Use PDF, DOC ou DOCX."
+        : "Formato não suportado. Use PDF, JPG ou PNG.",
+    }, { status: 400 });
   }
 
   const safeName = arquivo.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");

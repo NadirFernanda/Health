@@ -11,7 +11,8 @@ import {
 type DocEstado = "APROVADO" | "PENDENTE" | "NAO_ENVIADO" | "REJEITADO";
 type DocTipo =
   | "CEDULA_OMA"
-  | "BI_PASSAPORTE";
+  | "BI_PASSAPORTE"
+  | "CURRICULO";
 
 interface Documento {
   tipo: DocTipo;
@@ -52,13 +53,17 @@ export default function PerfilMedico() {
   const [erroSave, setErroSave] = useState("");
 
   // Campos editáveis
+  const [nome, setNome] = useState("");
   const [bio, setBio] = useState("");
   const [subEsp, setSubEsp] = useState("");
   const [anos, setAnos] = useState("");
 
   const [docs, setDocs] = useState<Documento[]>(docTemplate);
+  const [cv, setCv] = useState<{ ficheiro?: string; estado: DocEstado }>({ estado: "NAO_ENVIADO" });
+  const [cvUploading, setCvUploading] = useState(false);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const cvInputRef = useRef<HTMLInputElement | null>(null);
 
   const mergeDocs = (data: Array<{ tipo: DocTipo; estado: DocEstado; ficheiro?: string }>) => {
     return docTemplate.map((base) => {
@@ -78,10 +83,15 @@ export default function PerfilMedico() {
     ])
       .then(([profileData, docsData]: [PerfilData, Array<{ tipo: DocTipo; estado: DocEstado; ficheiro?: string }>]) => {
         setPerfil(profileData);
+        setNome(profileData.nome ?? "");
         setBio(profileData.bio ?? "");
         setSubEsp(profileData.subEspecialidade ?? "");
         setAnos(profileData.anosExperiencia ? String(profileData.anosExperiencia) : "");
-        setDocs(Array.isArray(docsData) ? mergeDocs(docsData) : docTemplate);
+        if (Array.isArray(docsData)) {
+          setDocs(mergeDocs(docsData));
+          const cvDoc = docsData.find((d) => d.tipo === "CURRICULO");
+          if (cvDoc) setCv({ ficheiro: cvDoc.ficheiro, estado: cvDoc.estado });
+        }
       })
       .catch(() => {
         setDocs(docTemplate);
@@ -94,6 +104,24 @@ export default function PerfilMedico() {
     if (!res.ok) return;
     const data: Array<{ tipo: DocTipo; estado: DocEstado; ficheiro?: string }> = await res.json();
     setDocs(mergeDocs(data));
+    const cvDoc = data.find((d) => d.tipo === "CURRICULO");
+    if (cvDoc) setCv({ ficheiro: cvDoc.ficheiro, estado: cvDoc.estado });
+  };
+
+  const handleCvUpload = async (file: File | undefined) => {
+    if (!file) return;
+    setCvUploading(true);
+    setCv({ estado: "PENDENTE" });
+    const formData = new FormData();
+    formData.append("tipo", "CURRICULO");
+    formData.append("file", file);
+    const res = await fetch("/api/medico/documentos", { method: "POST", body: formData });
+    if (res.ok) {
+      await carregarDocs();
+    } else {
+      setCv({ estado: "NAO_ENVIADO" });
+    }
+    setCvUploading(false);
   };
 
   const handleUpload = async (index: number, file: File | undefined) => {
@@ -142,12 +170,12 @@ export default function PerfilMedico() {
     const res = await fetch("/api/medico/perfil", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ bio, subEspecialidade: subEsp, anosExperiencia: anos }),
+      body: JSON.stringify({ nome, bio, subEspecialidade: subEsp, anosExperiencia: anos }),
     });
     setSalvando(false);
     if (res.ok) {
       setPerfil((p) =>
-        p ? { ...p, bio, subEspecialidade: subEsp, anosExperiencia: parseInt(anos) || 0 } : p
+        p ? { ...p, nome, bio, subEspecialidade: subEsp, anosExperiencia: parseInt(anos) || 0 } : p
       );
       setEditando(false);
     } else {
@@ -290,6 +318,16 @@ export default function PerfilMedico() {
 
         {editando ? (
           <div className="space-y-3">
+            <div>
+              <label className="block text-xs text-gray-500 font-medium mb-1.5">Nome completo</label>
+              <input
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                placeholder="Nome completo"
+                minLength={3}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-[#0B3C74] transition-colors"
+              />
+            </div>
             <div>
               <label className="block text-xs text-gray-500 font-medium mb-1.5">Sub-especialidade</label>
               <input
@@ -477,6 +515,44 @@ export default function PerfilMedico() {
           })}
         </div>
         <p className="text-xs text-gray-300 mt-3 text-center">Formatos aceites: PDF, JPG, PNG · Máx. 10 MB por ficheiro</p>
+      </div>
+
+      {/* Currículo */}
+      <div className="mx-4 mb-3 bg-white rounded-2xl border border-gray-100 px-4 py-4">
+        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Currículo</h3>
+        <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-2.5">
+          <span className={`shrink-0 ${estadoConfig[cv.estado].cls}`}>{estadoConfig[cv.estado].icon}</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-gray-800 font-medium">Curriculum Vitae</p>
+            {cv.ficheiro ? (
+              <a href={cv.ficheiro} target="_blank" rel="noreferrer" className="text-xs text-blue-600 underline truncate block">
+                Ver currículo carregado
+              </a>
+            ) : (
+              <p className="text-xs text-gray-300">Nenhum ficheiro enviado</p>
+            )}
+          </div>
+          <div className="shrink-0 flex items-center gap-2">
+            <span className={`text-xs font-semibold ${estadoConfig[cv.estado].cls}`}>{estadoConfig[cv.estado].label}</span>
+            <input
+              ref={cvInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx"
+              className="hidden"
+              onChange={(e) => handleCvUpload(e.target.files?.[0])}
+            />
+            {cv.estado !== "APROVADO" && (
+              <button
+                onClick={() => cvInputRef.current?.click()}
+                disabled={cvUploading}
+                className="text-xs text-[#0B3C74] font-semibold border border-blue-100 bg-blue-50 px-2.5 py-1 rounded-lg disabled:opacity-50"
+              >
+                {cvUploading ? "A enviar…" : cv.estado === "NAO_ENVIADO" ? "Carregar" : "Substituir"}
+              </button>
+            )}
+          </div>
+        </div>
+        <p className="text-xs text-gray-300 mt-3 text-center">Formatos aceites: PDF, DOC, DOCX · Máx. 10 MB</p>
       </div>
 
       {/* Acções de conta */}
