@@ -75,68 +75,79 @@ export async function POST(
     return Response.json({ estado: "RECUSADO" });
   }
 
-  // ASSINAR: finalise the contract → ACEITE
-  let pagamento: any = null;
-  await prisma.$transaction(async (tx) => {
-    const plantao = candidatura.plantao;
+  // ASSINAR — Step 1 (critical): update candidatura + plantao state only.
+  // Keep this transaction minimal so a payment/notification failure can never
+  // roll back the contract signing itself.
+  const plantao = candidatura.plantao;
+  let novoEstadoPlantao: "ABERTO" | "FECHADO" = "ABERTO";
 
-    await tx.candidatura.update({
-      where: { id: candidaturaId },
-      data: {
-        estado: "ACEITE",
-        respondidoEm: new Date(),
-        contratoAssinadoEm: new Date(),
-      },
-    });
-
-    // Create payment record in escrow with pending status
-    const valorBruto = plantao.valorKwanzas;
-    const comissao = Math.round(valorBruto * COMISSAO_PERCENTAGEM);
-    const valorLiquido = valorBruto - comissao;
-
-    pagamento = await createEscrowPayment(
-      {
-        tipo: "TURNO",
-        plantaoId: candidatura.plantaoId,
-        candidaturaId,
-        beneficiarioProfissionalId: prof.id,
-        valorBrutoAoa: valorBruto,
-        comissaoAoa: comissao,
-        valorLiquidoAoa: valorLiquido,
-        metodo: "TRANSFERENCIA_BANCARIA",
-      },
-      tx
-    );
-
-    // Increment vacancies filled
-    const novasVagasPreenchidas = plantao.vagasPreenchidas + 1;
-    const novoEstadoPlantao = novasVagasPreenchidas >= plantao.vagas ? "FECHADO" : "ABERTO";
-
-    await tx.plantao.update({
-      where: { id: candidatura.plantaoId },
-      data: { vagasPreenchidas: { increment: 1 }, estado: novoEstadoPlantao },
-    });
-
-    // Auto-reject remaining PENDENTE candidatures if plantão is now full
-    if (novoEstadoPlantao === "FECHADO") {
-      await tx.candidatura.updateMany({
-        where: {
-          plantaoId: candidatura.plantaoId,
-          estado: "PENDENTE",
-          id: { not: candidaturaId },
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.candidatura.update({
+        where: { id: candidaturaId },
+        data: {
+          estado: "ACEITE",
+          respondidoEm: new Date(),
+          contratoAssinadoEm: new Date(),
         },
-        data: { estado: "RECUSADO", respondidoEm: new Date() },
       });
-    }
 
-    // Notify clinic that doctor signed
-    if (plantao.clinicaId) {
-      const clinicaUser = await tx.clinica.findUnique({
-        where: { id: plantao.clinicaId },
-        select: { userId: true },
+      const updated = await tx.plantao.update({
+        where: { id: candidatura.plantaoId },
+        data: { vagasPreenchidas: { increment: 1 } },
+        select: { vagasPreenchidas: true, vagas: true },
       });
-      if (clinicaUser) {
-        await tx.notificacao.create({
+
+      novoEstadoPlantao = updated.vagasPreenchidas >= updated.vagas ? "FECHADO" : "ABERTO";
+
+      if (novoEstadoPlantao === "FECHADO") {
+        await tx.plantao.update({
+          where: { id: candidatura.plantaoId },
+          data: { estado: "FECHADO" },
+        });
+        await tx.candidatura.updateMany({
+          where: {
+            plantaoId: candidatura.plantaoId,
+            estado: "PENDENTE",
+            id: { not: candidaturaId },
+          },
+          data: { estado: "RECUSADO", respondidoEm: new Date() },
+        });
+      }
+    });
+  } catch (err) {
+    console.error("[contrato] transaction failed:", err);
+    return Response.json({ error: "Erro ao processar contrato. Tente novamente." }, { status: 500 });
+  }
+
+  // Step 2 (non-critical, fire-and-forget): payment record + notifications.
+  // Failures here must never block the success response already committed above.
+  const valorBruto = plantao.valorKwanzas;
+  const comissao = Math.round(valorBruto * COMISSAO_PERCENTAGEM);
+  const valorLiquido = valorBruto - comissao;
+
+  createEscrowPayment(
+    {
+      tipo: "TURNO",
+      plantaoId: candidatura.plantaoId,
+      candidaturaId,
+      beneficiarioProfissionalId: prof.id,
+      valorBrutoAoa: valorBruto,
+      comissaoAoa: comissao,
+      valorLiquidoAoa: valorLiquido,
+      metodo: "TRANSFERENCIA_BANCARIA",
+    },
+    prisma
+  )
+    .then((p) => processPaymentEscrow(p.id))
+    .catch((err) => console.error("[contrato] payment creation failed:", err));
+
+  if (plantao.clinicaId) {
+    prisma.clinica
+      .findUnique({ where: { id: plantao.clinicaId }, select: { userId: true } })
+      .then(async (clinicaUser) => {
+        if (!clinicaUser) return;
+        await prisma.notificacao.create({
           data: {
             userId: clinicaUser.userId,
             tipo: "CONTRATO",
@@ -151,16 +162,8 @@ export async function POST(
           href: `/clinica/plantoes/${candidatura.plantaoId}`,
           tag: "CONTRATO",
         }).catch(() => {});
-      }
-    }
-  });
-
-  if (pagamento) {
-    // Non-blocking: contract is already signed; payment processing failure
-    // must not roll back the user-visible success response.
-    processPaymentEscrow(pagamento.id).catch((err) => {
-      console.error("[contrato] processPaymentEscrow failed:", err);
-    });
+      })
+      .catch((err) => console.error("[contrato] notification failed:", err));
   }
 
   return Response.json({ estado: "ACEITE" });
