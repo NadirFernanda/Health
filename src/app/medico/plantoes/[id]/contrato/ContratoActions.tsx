@@ -93,6 +93,11 @@ export default function ContratoActions({
         >
           Ver o meu plantão
         </button>
+        {pagamentoInfo && (
+          <a href={`/recibo/${pagamentoInfo.pagamentoId}`} className="text-sm text-[#0B3C74] font-semibold underline">
+            Ver comprovativo de pagamento
+          </a>
+        )}
       </div>
     );
   }

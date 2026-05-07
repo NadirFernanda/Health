@@ -134,6 +134,11 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
         <button onClick={() => router.push("/medico/minhas-reservas")} className="mt-6 bg-[#0B3C74] text-white font-bold px-8 py-3 rounded-2xl w-full max-w-xs">
           Ver minhas reservas
         </button>
+        {pagamentoInfo && (
+          <a href={`/recibo/${pagamentoInfo.pagamentoId}`} className="mt-2 text-sm text-[#0B3C74] font-semibold underline">
+            Ver comprovativo de pagamento
+          </a>
+        )}
         <button onClick={() => router.push("/medico")} className="mt-2 text-gray-400 text-sm py-2">
           Voltar ao início
         </button>

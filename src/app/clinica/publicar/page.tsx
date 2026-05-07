@@ -117,6 +117,11 @@ export default function PublicarPlantao() {
         >
           Ver plantões publicados
         </button>
+        {pagamentoInfo && (
+          <a href={`/recibo/${pagamentoInfo.pagamentoId}`} className="mt-3 text-sm text-[#0B3C74] font-semibold underline">
+            Ver comprovativo de pagamento
+          </a>
+        )}
       </div>
     );
   }
