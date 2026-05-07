@@ -269,7 +269,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
 
   /* ── DETALHE ── */
   return (
-    <div className="pb-28">
+    <div className="pb-36">
       <TopBar titulo="" back="/medico/salas" />
 
       {/* Hero */}
@@ -353,8 +353,8 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
         </div>
       </div>
 
-      {/* CTA fixo */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-4 safe-bottom">
+      {/* CTA fixo — posicionado acima do BottomNav (h≈64px) */}
+      <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-100 px-4 py-3 z-[60]">
         <button onClick={() => setStep("horario")}
           className="w-full bg-gradient-to-r from-[#0B3C74] to-[#00A99D] text-white font-bold py-4 rounded-2xl text-base active:scale-[0.99] transition-transform shadow-lg shadow-[#0B3C74]/20">
           RESERVAR ESTA SALA

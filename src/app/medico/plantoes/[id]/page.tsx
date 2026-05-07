@@ -273,7 +273,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
   const equipIndisponiveis = EQUIP_LABELS.filter(({ key }) => plantao[key as keyof typeof plantao] !== true);
 
   return (
-    <div className="pb-32">
+    <div className="pb-8">
       <TopBar titulo="Detalhe do Plantão" back={clinica ? "/medico/buscar" : "/medico/plantoes"} />
 
       {/* ── Hero ── */}
@@ -446,7 +446,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
       )}
 
       {/* ── CTA ── */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-4 pb-6 pt-3 bg-gradient-to-t from-[#f7f8fa] via-[#f7f8fa]/95 to-transparent z-40">
+      <div className="px-4 pt-4 pb-4">
         <div className="space-y-2.5">
 
           {/* No candidatura + open */}
