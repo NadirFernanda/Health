@@ -5,7 +5,7 @@ import { criarNotificacaoComPush } from "@/lib/push";
 
 export async function POST(
   _request: NextRequest,
-  { params }: { params: Promise<{ plantaoId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await requireSession("MEDICO");
   if (auth instanceof Response) return auth;
@@ -13,7 +13,7 @@ export async function POST(
   const prof = await getProfissionalFromSession(auth.session);
   if (!prof) return Response.json({ error: "Perfil não encontrado" }, { status: 404 });
 
-  const { plantaoId } = await params;
+  const { id: plantaoId } = await params;
 
   const candidatura = await prisma.candidatura.findUnique({
     where: { plantaoId_profissionalId: { plantaoId, profissionalId: prof.id } },
