@@ -37,13 +37,14 @@ function formatHora(d: string) {
 }
 
 const estadoMap: Record<string, { label: string; cls: string }> = {
+  AGUARDANDO_PAGAMENTO: { label: "Ag. pagamento", cls: "bg-amber-50 text-amber-700" },
   ABERTO:    { label: "Aberto",    cls: "bg-green-50 text-green-700" },
   FECHADO:   { label: "Fechado",   cls: "bg-gray-100 text-gray-600" },
   CANCELADO: { label: "Cancelado", cls: "bg-red-50 text-red-600" },
   CONCLUIDO: { label: "Concluído", cls: "bg-blue-50 text-blue-700" },
 };
 
-type FiltroEstado = "TODOS" | "ABERTO" | "FECHADO" | "CONCLUIDO" | "CANCELADO";
+type FiltroEstado = "TODOS" | "AGUARDANDO_PAGAMENTO" | "ABERTO" | "FECHADO" | "CONCLUIDO" | "CANCELADO";
 
 export default function MeusPlantoes() {
   const router = useRouter();
@@ -71,7 +72,7 @@ export default function MeusPlantoes() {
       {/* Filtros */}
       <div className="px-4 pt-4">
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-          {(["TODOS", "ABERTO", "FECHADO", "CONCLUIDO", "CANCELADO"] as FiltroEstado[]).map((f) => (
+          {(["TODOS", "AGUARDANDO_PAGAMENTO", "ABERTO", "FECHADO", "CONCLUIDO", "CANCELADO"] as FiltroEstado[]).map((f) => (
             <button
               key={f}
               onClick={() => setFiltro(f)}

@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { logoutAction } from "@/app/actions/auth";
 import {
   BarChart2, Stethoscope, Building2, Building, ClipboardList, Wallet, Headphones, AlertTriangle,
-  Users, ChevronLeft, type LucideIcon,
+  Users, ChevronLeft, CreditCard, type LucideIcon,
 } from "lucide-react";
 import type { AdminModule, AccessLevel } from "@/lib/admin-permissions";
 
@@ -15,6 +15,7 @@ const navItems: { href: string; label: string; icon: LucideIcon; module: AdminMo
   { href: "/admin/consultorios",    label: "Consultórios",   icon: Building,    module: "profissionais" },
   { href: "/admin/plantoes",        label: "Plantões",       icon: ClipboardList, module: "plantoes" },
   { href: "/admin/transacoes",      label: "Finanças",      icon: Wallet,      module: "financeiro" },
+  { href: "/admin/pagamentos",      label: "Pagamentos",    icon: CreditCard,  module: "financeiro" },
   { href: "/admin/disputas",        label: "Disputas",       icon: AlertTriangle, module: "disputas" },
   { href: "/admin/support",         label: "Suporte",        icon: Headphones,  module: "suporte" },
   { href: "/admin/admins",          label: "Admins",         icon: Users,       module: "admins" },

@@ -2,7 +2,11 @@
 import { useState } from "react";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
-import { Sparkles, CheckSquare, Square } from "lucide-react";
+import { Sparkles, CheckSquare, Square, Landmark, Clock } from "lucide-react";
+
+function formatAOA(v: number) {
+  return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
+}
 
 const especialidades = [
   "Medicina Geral", "Pediatria", "Ginecologia", "Cardiologia",
@@ -29,6 +33,7 @@ export default function PublicarPlantaoMedico() {
   const [publicado, setPublicado] = useState(false);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
+  const [pagamentoInfo, setPagamentoInfo] = useState<{ pagamentoId: string; valorKwanzas: number } | null>(null);
 
   const [form, setForm] = useState({
     especialidade: "",
@@ -77,12 +82,61 @@ export default function PublicarPlantaoMedico() {
         setLoading(false);
         return;
       }
-      setPublicado(true);
+      const data = await res.json();
+      setPagamentoInfo({ pagamentoId: data.pagamentoId, valorKwanzas: data.valorKwanzas });
     } catch {
       setErro("Erro de rede. Tenta novamente.");
     } finally {
       setLoading(false);
     }
+  }
+
+  if (pagamentoInfo) {
+    return (
+      <div>
+        <TopBar titulo="Pagamento da Vaga" back="/medico/publicar-plantao" />
+        <div className="px-4 py-5 space-y-4">
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800 leading-5">
+            <p className="font-bold mb-1">Vaga criada — aguarda confirmação do pagamento</p>
+            <p>Após confirmarmos o pagamento, a vaga fica visível para outros médicos se candidatarem.</p>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Resumo do pagamento</p>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Valor da vaga</span>
+              <span className="font-bold text-[#0B3C74]">{formatAOA(pagamentoInfo.valorKwanzas)}</span>
+            </div>
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>Comissão plataforma (15%)</span>
+              <span>{formatAOA(Math.round(pagamentoInfo.valorKwanzas * 0.15))}</span>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Dados para transferência</p>
+            <p className="flex items-center gap-2 text-sm text-gray-700">
+              <Landmark size={14} strokeWidth={1.75} className="text-gray-400 shrink-0" />
+              <span>NIB: <strong>0040 0000 12345 67890 10 1</strong></span>
+            </p>
+            <p className="text-xs text-gray-500">Banco: BAI · Titular: Medfreela Lda</p>
+            <p className="text-xs text-gray-500">Referência: <strong className="font-mono">{pagamentoInfo.pagamentoId.slice(-10).toUpperCase()}</strong></p>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-100 rounded-2xl p-3 flex items-start gap-2 text-xs text-blue-700">
+            <Clock size={13} strokeWidth={2} className="shrink-0 mt-0.5" />
+            O pagamento é retido na plataforma e libertado ao substituto após a conclusão do plantão.
+          </div>
+
+          <button
+            onClick={() => router.push("/medico/plantoes")}
+            className="w-full bg-[#0B3C74] text-white font-bold py-4 rounded-2xl"
+          >
+            Ver os meus plantões
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (publicado) {

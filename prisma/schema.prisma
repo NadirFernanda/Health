@@ -500,6 +500,7 @@ enum TipoProfissional {
 }
 
 enum EstadoPlantao {
+  AGUARDANDO_PAGAMENTO
   ABERTO
   FECHADO
   EM_ANDAMENTO
@@ -510,6 +511,7 @@ enum EstadoPlantao {
 enum EstadoCandidatura {
   PENDENTE
   CONTRATO_PENDENTE
+  AGUARDANDO_PAGAMENTO
   ACEITE
   RECUSADO
   CANCELADA

@@ -62,11 +62,12 @@ export default async function DetalhePlantaoClinica({
     CANCELADO:    { label: "Cancelado",    cls: "bg-red-50 text-red-600" },
   };
   const estadoCand: Record<string, { label: string; cls: string }> = {
-    PENDENTE:           { label: "Pendente",           cls: "bg-yellow-50 text-yellow-700" },
-    CONTRATO_PENDENTE:  { label: "Contrato enviado",   cls: "bg-blue-50 text-blue-700" },
-    ACEITE:             { label: "Aceite",             cls: "bg-green-50 text-green-700" },
-    RECUSADO:           { label: "Recusado",           cls: "bg-red-50 text-red-600" },
-    CANCELADA:          { label: "Cancelada",          cls: "bg-gray-100 text-gray-500" },
+    PENDENTE:              { label: "Pendente",           cls: "bg-yellow-50 text-yellow-700" },
+    CONTRATO_PENDENTE:     { label: "Contrato enviado",   cls: "bg-blue-50 text-blue-700" },
+    AGUARDANDO_PAGAMENTO:  { label: "Ag. pagamento",      cls: "bg-amber-50 text-amber-700" },
+    ACEITE:                { label: "Aceite",             cls: "bg-green-50 text-green-700" },
+    RECUSADO:              { label: "Recusado",           cls: "bg-red-50 text-red-600" },
+    CANCELADA:             { label: "Cancelada",          cls: "bg-gray-100 text-gray-500" },
   };
 
   const estado = estadoMap[plantao.estado] ?? { label: plantao.estado, cls: "bg-gray-100 text-gray-600" };

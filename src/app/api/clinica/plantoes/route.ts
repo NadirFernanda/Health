@@ -59,21 +59,39 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Campos obrigatórios em falta" }, { status: 400 });
   }
 
-  const plantao = await prisma.plantao.create({
-    data: {
-      clinicaId: clinica.id,
-      tipoProfissional: tipoProfissional ?? "MEDICO",
-      especialidade,
-      dataInicio: new Date(dataInicio),
-      dataFim: new Date(dataFim),
-      valorKwanzas: parseInt(valorKwanzas),
-      valorCentavos: BigInt(parseInt(valorKwanzas)) * 100n,
-      vagas: parseInt(vagas),
-      descricao,
-      salaId: salaId ?? null,
-      ...(equipamentos ?? {}),
-    },
+  const valorInt = parseInt(valorKwanzas);
+  const comissao = Math.round(valorInt * 0.15);
+
+  const { plantao, pagamento } = await prisma.$transaction(async (tx) => {
+    const p = await tx.plantao.create({
+      data: {
+        clinicaId: clinica.id,
+        tipoProfissional: tipoProfissional ?? "MEDICO",
+        especialidade,
+        dataInicio: new Date(dataInicio),
+        dataFim: new Date(dataFim),
+        valorKwanzas: valorInt,
+        valorCentavos: BigInt(valorInt) * 100n,
+        vagas: parseInt(vagas),
+        descricao,
+        salaId: salaId ?? null,
+        estado: "AGUARDANDO_PAGAMENTO",
+        ...(equipamentos ?? {}),
+      },
+    });
+    const pag = await tx.pagamento.create({
+      data: {
+        tipo: "TURNO",
+        plantaoId: p.id,
+        valorBrutoAoa: valorInt,
+        comissaoAoa: comissao,
+        valorLiquidoAoa: valorInt - comissao,
+        metodo: "TRANSFERENCIA_BANCARIA",
+        estado: "PENDENTE",
+      },
+    });
+    return { plantao: p, pagamento: pag };
   });
 
-  return Response.json({ id: plantao.id }, { status: 201 });
+  return Response.json({ id: plantao.id, pagamentoId: pagamento.id, valorKwanzas: valorInt }, { status: 201 });
 }

@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
   const prof = await getProfissionalFromSession(auth.session);
   if (!prof) return Response.json({ error: "Perfil não encontrado" }, { status: 404 });
 
-  const { salaId, data, horaInicio, duracaoHoras } = await request.json();
+  const { salaId, data, horaInicio, duracaoHoras, metodo } = await request.json();
   if (!salaId || !data || !horaInicio || !duracaoHoras) {
     return Response.json({ error: "Campos obrigatórios em falta" }, { status: 400 });
   }
@@ -58,17 +58,42 @@ export async function POST(request: NextRequest) {
 
   const valorTotal = sala.precoPorHora * duracaoHoras;
   const valorTotalCentavos = BigInt(sala.precoPorHora) * BigInt(duracaoHoras) * 100n;
-  const reserva = await prisma.reservaSala.create({
-    data: {
-      salaId,
-      profissionalId: prof.id,
-      data: new Date(data),
-      horaInicio,
-      duracaoHoras,
-      valorTotal,
-      valorTotalCentavos,
-    },
+  const comissao = Math.round(valorTotal * 0.15);
+  const metodoFinal = (metodo === "MULTICAIXA_EXPRESS" ? "MULTICAIXA_EXPRESS" : "TRANSFERENCIA_BANCARIA") as const;
+
+  const { reserva, pagamento } = await prisma.$transaction(async (tx) => {
+    const r = await tx.reservaSala.create({
+      data: {
+        salaId,
+        profissionalId: prof.id,
+        data: new Date(data),
+        horaInicio,
+        duracaoHoras,
+        valorTotal,
+        valorTotalCentavos,
+        estado: "PENDENTE_PAGAMENTO",
+      },
+    });
+    const pag = await tx.pagamento.create({
+      data: {
+        tipo: "SALA",
+        reservaSalaId: r.id,
+        valorBrutoAoa: valorTotal,
+        comissaoAoa: comissao,
+        valorLiquidoAoa: valorTotal - comissao,
+        metodo: metodoFinal,
+        estado: "PENDENTE",
+      },
+    });
+    return { reserva: r, pagamento: pag };
   });
 
-  return Response.json({ id: reserva.id, codigoQr: reserva.codigoQr, valorTotal, valorTotalCentavos: valorTotalCentavos.toString() }, { status: 201 });
+  return Response.json({
+    id: reserva.id,
+    codigoQr: reserva.codigoQr,
+    valorTotal,
+    valorTotalCentavos: valorTotalCentavos.toString(),
+    pagamentoId: pagamento.id,
+    estado: "PENDENTE_PAGAMENTO",
+  }, { status: 201 });
 }

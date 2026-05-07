@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
-import { Sparkles, Info, ChevronRight, ChevronLeft, CheckSquare, Square, Calendar, Users, Check } from "lucide-react";
+import { Info, ChevronRight, ChevronLeft, CheckSquare, Square, Calendar, Users, Check, Landmark, Clock } from "lucide-react";
 
 const especialidades = [
   "Medicina Geral", "Pediatria", "Ginecologia", "Cardiologia",
@@ -29,10 +29,16 @@ const equipamentosOpcoes = [
   { key: "desfibrilador", label: "Desfibrilador" },
 ];
 
+function formatAOA(v: number) {
+  return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
+}
+
 export default function PublicarPlantao() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [publicado, setPublicado] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState("");
+  const [pagamentoInfo, setPagamentoInfo] = useState<{ pagamentoId: string; valorKwanzas: number } | null>(null);
 
   const [form, setForm] = useState({
     tipoProfissional: "MEDICO",
@@ -55,28 +61,87 @@ export default function PublicarPlantao() {
   const toggleEquip = (key: string) =>
     setEquipamentos((prev) => ({ ...prev, [key]: !prev[key] }));
 
-  if (publicado) {
+  async function publicar() {
+    setLoading(true);
+    setErro("");
+    try {
+      const dataInicio = new Date(`${form.dataInicio}T${form.horaInicio}:00`).toISOString();
+      const dataFim    = new Date(`${form.dataFim}T${form.horaFim}:00`).toISOString();
+      const res = await fetch("/api/clinica/plantoes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipoProfissional: form.tipoProfissional,
+          especialidade: form.especialidade,
+          dataInicio, dataFim,
+          valorKwanzas: form.valor,
+          vagas: form.vagas,
+          descricao: "",
+          equipamentos,
+        }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        setErro(d.error ?? "Erro ao publicar");
+        return;
+      }
+      const data = await res.json();
+      setPagamentoInfo({ pagamentoId: data.pagamentoId, valorKwanzas: data.valorKwanzas });
+    } catch {
+      setErro("Erro de rede. Tenta novamente.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (pagamentoInfo) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f7f8fa] px-6 text-center">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
-          <Sparkles size={40} strokeWidth={1.5} className="text-green-500" />
+      <div>
+        <TopBar titulo="Pagamento do Plantão" back="/clinica/publicar" />
+        <div className="px-4 py-5 space-y-4">
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800 leading-5">
+            <p className="font-bold mb-1">Plantão criado — aguarda confirmação do pagamento</p>
+            <p>Após confirmarmos o pagamento, o plantão fica visível para os médicos candidatarem-se.</p>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Resumo do pagamento</p>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Valor do plantão</span>
+              <span className="font-bold text-[#0B3C74]">{formatAOA(pagamentoInfo.valorKwanzas)}</span>
+            </div>
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>Comissão plataforma (15%)</span>
+              <span>{formatAOA(Math.round(pagamentoInfo.valorKwanzas * 0.15))}</span>
+            </div>
+            <div className="border-t border-gray-100 pt-2 flex justify-between text-sm font-bold">
+              <span>Total a pagar</span>
+              <span className="text-[#0B3C74]">{formatAOA(pagamentoInfo.valorKwanzas)}</span>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Dados para transferência</p>
+            <p className="flex items-center gap-2 text-sm text-gray-700">
+              <Landmark size={14} strokeWidth={1.75} className="text-gray-400 shrink-0" />
+              <span>NIB: <strong>0040 0000 12345 67890 10 1</strong></span>
+            </p>
+            <p className="text-xs text-gray-500">Banco: BAI · Titular: Medfreela Lda</p>
+            <p className="text-xs text-gray-500">Referência: <strong className="font-mono">{pagamentoInfo.pagamentoId.slice(-10).toUpperCase()}</strong></p>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-100 rounded-2xl p-3 flex items-start gap-2 text-xs text-blue-700">
+            <Clock size={13} strokeWidth={2} className="shrink-0 mt-0.5" />
+            O pagamento é retido na plataforma e só é libertado ao médico após a conclusão do plantão.
+          </div>
+
+          <button
+            onClick={() => router.push("/clinica/plantoes")}
+            className="w-full bg-[#0B3C74] text-white font-bold py-4 rounded-2xl"
+          >
+            Ver os meus plantões
+          </button>
         </div>
-        <h2 className="text-xl font-bold text-gray-900">Plantão publicado!</h2>
-        <p className="text-gray-500 mt-2 text-sm leading-6">
-          Os médicos com especialidade compatível serão notificados agora.
-        </p>
-        <button
-          onClick={() => router.push("/clinica/plantoes")}
-          className="mt-6 bg-[#0B3C74] text-white font-bold px-8 py-3 rounded-2xl"
-        >
-          Ver plantões publicados
-        </button>
-        <button
-          onClick={() => router.push("/clinica")}
-          className="mt-3 text-gray-400 text-sm underline"
-        >
-          Voltar ao painel
-        </button>
       </div>
     );
   }
@@ -163,7 +228,7 @@ export default function PublicarPlantao() {
             <input type="number" placeholder="Ex: 15000" value={form.valor}
               onChange={(e) => setForm({ ...form, valor: e.target.value })}
               className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#0B3C74]" />
-            <p className="text-xs text-gray-400 mt-1">O médico receberá este valor integralmente</p>
+            <p className="text-xs text-gray-400 mt-1">O médico receberá 85% deste valor após comissão de 15%</p>
           </div>
 
           <div>
@@ -242,15 +307,20 @@ export default function PublicarPlantao() {
           </div>
 
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700 flex items-start gap-2">
-            <Info size={14} strokeWidth={2} className="shrink-0 mt-0.5" /> A plataforma retém <strong>10% de comissão</strong> sobre o valor do plantão. Será cobrado <strong>{Math.round(parseInt(form.valor || "0") * 1.1).toLocaleString()} AOA</strong> no total.
+            <Info size={14} strokeWidth={2} className="shrink-0 mt-0.5" /> A plataforma retém <strong>15% de comissão</strong> sobre o valor do plantão. O médico receberá <strong>{Math.round(parseInt(form.valor || "0") * 0.85).toLocaleString()} AOA</strong> líquido.
           </div>
 
+          {erro && <p className="text-red-500 text-sm text-center">{erro}</p>}
           <div className="flex gap-2">
             <button onClick={() => setStep(2)} className="flex-1 border border-gray-200 text-gray-600 font-semibold py-3.5 rounded-2xl text-sm inline-flex items-center justify-center gap-1">
               <ChevronLeft size={16} strokeWidth={2} /> Voltar
             </button>
-            <button onClick={() => setPublicado(true)} className="flex-1 bg-[#00A99D] text-white font-bold py-3.5 rounded-2xl text-sm">
-              PUBLICAR
+            <button
+              onClick={publicar}
+              disabled={loading}
+              className="flex-1 bg-[#00A99D] disabled:opacity-60 text-white font-bold py-3.5 rounded-2xl text-sm"
+            >
+              {loading ? "A publicar..." : "PUBLICAR"}
             </button>
           </div>
         </div>
