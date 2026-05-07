@@ -4,11 +4,12 @@ import { useParams, useRouter } from "next/navigation";
 import { TopBar } from "@/components/nav";
 import {
   Star, BadgeCheck, MapPin, Briefcase, Award, MessageCircle,
-  Clock, Stethoscope, Hash, Calendar,
+  Clock, Stethoscope, Hash, Calendar, FileText, Download, ExternalLink,
 } from "lucide-react";
 
 type Credencial = { tipo: string; comentario: string | null; estado: string; criadoEm: string };
 type Avaliacao  = { estrelas: number; comentario: string | null; criadoEm: string };
+type Curriculo  = { ficheiro: string; estado: string; criadoEm: string };
 type Medico = {
   id: string; nome: string; tipo: string; especialidade: string;
   subEspecialidade: string | null; provincia: string; cidade: string | null;
@@ -18,6 +19,7 @@ type Medico = {
   disponivelAgora: boolean; numeroOrdem: string | null;
   numeroSinome: string | null; numeroOma: string | null;
   credenciais: Credencial[]; avaliacoesRecebidas: Avaliacao[];
+  documentos: Curriculo[];
 };
 
 function Stars({ nota, size = 13 }: { nota: number; size?: number }) {
@@ -269,6 +271,50 @@ export default function PerfilMedicoClinica() {
             </div>
           </div>
         )}
+
+        {/* Currículo */}
+        {medico.documentos.length > 0 && (() => {
+          const cv = medico.documentos[0];
+          const isAprovado = cv.estado === "APROVADO";
+          return (
+            <div className="bg-white rounded-2xl border border-gray-100 p-4">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <FileText size={11} strokeWidth={2} />
+                Currículo
+              </p>
+              <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isAprovado ? "bg-blue-50" : "bg-yellow-50"}`}>
+                  <FileText size={18} strokeWidth={1.5} className={isAprovado ? "text-[#0B3C74]" : "text-yellow-500"} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-800">Curriculum Vitae</p>
+                  <p className="text-[10px] mt-0.5">
+                    {isAprovado
+                      ? <span className="text-green-600 font-semibold">✓ Verificado pela plataforma</span>
+                      : <span className="text-yellow-600 font-semibold">⏳ Em revisão</span>}
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <a
+                    href={cv.ficheiro}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 bg-[#0B3C74] text-white text-xs font-semibold px-3 py-2 rounded-xl"
+                  >
+                    <ExternalLink size={12} strokeWidth={2} /> Ver
+                  </a>
+                  <a
+                    href={cv.ficheiro}
+                    download
+                    className="flex items-center gap-1.5 border border-gray-200 text-gray-600 text-xs font-semibold px-3 py-2 rounded-xl"
+                  >
+                    <Download size={12} strokeWidth={2} /> Download
+                  </a>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Avaliações */}
         {medico.avaliacoesRecebidas.length > 0 && (

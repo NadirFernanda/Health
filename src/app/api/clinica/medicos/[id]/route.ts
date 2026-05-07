@@ -38,6 +38,11 @@ export async function GET(
         select: { tipo: true, comentario: true, estado: true, criadoEm: true },
         where: { estado: "APROVADO" },
       },
+      documentos: {
+        select: { tipo: true, ficheiro: true, estado: true, criadoEm: true },
+        where: { tipo: "CURRICULO", estado: { in: ["APROVADO", "PENDENTE"] } },
+        take: 1,
+      },
       avaliacoesRecebidas: {
         select: { estrelas: true, comentario: true, criadoEm: true },
         orderBy: { criadoEm: "desc" },
