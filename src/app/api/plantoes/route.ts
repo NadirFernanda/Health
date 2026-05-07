@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
   }
 
   const valorInt = parseInt(valorKwanzas);
-  const comissao = Math.round(valorInt * 0.15);
+  const comissao = Math.round(valorInt * 0.10);
 
   const { plantao, pagamento } = await prisma.$transaction(async (tx) => {
     const p = await tx.plantao.create({

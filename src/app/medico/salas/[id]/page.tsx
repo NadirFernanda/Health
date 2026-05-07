@@ -301,7 +301,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
 
       <div className="bg-white mt-2 px-4 py-4 border-b border-gray-100">
         <p className="text-3xl font-bold text-[#0B3C74]">{formatAOA(sala.precoPorHora)}<span className="text-base text-gray-400 font-normal">/hora</span></p>
-        <p className="text-xs text-gray-400 mt-1">Comissão Medfreela (15%) incluída no preço</p>
+        <p className="text-xs text-gray-400 mt-1">Comissão Medfreela (10%) incluída no preço</p>
       </div>
 
       <div className="bg-white mt-2 px-4 py-4 border-b border-gray-100">

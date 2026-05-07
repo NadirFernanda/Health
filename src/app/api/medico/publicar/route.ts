@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
   const metodoPagamento = (["MULTICAIXA_EXPRESS", "TPA"].includes(metodo) ? metodo : "TRANSFERENCIA_BANCARIA") as "MULTICAIXA_EXPRESS" | "TPA" | "TRANSFERENCIA_BANCARIA";
   const valorInt = parseInt(valorKwanzas);
-  const comissao = Math.round(valorInt * 0.15);
+  const comissao = Math.round(valorInt * 0.10);
 
   const { plantao, pagamento } = await prisma.$transaction(async (tx) => {
     const p = await tx.plantao.create({

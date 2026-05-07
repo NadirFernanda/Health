@@ -244,7 +244,7 @@ export default function PublicarPlantao() {
             <input type="number" placeholder="Ex: 15000" value={form.valor}
               onChange={(e) => setForm({ ...form, valor: e.target.value })}
               className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-[#0B3C74]" />
-            <p className="text-xs text-gray-400 mt-1">O médico receberá 85% deste valor após comissão de 15%</p>
+            <p className="text-xs text-gray-400 mt-1">O médico receberá 90% deste valor após comissão de 10%</p>
           </div>
 
           <div>
@@ -325,7 +325,7 @@ export default function PublicarPlantao() {
 
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700 flex items-start gap-2">
             <Info size={14} strokeWidth={2} className="shrink-0 mt-0.5" />
-            A plataforma retém <strong>15% de comissão</strong>. O médico receberá <strong>{Math.round(parseInt(form.valor || "0") * 0.85).toLocaleString()} AOA</strong> líquido.
+            A plataforma retém <strong>10% de comissão</strong>. O médico receberá <strong>{Math.round(parseInt(form.valor || "0") * 0.90).toLocaleString()} AOA</strong> líquido.
           </div>
 
           {/* Selector de método */}

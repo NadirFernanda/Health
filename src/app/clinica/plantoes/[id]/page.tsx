@@ -6,6 +6,7 @@ import { redirect, notFound } from "next/navigation";
 import { Calendar, BadgeCheck, Star, MessageCircle, Users, CheckCircle2 } from "lucide-react";
 import CandidaturaActions from "./CandidaturaActions";
 import { DisputaClinicaButton } from "./DisputaClinicaButton";
+import LiberarPagamentoButton from "./LiberarPagamentoButton";
 
 function formatAOA(v: number) {
   return new Intl.NumberFormat("pt-PT").format(v) + " AOA";
@@ -33,7 +34,14 @@ export default async function DetalhePlantaoClinica({
 
   const candidaturas = await prisma.candidatura.findMany({
     where: { plantaoId: id },
-    include: { profissional: true },
+    include: {
+      profissional: true,
+      pagamentos: {
+        where: { estado: "CONFIRMADO", liberadoEm: null },
+        select: { id: true, valorLiquidoAoa: true },
+        take: 1,
+      },
+    },
     orderBy: { criadoEm: "desc" },
   });
 
@@ -66,6 +74,7 @@ export default async function DetalhePlantaoClinica({
     CONTRATO_PENDENTE:     { label: "Contrato enviado",   cls: "bg-blue-50 text-blue-700" },
     AGUARDANDO_PAGAMENTO:  { label: "Ag. pagamento",      cls: "bg-amber-50 text-amber-700" },
     ACEITE:                { label: "Aceite",             cls: "bg-green-50 text-green-700" },
+    CONCLUIDO:             { label: "Concluído",          cls: "bg-teal-50 text-teal-700" },
     RECUSADO:              { label: "Recusado",           cls: "bg-red-50 text-red-600" },
     CANCELADA:             { label: "Cancelada",          cls: "bg-gray-100 text-gray-500" },
   };
@@ -201,6 +210,22 @@ export default async function DetalhePlantaoClinica({
                 {c.estado === "ACEITE" && (
                   <div className="flex-1">
                     <DisputaClinicaButton candidaturaId={c.id} />
+                  </div>
+                )}
+                {c.estado === "CONCLUIDO" && (
+                  <div className="flex-1 space-y-1">
+                    {c.pagamentos[0] ? (
+                      <LiberarPagamentoButton
+                        candidaturaId={c.id}
+                        plantaoId={id}
+                        nomeMedico={c.profissional.nome}
+                        valorLiquidoAoa={c.pagamentos[0].valorLiquidoAoa}
+                      />
+                    ) : (
+                      <span className="w-full flex items-center justify-center text-xs text-teal-600 font-semibold bg-teal-50 rounded-xl py-2.5">
+                        Pagamento já liberado
+                      </span>
+                    )}
                   </div>
                 )}
               </div>

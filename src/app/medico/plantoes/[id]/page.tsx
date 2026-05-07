@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { MapPin, Star, Stethoscope, Calendar, Clock, Banknote, Users, CheckCircle, XCircle, BadgeCheck, AlertTriangle, MessageCircle, CheckCircle2, XCircle as XCircleIcon, FileText, Activity, Trophy, Lock } from "lucide-react";
 import { DisputaButton } from "./DisputaButton";
 import MedicoCandidaturaActions from "./MedicoCandidaturaActions";
+import TerminarPlantaoButton from "./TerminarPlantaoButton";
 
 function formatAOA(v: number) { return new Intl.NumberFormat("pt-PT").format(v) + " AOA"; }
 function formatData(d: Date) { return d.toLocaleDateString("pt-PT", { weekday: "long", day: "2-digit", month: "long", year: "numeric" }); }
@@ -49,6 +50,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
       CONTRATO_PENDENTE:    { label: "Contrato enviado",  cls: "bg-blue-50 text-blue-700" },
       AGUARDANDO_PAGAMENTO: { label: "Ag. pagamento",     cls: "bg-amber-50 text-amber-700" },
       ACEITE:               { label: "Aceite",            cls: "bg-green-50 text-green-700" },
+      CONCLUIDO:            { label: "Concluído",         cls: "bg-teal-50 text-teal-700" },
       RECUSADO:             { label: "Recusado",          cls: "bg-red-50 text-red-600" },
       CANCELADA:            { label: "Cancelada",         cls: "bg-gray-100 text-gray-500" },
     };
@@ -404,6 +406,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
               <p className="text-sm font-bold text-orange-700">Estás de plantão agora!</p>
               <p className="text-xs text-orange-500 mt-0.5">O plantão está em andamento · termina às {formatHora(dataFim)}</p>
             </div>
+            <TerminarPlantaoButton plantaoId={plantao.id} />
             <Link
               href={`/medico/plantoes/${plantao.id}/mensagens`}
               className="relative flex items-center justify-center gap-2 w-full border border-gray-200 text-gray-700 font-semibold py-3 rounded-2xl text-sm"
@@ -443,6 +446,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
               <p className="text-sm font-bold text-green-700">Candidatura aceite!</p>
               <p className="text-xs text-green-600 mt-0.5">Confirma presença no plantão</p>
             </div>
+            <TerminarPlantaoButton plantaoId={plantao.id} />
             <Link
               href={`/medico/plantoes/${plantao.id}/mensagens`}
               className="relative flex items-center justify-center gap-2 w-full border border-gray-200 text-gray-700 font-semibold py-3 rounded-2xl text-sm"
@@ -456,6 +460,22 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
               )}
             </Link>
             <DisputaButton candidaturaId={candidatura.id} />
+          </div>
+        )}
+
+        {candidatura?.estado === "CONCLUIDO" && (
+          <div className="space-y-2">
+            <div className="bg-teal-50 border border-teal-100 rounded-2xl px-4 py-3 text-center">
+              <Trophy size={20} className="text-teal-500 mx-auto mb-1" strokeWidth={2} />
+              <p className="text-sm font-bold text-teal-700">Plantão terminado!</p>
+              <p className="text-xs text-teal-600 mt-0.5">A aguardar que a clínica libere o pagamento</p>
+            </div>
+            <Link
+              href="/medico/ganhos"
+              className="block w-full text-center bg-[#00A99D] text-white font-bold py-3 rounded-2xl text-sm"
+            >
+              Ver carteira
+            </Link>
           </div>
         )}
 

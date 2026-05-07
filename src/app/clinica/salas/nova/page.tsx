@@ -254,7 +254,7 @@ export default function NovaSala() {
 
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-[#0B3C74]">
             <p className="font-bold mb-1 inline-flex items-center gap-1"><Info size={13} strokeWidth={2} /> Como funciona</p>
-            <p>A sua sala ficará visível na pesquisa de profissionais. Receberá {Math.round(Number(preco) * 0.85).toLocaleString()} AOA por hora (após comissão MedFreela de 15%).</p>
+            <p>A sua sala ficará visível na pesquisa de profissionais. Receberá {Math.round(Number(preco) * 0.90).toLocaleString()} AOA por hora (após comissão MedFreela de 10%).</p>
           </div>
 
           <div className="flex gap-3">
