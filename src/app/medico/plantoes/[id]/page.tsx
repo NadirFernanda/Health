@@ -7,6 +7,7 @@ import { MapPin, Star, Stethoscope, Calendar, Clock, Banknote, Users, CheckCircl
 import { DisputaButton } from "./DisputaButton";
 import MedicoCandidaturaActions from "./MedicoCandidaturaActions";
 import TerminarPlantaoButton from "./TerminarPlantaoButton";
+import LiberarPagamentoButton from "@/app/clinica/plantoes/[id]/LiberarPagamentoButton";
 
 function formatAOA(v: number) { return new Intl.NumberFormat("pt-PT").format(v) + " AOA"; }
 function formatData(d: Date) { return d.toLocaleDateString("pt-PT", { weekday: "long", day: "2-digit", month: "long", year: "numeric" }); }
@@ -44,6 +45,14 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
       });
       naoLidasMap = Object.fromEntries(grouped.map((r) => [r.candidaturaId, r._count.id]));
     } catch { /* ok */ }
+
+    const escrowsMedico = await prisma.pagamento.findMany({
+      where: { plantaoId: id, estado: "CONFIRMADO" },
+      select: { id: true, candidaturaId: true, beneficiarioProfissionalId: true, valorLiquidoAoa: true, liberadoEm: true },
+    });
+    function escrowParaCandidaturaMedico(candId: string, profId: string) {
+      return escrowsMedico.find((e) => e.candidaturaId === candId || e.beneficiarioProfissionalId === profId) ?? null;
+    }
 
     const estadoCand: Record<string, { label: string; cls: string }> = {
       PENDENTE:             { label: "Pendente",          cls: "bg-yellow-50 text-yellow-700" },
@@ -175,6 +184,27 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
                       ⏳ A aguardar assinatura
                     </span>
                   )}
+                  {c.estado === "CONCLUIDO" && (() => {
+                    const escrow = escrowParaCandidaturaMedico(c.id, c.profissional.id);
+                    const valorLiquido = escrow?.valorLiquidoAoa ?? Math.round(plantao.valorKwanzas * 0.90);
+                    return (
+                      <div className="flex-1 space-y-1">
+                        {escrow?.liberadoEm ? (
+                          <span className="w-full flex items-center justify-center text-xs text-teal-600 font-semibold bg-teal-50 rounded-xl py-2.5">
+                            Pagamento já liberado
+                          </span>
+                        ) : (
+                          <LiberarPagamentoButton
+                            candidaturaId={c.id}
+                            plantaoId={id}
+                            nomeMedico={c.profissional.nome}
+                            valorLiquidoAoa={valorLiquido}
+                            apiPath={`/api/medico/publicar/${id}/liberar-pagamento`}
+                          />
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             );

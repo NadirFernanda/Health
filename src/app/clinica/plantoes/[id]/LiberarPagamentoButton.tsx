@@ -12,11 +12,13 @@ export default function LiberarPagamentoButton({
   plantaoId,
   nomeMedico,
   valorLiquidoAoa,
+  apiPath,
 }: {
   candidaturaId: string;
   plantaoId: string;
   nomeMedico: string;
   valorLiquidoAoa: number;
+  apiPath?: string;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -26,7 +28,8 @@ export default function LiberarPagamentoButton({
   async function liberar() {
     setLoading(true);
     setError("");
-    const res = await fetch(`/api/clinica/plantoes/${plantaoId}/liberar-pagamento`, {
+    const endpoint = apiPath ?? `/api/clinica/plantoes/${plantaoId}/liberar-pagamento`;
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ candidaturaId }),
