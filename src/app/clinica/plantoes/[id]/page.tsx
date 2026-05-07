@@ -43,7 +43,7 @@ export default async function DetalhePlantaoClinica({
   // Find all confirmed escrow payments for this plantão (by plantaoId, not candidaturaId)
   // so we show the button even when the candidaturaId link was missed at signing time.
   const escrows = await prisma.pagamento.findMany({
-    where: { plantaoId: id, estado: "CONFIRMADO" },
+    where: { plantaoId: id, tipo: "TURNO" },
     select: { id: true, candidaturaId: true, beneficiarioProfissionalId: true, valorLiquidoAoa: true, liberadoEm: true },
   });
 
@@ -218,27 +218,28 @@ export default async function DetalhePlantaoClinica({
                     <DisputaClinicaButton candidaturaId={c.id} />
                   </div>
                 )}
-                {c.estado === "CONCLUIDO" && (() => {
-                  const escrow = escrowParaCandidatura(c.id, c.profissional.id);
-                  const valorLiquido = escrow?.valorLiquidoAoa ?? Math.round(plantao.valorKwanzas * 0.90);
-                  return (
-                    <div className="flex-1 space-y-1">
-                      {escrow?.liberadoEm ? (
-                        <span className="w-full flex items-center justify-center text-xs text-teal-600 font-semibold bg-teal-50 rounded-xl py-2.5">
-                          Pagamento já liberado
-                        </span>
-                      ) : (
-                        <LiberarPagamentoButton
-                          candidaturaId={c.id}
-                          plantaoId={id}
-                          nomeMedico={c.profissional.nome}
-                          valorLiquidoAoa={valorLiquido}
-                        />
-                      )}
-                    </div>
-                  );
-                })()}
               </div>
+              {c.estado === "CONCLUIDO" && (() => {
+                const escrow = escrowParaCandidatura(c.id, c.profissional.id);
+                const jaLiberado = !!escrow?.liberadoEm;
+                const valorLiquido = escrow?.valorLiquidoAoa ?? Math.round(plantao.valorKwanzas * 0.90);
+                return (
+                  <div className="mt-2">
+                    {jaLiberado ? (
+                      <span className="w-full flex items-center justify-center text-xs text-teal-600 font-semibold bg-teal-50 rounded-xl py-2.5">
+                        Pagamento já liberado
+                      </span>
+                    ) : (
+                      <LiberarPagamentoButton
+                        candidaturaId={c.id}
+                        plantaoId={id}
+                        nomeMedico={c.profissional.nome}
+                        valorLiquidoAoa={valorLiquido}
+                      />
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           );
         })}

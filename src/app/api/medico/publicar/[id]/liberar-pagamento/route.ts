@@ -39,10 +39,11 @@ export async function POST(
       OR: [
         { candidaturaId },
         { beneficiarioProfissionalId: candidatura.profissional.id },
+        { tipo: "TURNO" },
       ],
-      estado: "CONFIRMADO",
       liberadoEm: null,
     },
+    orderBy: { criadoEm: "desc" },
   });
 
   if (!escrow) {

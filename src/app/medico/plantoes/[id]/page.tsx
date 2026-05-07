@@ -47,7 +47,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
     } catch { /* ok */ }
 
     const escrowsMedico = await prisma.pagamento.findMany({
-      where: { plantaoId: id, estado: "CONFIRMADO" },
+      where: { plantaoId: id, tipo: "TURNO" },
       select: { id: true, candidaturaId: true, beneficiarioProfissionalId: true, valorLiquidoAoa: true, liberadoEm: true },
     });
     function escrowParaCandidaturaMedico(candId: string, profId: string) {
@@ -156,7 +156,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
                 <div className="flex gap-2 mt-3">
                   <Link
                     href={`/medico/medicos/${c.profissional.id}`}
-                    className="flex items-center justify-center gap-1 border border-[#0B3C74]/20 text-[#0B3C74] font-semibold py-2.5 px-3 rounded-xl text-xs"
+                    className="flex items-center justify-center gap-1 border border-[#0B3C74]/20 text-[#0B3C74] font-semibold py-2.5 px-3 rounded-xl text-xs shrink-0"
                   >
                     Ver Perfil
                   </Link>
@@ -184,28 +184,29 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
                       ⏳ A aguardar assinatura
                     </span>
                   )}
-                  {c.estado === "CONCLUIDO" && (() => {
-                    const escrow = escrowParaCandidaturaMedico(c.id, c.profissional.id);
-                    const valorLiquido = escrow?.valorLiquidoAoa ?? Math.round(plantao.valorKwanzas * 0.90);
-                    return (
-                      <div className="flex-1 space-y-1">
-                        {escrow?.liberadoEm ? (
-                          <span className="w-full flex items-center justify-center text-xs text-teal-600 font-semibold bg-teal-50 rounded-xl py-2.5">
-                            Pagamento já liberado
-                          </span>
-                        ) : (
-                          <LiberarPagamentoButton
-                            candidaturaId={c.id}
-                            plantaoId={id}
-                            nomeMedico={c.profissional.nome}
-                            valorLiquidoAoa={valorLiquido}
-                            apiPath={`/api/medico/publicar/${id}/liberar-pagamento`}
-                          />
-                        )}
-                      </div>
-                    );
-                  })()}
                 </div>
+                {c.estado === "CONCLUIDO" && (() => {
+                  const escrow = escrowParaCandidaturaMedico(c.id, c.profissional.id);
+                  const jaLiberado = !!escrow?.liberadoEm;
+                  const valorLiquido = escrow?.valorLiquidoAoa ?? Math.round(plantao.valorKwanzas * 0.90);
+                  return (
+                    <div className="mt-2">
+                      {jaLiberado ? (
+                        <span className="w-full flex items-center justify-center text-xs text-teal-600 font-semibold bg-teal-50 rounded-xl py-2.5">
+                          Pagamento já liberado
+                        </span>
+                      ) : (
+                        <LiberarPagamentoButton
+                          candidaturaId={c.id}
+                          plantaoId={id}
+                          nomeMedico={c.profissional.nome}
+                          valorLiquidoAoa={valorLiquido}
+                          apiPath={`/api/medico/publicar/${id}/liberar-pagamento`}
+                        />
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}
