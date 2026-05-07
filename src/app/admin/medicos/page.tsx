@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Check, X, Star, ClipboardList, MessageCircle, Ban, RotateCcw, Wallet, FileText, ExternalLink } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { Check, X, Star, ClipboardList, MessageCircle, Ban, RotateCcw, Wallet, FileText, ExternalLink, Loader2 } from "lucide-react";
 
 type EstadoVerificacao = "APROVADO" | "PENDENTE" | "EM_ANALISE" | "REJEITADO" | "SUSPENSO";
 type Filtro = "TODOS" | "PENDENTE" | "EM_ANALISE" | "APROVADO" | "REJEITADO" | "SUSPENSO";
@@ -42,48 +42,60 @@ export default function AdminMedicos() {
   const [filtro, setFiltro] = useState<Filtro>("TODOS");
   const [lista, setLista]   = useState<Medico[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null); // id of doctor being actioned
+  const [actionError, setActionError] = useState<{ id: string; msg: string } | null>(null);
+  const [rejecting, setRejecting] = useState<{ id: string; motivo: string } | null>(null);
 
-  useEffect(() => {
-    fetch("/api/admin/medicos", { credentials: "include" })
-      .then(async (r) => {
-        const body = await r.json().catch(() => ({}));
-        if (!r.ok) {
-          const details = (body as { details?: string; error?: string }).details
-            ?? (body as { error?: string }).error
-            ?? `HTTP ${r.status}`;
-          throw new Error(details);
-        }
-        return body;
-      })
-      .then((d) => {
-        if (Array.isArray(d)) setLista(d);
-        else throw new Error("Resposta inesperada de médicos");
-      })
-      .catch((err: unknown) => {
-        const msg = err instanceof Error ? err.message : String(err);
-        console.error("[admin/medicos]", msg);
-        setError(msg);
-      })
-      .finally(() => setLoading(false));
+  const carregarLista = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const r = await fetch("/api/admin/medicos", { credentials: "include" });
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        const details = (body as { details?: string; error?: string }).details
+          ?? (body as { error?: string }).error
+          ?? `HTTP ${r.status}`;
+        throw new Error(details);
+      }
+      if (Array.isArray(body)) setLista(body);
+      else throw new Error("Resposta inesperada de médicos");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("[admin/medicos]", msg);
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const acao = async (id: string, a: string) => {
-    await fetch(`/api/admin/medicos/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ acao: a }),
-    });
-    // Reflecte a mudança localmente
-    setLista((prev) => prev.map((m) => {
-      if (m.id !== id) return m;
-      if (a === "APROVAR")   return { ...m, verified: true,  estadoVerificacao: "APROVADO"  as EstadoVerificacao };
-      if (a === "REJEITAR")  return { ...m, verified: false, estadoVerificacao: "REJEITADO" as EstadoVerificacao };
-      if (a === "SUSPENDER") return { ...m,                  estadoVerificacao: "SUSPENSO"  as EstadoVerificacao };
-      if (a === "REATIVAR")  return { ...m,                  estadoVerificacao: "APROVADO"  as EstadoVerificacao };
-      return m;
-    }));
+  useEffect(() => { carregarLista(); }, [carregarLista]);
+
+  const acao = async (id: string, a: string, motivo?: string) => {
+    setActionLoading(id);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/admin/medicos/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ acao: a, ...(motivo ? { motivo } : {}) }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        const msg = (body as { error?: string }).error ?? `Erro HTTP ${res.status}`;
+        setActionError({ id, msg });
+        return;
+      }
+      // Reload from server so badge always reflects true DB state
+      await carregarLista();
+      setRejecting(null);
+    } catch {
+      setActionError({ id, msg: "Erro de ligação. Tenta novamente." });
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   const filtered = filtro === "TODOS" ? lista : lista.filter((m) => m.estadoVerificacao === filtro);
@@ -195,36 +207,79 @@ export default function AdminMedicos() {
             )}
 
             {/* Acções */}
+            {/* Erro de acção inline */}
+            {actionError?.id === m.id && (
+              <p className="mt-2 text-xs text-red-600 bg-red-50 rounded-xl px-3 py-2">{actionError.msg}</p>
+            )}
+
+            {/* APROVAR / REJEITAR */}
             {(m.estadoVerificacao === "EM_ANALISE" || m.estadoVerificacao === "PENDENTE") && (
-              <div className="flex gap-2 mt-3">
-                <button
-                  onClick={() => acao(m.id, "APROVAR")}
-                  className="flex-1 bg-[#00A99D] hover:bg-[#009082] text-white text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1"
-                >
-                  <Check size={13} strokeWidth={2.5} /> APROVAR
-                </button>
-                <button
-                  onClick={() => acao(m.id, "REJEITAR")}
-                  className="flex-1 border border-red-200 hover:bg-red-50 text-red-500 text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1"
-                >
-                  <X size={13} strokeWidth={2.5} /> REJEITAR
-                </button>
+              <div className="mt-3 space-y-2">
+                <div className="flex gap-2">
+                  <button
+                    disabled={actionLoading === m.id}
+                    onClick={() => acao(m.id, "APROVAR")}
+                    className="flex-1 bg-[#00A99D] hover:bg-[#009082] disabled:opacity-50 text-white text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1"
+                  >
+                    {actionLoading === m.id
+                      ? <Loader2 size={13} strokeWidth={2} className="animate-spin" />
+                      : <Check size={13} strokeWidth={2.5} />}
+                    APROVAR
+                  </button>
+                  <button
+                    disabled={actionLoading === m.id}
+                    onClick={() => setRejecting(rejecting?.id === m.id ? null : { id: m.id, motivo: "" })}
+                    className="flex-1 border border-red-200 hover:bg-red-50 disabled:opacity-50 text-red-500 text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1"
+                  >
+                    <X size={13} strokeWidth={2.5} /> REJEITAR
+                  </button>
+                </div>
+                {/* Motivo de rejeição */}
+                {rejecting?.id === m.id && (
+                  <div className="flex gap-2 items-end">
+                    <textarea
+                      value={rejecting.motivo}
+                      onChange={(e) => setRejecting({ id: m.id, motivo: e.target.value })}
+                      placeholder="Motivo da rejeição (obrigatório)..."
+                      rows={2}
+                      className="flex-1 border border-red-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-red-400 resize-none"
+                    />
+                    <button
+                      disabled={!rejecting.motivo.trim() || actionLoading === m.id}
+                      onClick={() => acao(m.id, "REJEITAR", rejecting.motivo.trim())}
+                      className="shrink-0 bg-red-500 disabled:opacity-40 text-white text-xs font-bold px-3 py-2 rounded-xl"
+                    >
+                      {actionLoading === m.id
+                        ? <Loader2 size={13} className="animate-spin" />
+                        : "Confirmar"}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
+
             {m.estadoVerificacao === "APROVADO" && (
               <button
+                disabled={actionLoading === m.id}
                 onClick={() => acao(m.id, "SUSPENDER")}
-                className="mt-2.5 w-full border border-gray-200 text-gray-400 hover:bg-gray-50 text-xs font-medium py-2 rounded-xl transition-colors flex items-center justify-center gap-1"
+                className="mt-2.5 w-full border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-50 text-xs font-medium py-2 rounded-xl transition-colors flex items-center justify-center gap-1"
               >
-                <Ban size={13} strokeWidth={2} /> Suspender Acesso
+                {actionLoading === m.id
+                  ? <Loader2 size={13} className="animate-spin" />
+                  : <Ban size={13} strokeWidth={2} />}
+                Suspender Acesso
               </button>
             )}
             {m.estadoVerificacao === "SUSPENSO" && (
               <button
+                disabled={actionLoading === m.id}
                 onClick={() => acao(m.id, "REATIVAR")}
-                className="mt-2.5 w-full bg-[#0B3C74]/10 hover:bg-[#0B3C74]/20 text-[#0B3C74] text-xs font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1"
+                className="mt-2.5 w-full bg-[#0B3C74]/10 hover:bg-[#0B3C74]/20 disabled:opacity-50 text-[#0B3C74] text-xs font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1"
               >
-                <RotateCcw size={13} strokeWidth={2} /> Reactivar Acesso
+                {actionLoading === m.id
+                  ? <Loader2 size={13} className="animate-spin" />
+                  : <RotateCcw size={13} strokeWidth={2} />}
+                Reactivar Acesso
               </button>
             )}
           </div>
