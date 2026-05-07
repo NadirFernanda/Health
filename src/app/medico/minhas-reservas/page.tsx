@@ -1,11 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
 import { TopBar } from "@/components/nav";
-import { Calendar, MapPin, ClipboardList, CreditCard, Clock, Banknote, Star, ChevronDown, ChevronUp } from "lucide-react";
+import Link from "next/link";
+import {
+  Calendar, MapPin, Clock, Banknote, Star,
+  Building2, CheckCircle2, XCircle, Hourglass,
+  BadgeCheck, ClipboardList, Loader2,
+} from "lucide-react";
 
 type ReservaAPI = {
   id: string;
-  estado: "CONFIRMADA" | "PENDENTE" | "CANCELADA" | "CONCLUIDA";
+  estado: "CONFIRMADA" | "PENDENTE_PAGAMENTO" | "CANCELADA" | "CONCLUIDA";
   codigoQr: string | null;
   data: string;
   horaInicio: string;
@@ -21,37 +26,142 @@ type ReservaAPI = {
   };
 };
 
-type FiltroEstado = "TODAS" | "CONFIRMADA" | "CONCLUIDA" | "CANCELADA";
+type Filtro = "TODAS" | "CONFIRMADA" | "CONCLUIDA" | "CANCELADA";
 
-const estadoMap: Record<ReservaAPI["estado"], { label: string; cls: string }> = {
-  CONFIRMADA: { label: "Confirmada", cls: "bg-blue-50 text-[#0B3C74]" },
-  PENDENTE:   { label: "Pendente",   cls: "bg-yellow-50 text-yellow-700" },
-  CANCELADA:  { label: "Cancelada",  cls: "bg-red-50 text-red-600" },
-  CONCLUIDA:  { label: "Concluída",  cls: "bg-gray-100 text-gray-600" },
+const TIPO_LABEL: Record<string, string> = {
+  CONSULTORIO: "Consultório",
+  OBSERVACAO: "Observação",
+  PROCEDIMENTOS: "Procedimentos",
+};
+
+const ESTADO_CFG: Record<ReservaAPI["estado"], { label: string; icon: React.ReactNode; cls: string; dot: string }> = {
+  CONFIRMADA:        { label: "Confirmada",        icon: <CheckCircle2 size={13} strokeWidth={2} />, cls: "bg-emerald-50 text-emerald-700", dot: "bg-emerald-400" },
+  PENDENTE_PAGAMENTO:{ label: "Pend. Pagamento",   icon: <Hourglass size={13} strokeWidth={2} />,    cls: "bg-amber-50 text-amber-700",   dot: "bg-amber-400" },
+  CANCELADA:         { label: "Cancelada",          icon: <XCircle size={13} strokeWidth={2} />,      cls: "bg-red-50 text-red-600",       dot: "bg-red-400" },
+  CONCLUIDA:         { label: "Concluída",          icon: <BadgeCheck size={13} strokeWidth={2} />,   cls: "bg-gray-100 text-gray-500",    dot: "bg-gray-400" },
 };
 
 function formatAOA(v: number) {
   return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
 }
 
-function QRPlaceholder({ codigo }: { codigo: string }) {
+function formatData(iso: string) {
+  return new Date(iso).toLocaleDateString("pt-AO", {
+    weekday: "short", day: "2-digit", month: "short", year: "numeric",
+  });
+}
+
+function QRCode({ codigo }: { codigo: string }) {
   return (
-    <div className="flex flex-col items-center bg-gray-50 rounded-xl p-3">
-      <div className="w-16 h-16 bg-gray-200 rounded-lg grid grid-cols-4 gap-0.5 p-1 mb-1.5">
+    <div className="flex flex-col items-center gap-1.5 bg-gray-50 rounded-xl p-3 w-fit">
+      <div className="w-14 h-14 bg-white border border-gray-200 rounded-lg grid grid-cols-4 gap-px p-1">
         {Array.from({ length: 16 }).map((_, i) => (
-          <div key={i} className={`rounded-sm ${(i * 7 + 3) % 3 !== 0 ? "bg-gray-800" : "bg-white"}`} />
+          <div key={i} className={`rounded-[2px] ${(i * 7 + 3) % 3 !== 0 ? "bg-gray-900" : "bg-white"}`} />
         ))}
       </div>
-      <p className="text-xs font-mono font-bold text-gray-700">{codigo}</p>
+      <p className="text-[10px] font-mono font-bold text-gray-600 tracking-wide">{codigo}</p>
+    </div>
+  );
+}
+
+function ReservaCard({ r, onCancelar }: { r: ReservaAPI; onCancelar: (id: string) => void }) {
+  const cfg = ESTADO_CFG[r.estado] ?? ESTADO_CFG.CANCELADA;
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-4 pt-4 pb-3 flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-[#0B3C74]/8 flex items-center justify-center shrink-0">
+            <Building2 size={18} strokeWidth={1.75} className="text-[#0B3C74]" />
+          </div>
+          <div className="min-w-0">
+            <p className="font-bold text-sm text-gray-900 truncate">{r.sala.clinica.nome}</p>
+            <p className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+              <MapPin size={10} strokeWidth={1.75} className="shrink-0" />
+              {r.sala.zona}
+            </p>
+          </div>
+        </div>
+        <span className={`shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full ${cfg.cls}`}>
+          {cfg.icon}{cfg.label}
+        </span>
+      </div>
+
+      {/* Body */}
+      <div className="px-4 pb-3 border-t border-gray-50 pt-3 space-y-2.5">
+        {/* Sala name + type */}
+        <div className="flex items-center gap-2">
+          <p className="font-semibold text-sm text-gray-800">{r.sala.nome}</p>
+          <span className="text-[10px] font-semibold bg-[#0B3C74]/10 text-[#0B3C74] px-2 py-0.5 rounded-full">
+            {TIPO_LABEL[r.sala.tipo] ?? r.sala.tipo}
+          </span>
+        </div>
+
+        {/* Date + duration */}
+        <div className="flex items-center gap-4 text-xs text-gray-600">
+          <span className="flex items-center gap-1.5">
+            <Calendar size={12} strokeWidth={1.75} className="text-gray-400" />
+            {formatData(r.data)}
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Clock size={12} strokeWidth={1.75} className="text-gray-400" />
+            {r.horaInicio} · {r.duracaoHoras}h
+          </span>
+        </div>
+
+        {/* Value */}
+        <div className="flex items-center gap-1.5">
+          <Banknote size={14} strokeWidth={1.75} className="text-[#00A99D]" />
+          <span className="text-base font-bold text-[#00A99D]">{formatAOA(r.valorTotal)}</span>
+        </div>
+
+        {/* QR code for confirmed */}
+        {r.estado === "CONFIRMADA" && r.codigoQr && (
+          <div className="flex items-center gap-3 mt-1">
+            <QRCode codigo={r.codigoQr} />
+            <div className="text-xs text-gray-500 space-y-1">
+              <p className="flex items-center gap-1">
+                <ClipboardList size={11} strokeWidth={1.75} />
+                Código de acesso
+              </p>
+              <p className="font-mono font-bold text-gray-800 text-sm">{r.codigoQr}</p>
+              <p className="text-gray-400">Apresente na recepção</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Footer actions */}
+      {(r.estado === "CONFIRMADA" || r.estado === "CONCLUIDA") && (
+        <div className="px-4 pb-4 pt-1 flex gap-2">
+          {r.estado === "CONFIRMADA" && (
+            <button
+              onClick={() => onCancelar(r.id)}
+              className="flex-1 text-center text-xs font-semibold text-red-600 border border-red-100 bg-red-50 py-2.5 rounded-xl active:opacity-80 transition-opacity"
+            >
+              Cancelar Reserva
+            </button>
+          )}
+          {r.estado === "CONCLUIDA" && (
+            <Link
+              href={`/medico/salas/${r.sala.id}/avaliar?reserva=${r.id}`}
+              className="flex-1 text-center text-xs font-semibold text-amber-700 border border-amber-100 bg-amber-50 py-2.5 rounded-xl active:opacity-80 transition-opacity inline-flex items-center justify-center gap-1"
+            >
+              <Star size={12} strokeWidth={1.75} fill="currentColor" /> Avaliar Sala
+            </Link>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
 export default function MinhasReservas() {
-  const [filtro, setFiltro] = useState<FiltroEstado>("TODAS");
+  const [filtro, setFiltro] = useState<Filtro>("TODAS");
   const [reservas, setReservas] = useState<ReservaAPI[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandido, setExpandido] = useState<string | null>(null);
+  const [cancelando, setCancelando] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/medico/reservas")
@@ -61,121 +171,94 @@ export default function MinhasReservas() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtradas = filtro === "TODAS" ? reservas : reservas.filter((r) => r.estado === filtro);
-
   const cancelar = async (id: string) => {
+    setCancelando(id);
     const res = await fetch(`/api/medico/reservas/${id}`, { method: "DELETE" });
     if (res.ok) {
       setReservas((prev) => prev.map((r) => r.id === id ? { ...r, estado: "CANCELADA" as const } : r));
-      setExpandido(null);
     }
+    setCancelando(null);
   };
 
+  const FILTROS: { key: Filtro; label: string }[] = [
+    { key: "TODAS", label: "Todas" },
+    { key: "CONFIRMADA", label: "Confirmadas" },
+    { key: "CONCLUIDA", label: "Concluídas" },
+    { key: "CANCELADA", label: "Canceladas" },
+  ];
+
+  const filtradas = filtro === "TODAS" ? reservas : reservas.filter((r) => r.estado === filtro);
+  const confirmadas = reservas.filter((r) => r.estado === "CONFIRMADA").length;
+
   return (
-    <div>
+    <div className="pb-28">
       <TopBar titulo="Minhas Reservas" back="/medico" />
+
+      {/* Summary header */}
+      <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] mx-4 mt-4 rounded-2xl px-5 py-5">
+        <p className="text-blue-200 text-xs font-semibold uppercase tracking-wide">Reservas activas</p>
+        <p className="text-white text-4xl font-black mt-1">{confirmadas}</p>
+        <p className="text-blue-200 text-xs mt-1">
+          {reservas.length} reserva{reservas.length !== 1 ? "s" : ""} no total
+        </p>
+        <Link
+          href="/medico/salas"
+          className="mt-4 bg-white text-[#0B3C74] font-bold text-xs px-4 py-2.5 rounded-xl inline-flex items-center gap-1.5"
+        >
+          <Building2 size={13} strokeWidth={2} />
+          Reservar nova sala
+        </Link>
+      </div>
 
       {/* Filtros */}
       <div className="px-4 pt-4">
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-          {(["TODAS", "CONFIRMADA", "CONCLUIDA", "CANCELADA"] as FiltroEstado[]).map((f) => (
+          {FILTROS.map(({ key, label }) => (
             <button
-              key={f}
-              onClick={() => setFiltro(f)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                filtro === f ? "bg-[#0B3C74] text-white" : "bg-gray-100 text-gray-600"
+              key={key}
+              onClick={() => setFiltro(key)}
+              className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                filtro === key ? "bg-[#0B3C74] text-white" : "bg-gray-100 text-gray-600"
               }`}
             >
-              {f === "TODAS" ? "Todas" : estadoMap[f as ReservaAPI["estado"]].label}
+              {label}
+              {key !== "TODAS" && (
+                <span className={`ml-1.5 ${filtro === key ? "text-blue-200" : "text-gray-400"}`}>
+                  ({reservas.filter((r) => r.estado === key).length})
+                </span>
+              )}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Lista */}
-      <div className="px-4 pt-4 space-y-3 pb-8">
+      {/* List */}
+      <div className="px-4 pt-4 space-y-3">
         {loading ? (
-          <div className="text-center py-16 text-gray-400">
-            <p className="text-sm">A carregar...</p>
+          <div className="flex justify-center py-20">
+            <Loader2 size={28} className="animate-spin text-[#0B3C74]" />
           </div>
         ) : filtradas.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
-            <Calendar size={34} strokeWidth={1.5} className="mx-auto mb-2 text-gray-300" />
-            <p className="text-sm">Nenhuma reserva encontrada.</p>
-            <a href="/medico/salas" className="mt-3 inline-block text-xs text-[#0B3C74] font-semibold">
-              Explorar salas →
-            </a>
+            <Building2 size={36} strokeWidth={1.25} className="mx-auto mb-2 text-gray-300" />
+            <p className="text-sm font-medium text-gray-500">
+              {filtro === "TODAS" ? "Ainda não fizeste nenhuma reserva." : `Nenhuma reserva ${FILTROS.find(f => f.key === filtro)?.label.toLowerCase()}.`}
+            </p>
+            {filtro === "TODAS" && (
+              <Link
+                href="/medico/salas"
+                className="mt-4 inline-block text-xs font-semibold text-[#0B3C74] bg-[#0B3C74]/10 px-4 py-2 rounded-xl"
+              >
+                Explorar salas disponíveis →
+              </Link>
+            )}
           </div>
         ) : (
-          filtradas.map((r) => {
-            const aberto = expandido === r.id;
-            const dataFmt = new Date(r.data).toLocaleDateString("pt-AO", { weekday: "short", day: "2-digit", month: "short" });
-            return (
-              <div key={r.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-                <button
-                  className="w-full text-left px-4 py-4"
-                  onClick={() => setExpandido(aberto ? null : r.id)}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="font-semibold text-sm text-gray-900">{r.sala.clinica.nome} — {r.sala.nome}</p>
-                      <p className="text-xs text-gray-500 mt-0.5 inline-flex items-center gap-1"><MapPin size={11} strokeWidth={1.75} /> {r.sala.zona}</p>
-                      <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><Calendar size={11} strokeWidth={1.75} /> {dataFmt} às {r.horaInicio} · {r.duracaoHoras}h</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${estadoMap[r.estado].cls}`}>
-                        {estadoMap[r.estado].label}
-                      </span>
-                      <p className="text-[#0B3C74] font-bold text-sm mt-1">{formatAOA(r.valorTotal)}</p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1 inline-flex items-center gap-1">
-                    {aberto ? <ChevronUp size={12} strokeWidth={2} /> : <ChevronDown size={12} strokeWidth={2} />}
-                    {aberto ? "ocultar" : "ver detalhes"}
-                  </p>
-                </button>
-
-                {aberto && (
-                  <div className="border-t border-gray-100 px-4 py-4 space-y-4">
-                    <div className="flex gap-4 items-start">
-                      {r.codigoQr ? (
-                        <QRPlaceholder codigo={r.codigoQr} />
-                      ) : (
-                        <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs text-center">
-                          Sem QR
-                        </div>
-                      )}
-                      <div className="text-xs text-gray-600 space-y-1">
-                        {r.codigoQr && (
-                          <p className="inline-flex items-center gap-1"><ClipboardList size={12} strokeWidth={1.75} /> Código: <strong className="font-mono">{r.codigoQr}</strong></p>
-                        )}
-                        <p className="inline-flex items-center gap-1"><CreditCard size={12} strokeWidth={1.75} /> {r.sala.clinica.cidade}</p>
-                        <p className="inline-flex items-center gap-1"><Clock size={12} strokeWidth={1.75} /> Duração: {r.duracaoHoras}h</p>
-                        <p className="inline-flex items-center gap-1"><Banknote size={12} strokeWidth={1.75} /> Total: {formatAOA(r.valorTotal)}</p>
-                      </div>
-                    </div>
-
-                    {r.estado === "CONFIRMADA" && (
-                      <button
-                        onClick={() => cancelar(r.id)}
-                        className="w-full border-2 border-red-200 text-red-600 font-semibold text-sm py-2.5 rounded-xl hover:bg-red-50 transition-colors"
-                      >
-                        Cancelar Reserva
-                      </button>
-                    )}
-                    {r.estado === "CONCLUIDA" && (
-                      <a
-                        href={`/medico/salas/${r.sala.id}/avaliar?reserva=${r.id}`}
-                        className="block w-full text-center border-2 border-yellow-200 text-yellow-700 font-semibold text-sm py-2.5 rounded-xl hover:bg-yellow-50 transition-colors"
-                      >
-                        <span className="inline-flex items-center gap-1"><Star size={14} strokeWidth={1.75} fill="currentColor" /> Avaliar Sala</span>
-                      </a>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })
+          filtradas.map((r) => (
+            <div key={r.id} className={cancelando === r.id ? "opacity-50 pointer-events-none" : ""}>
+              <ReservaCard r={r} onCancelar={cancelar} />
+            </div>
+          ))
         )}
       </div>
     </div>
