@@ -41,6 +41,15 @@ export async function POST(
         data: { estado: "RECUSADO", respondidoEm: new Date() },
       });
 
+      // Re-open the shift if it was closed while waiting for this contract signature
+      const plantaoAtual = await tx.plantao.findUnique({
+        where: { id: candidatura.plantao.id },
+        select: { estado: true, vagasPreenchidas: true, vagas: true },
+      });
+      if (plantaoAtual?.estado === "FECHADO" && plantaoAtual.vagasPreenchidas < plantaoAtual.vagas) {
+        await tx.plantao.update({ where: { id: candidatura.plantao.id }, data: { estado: "ABERTO" } });
+      }
+
       if (candidatura.plantao.clinicaId) {
         const clinicaUser = await tx.clinica.findUnique({
           where: { id: candidatura.plantao.clinicaId },

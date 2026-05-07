@@ -75,6 +75,19 @@ export async function PATCH(
         where: { id: candidaturaId },
         data: { estado: "CONTRATO_PENDENTE", contratoGeradoEm: new Date() },
       });
+
+      // Close the shift immediately so no new applications arrive while contract is pending
+      const claimed = await tx.candidatura.count({
+        where: { plantaoId, estado: { in: ["CONTRATO_PENDENTE", "ACEITE"] } },
+      });
+      if (claimed >= candidatura.plantao.vagas) {
+        await tx.plantao.update({ where: { id: plantaoId }, data: { estado: "FECHADO" } });
+        await tx.candidatura.updateMany({
+          where: { plantaoId, estado: "PENDENTE" },
+          data: { estado: "RECUSADO", respondidoEm: new Date() },
+        });
+      }
+
       await tx.notificacao.create({
         data: {
           userId: pushData.userId,

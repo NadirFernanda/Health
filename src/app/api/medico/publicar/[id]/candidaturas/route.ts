@@ -90,6 +90,19 @@ export async function PATCH(
         where: { id: candidaturaId },
         data: { estado: "CONTRATO_PENDENTE", contratoGeradoEm: new Date() },
       });
+
+      // Close the shift immediately so no new applications arrive while contract is pending
+      const claimed = await tx.candidatura.count({
+        where: { plantaoId, estado: { in: ["CONTRATO_PENDENTE", "ACEITE"] } },
+      });
+      if (claimed >= candidatura.plantao.vagas) {
+        await tx.plantao.update({ where: { id: plantaoId }, data: { estado: "FECHADO" } });
+        await tx.candidatura.updateMany({
+          where: { plantaoId, estado: "PENDENTE" },
+          data: { estado: "RECUSADO", respondidoEm: new Date() },
+        });
+      }
+
       await tx.notificacao.create({
         data: {
           userId: pushData.userId,
@@ -131,9 +144,23 @@ export async function PATCH(
   }
 
   // ACEITE direto (legado — mantido para compatibilidade)
-  const updated = await prisma.candidatura.update({
-    where: { id: candidaturaId },
-    data: { estado, respondidoEm: new Date() },
+  await prisma.$transaction(async (tx) => {
+    await tx.candidatura.update({
+      where: { id: candidaturaId },
+      data: { estado: "ACEITE", respondidoEm: new Date() },
+    });
+    const updatedPlantao = await tx.plantao.update({
+      where: { id: plantaoId },
+      data: { vagasPreenchidas: { increment: 1 } },
+      select: { vagasPreenchidas: true, vagas: true },
+    });
+    if (updatedPlantao.vagasPreenchidas >= updatedPlantao.vagas) {
+      await tx.plantao.update({ where: { id: plantaoId }, data: { estado: "FECHADO" } });
+      await tx.candidatura.updateMany({
+        where: { plantaoId, estado: "PENDENTE", id: { not: candidaturaId } },
+        data: { estado: "RECUSADO", respondidoEm: new Date() },
+      });
+    }
   });
 
   let pagamento;
@@ -155,5 +182,5 @@ export async function PATCH(
   );
   if (pagamento) await processPaymentEscrow(pagamento.id);
 
-  return Response.json({ id: updated.id, estado: updated.estado });
+  return Response.json({ id: candidaturaId, estado: "ACEITE" });
 }
