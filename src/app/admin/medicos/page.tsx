@@ -168,7 +168,10 @@ export default function AdminMedicos() {
 
       {/* Lista */}
       <div className="space-y-3">
-        {filtered.map((m) => (
+        {filtered.map((m) => {
+          const allDocsApproved = m.documentos.length > 0 && m.documentos.every((d) => d.estado === "APROVADO");
+          const noPendingDocs   = m.documentos.length > 0 && m.documentos.every((d) => d.estado !== "PENDENTE");
+          return (
           <div key={m.id} className="bg-white rounded-2xl border border-gray-100 p-4">
             <div className="flex items-start gap-3">
               {/* Avatar */}
@@ -260,11 +263,16 @@ export default function AdminMedicos() {
             {/* APROVAR / REJEITAR */}
             {(m.estadoVerificacao === "EM_ANALISE" || m.estadoVerificacao === "PENDENTE") && (
               <div className="mt-3 space-y-2">
+                {!noPendingDocs && (
+                  <p className="text-[10px] text-amber-600 bg-amber-50 rounded-xl px-3 py-1.5">
+                    Aprova ou rejeita todos os documentos antes de decidir sobre o perfil.
+                  </p>
+                )}
                 <div className="flex gap-2">
                   <button
-                    disabled={actionLoading === m.id}
+                    disabled={actionLoading === m.id || !allDocsApproved}
                     onClick={() => acao(m.id, "APROVAR")}
-                    className="flex-1 bg-[#00A99D] hover:bg-[#009082] disabled:opacity-50 text-white text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1"
+                    className="flex-1 bg-[#00A99D] hover:bg-[#009082] disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1"
                   >
                     {actionLoading === m.id
                       ? <Loader2 size={13} strokeWidth={2} className="animate-spin" />
@@ -272,9 +280,9 @@ export default function AdminMedicos() {
                     APROVAR
                   </button>
                   <button
-                    disabled={actionLoading === m.id}
+                    disabled={actionLoading === m.id || !noPendingDocs}
                     onClick={() => setRejecting(rejecting?.id === m.id ? null : { id: m.id, motivo: "" })}
-                    className="flex-1 border border-red-200 hover:bg-red-50 disabled:opacity-50 text-red-500 text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1"
+                    className="flex-1 border border-red-200 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed text-red-500 text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1"
                   >
                     <X size={13} strokeWidth={2.5} /> REJEITAR
                   </button>
@@ -328,7 +336,8 @@ export default function AdminMedicos() {
               </button>
             )}
           </div>
-        ))}
+          );
+        })}
 
         {filtered.length === 0 && (
           <div className="text-center py-12 text-gray-400 text-sm bg-white rounded-2xl border border-gray-100">
