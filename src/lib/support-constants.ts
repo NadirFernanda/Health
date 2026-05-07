@@ -28,3 +28,8 @@ export const STATUS_LABELS: Record<string, string> = {
   EM_ANDAMENTO: "Em Andamento",
   FECHADO: "Fechado",
 };
+
+/** Formats a ticket sequential number as "TKT-0042" */
+export function formatTicketRef(numero: number): string {
+  return `TKT-${numero.toString().padStart(4, "0")}`;
+}

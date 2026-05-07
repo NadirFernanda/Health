@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ChevronLeft, MessageCircle, Clock, Tag, CheckCircle, Circle, Send } from "lucide-react";
+import { formatTicketRef } from "@/lib/support-constants";
 
 interface Reply {
   id: string;
@@ -13,6 +14,7 @@ interface Reply {
 
 interface Ticket {
   id: string;
+  numero: number;
   assunto: string;
   categoria: string;
   estado: string;
@@ -318,7 +320,8 @@ export function AdminSupportTickets() {
                   <p className="text-sm font-semibold text-gray-900 flex-1 truncate">{t.assunto}</p>
                   <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${eb.cls}`}>{eb.label}</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-0.5 truncate">{t.user.email}</p>
+                <p className="text-[10px] font-mono text-[#0B3C74] mt-0.5">{formatTicketRef(t.numero)}</p>
+                <p className="text-xs text-gray-400 truncate">{t.user.email}</p>
                 <div className="flex items-center gap-3 mt-2 text-[10px] text-gray-400">
                   <span className={`font-semibold px-1.5 py-0.5 rounded-md ${pb.cls}`}>{pb.label}</span>
                   <span className="flex items-center gap-1"><Tag size={10} /> {t.categoria}</span>

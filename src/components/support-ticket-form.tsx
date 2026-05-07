@@ -6,7 +6,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { TICKET_CATEGORIES } from "@/lib/support-constants";
+import { TICKET_CATEGORIES, formatTicketRef } from "@/lib/support-constants";
 
 interface CreateTicketFormProps {
   onSuccess?: (ticketId: string) => void;
@@ -17,7 +17,7 @@ export function CreateTicketForm({ onSuccess }: CreateTicketFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const [createdTicketId, setCreatedTicketId] = useState<string | null>(null);
+  const [createdTicketRef, setCreatedTicketRef] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     categoria: "",
@@ -50,7 +50,9 @@ export function CreateTicketForm({ onSuccess }: CreateTicketFormProps) {
 
       const data = await response.json();
       setSuccess(true);
-      setCreatedTicketId(data.ticket.id);
+      setCreatedTicketRef(
+        data.ticket.numero != null ? formatTicketRef(data.ticket.numero) : `#${data.ticket.id.slice(0, 8).toUpperCase()}`
+      );
       setFormData({
         categoria: "",
         assunto: "",
@@ -76,10 +78,10 @@ export function CreateTicketForm({ onSuccess }: CreateTicketFormProps) {
         </div>
       )}
 
-      {success && createdTicketId && (
+      {success && createdTicketRef && (
         <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
           <p className="font-semibold mb-1">Ticket criado com sucesso!</p>
-          <p className="text-sm">Referência: <span className="font-mono font-bold">#{createdTicketId.slice(0, 8).toUpperCase()}</span></p>
+          <p className="text-sm">Referência: <span className="font-mono font-bold">{createdTicketRef}</span></p>
           <p className="text-sm mt-1">Pode acompanhar o seu pedido na lista de tickets.</p>
         </div>
       )}

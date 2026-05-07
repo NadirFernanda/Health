@@ -87,6 +87,7 @@ export async function POST(request: NextRequest) {
         message: "Ticket criado com sucesso",
         ticket: {
           id: ticket.id,
+          numero: ticket.numero,
           assunto: ticket.assunto,
           prioridade: ticket.prioridade,
           estado: ticket.estado,

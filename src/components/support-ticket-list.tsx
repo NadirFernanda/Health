@@ -6,10 +6,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { STATUS_LABELS, PRIORITY_LABELS } from "@/lib/support-constants";
+import { STATUS_LABELS, PRIORITY_LABELS, formatTicketRef } from "@/lib/support-constants";
 
 interface TicketItem {
   id: string;
+  numero: number;
   assunto: string;
   categoria: string;
   estado: string;
@@ -155,7 +156,7 @@ export function TicketList({ selectedTicketId }: TicketListProps) {
                 <div className="flex-1">
                   <h3 className="font-medium text-gray-900">{ticket.assunto}</h3>
                   <p className="text-xs text-gray-500 mt-1">
-                    #{ticket.id.slice(0, 8)} • {new Date(ticket.criadoEm).toLocaleDateString("pt-AO")}
+                    {formatTicketRef(ticket.numero)} • {new Date(ticket.criadoEm).toLocaleDateString("pt-AO")}
                   </p>
                   <p className="text-xs text-gray-600 mt-1">{ticket.categoria}</p>
                 </div>

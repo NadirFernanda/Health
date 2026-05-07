@@ -5,7 +5,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { PRIORITY_LABELS, STATUS_LABELS } from "@/lib/support-constants";
+import { PRIORITY_LABELS, STATUS_LABELS, formatTicketRef } from "@/lib/support-constants";
 
 interface Author {
   id: string;
@@ -22,6 +22,7 @@ interface Reply {
 
 interface Ticket {
   id: string;
+  numero: number;
   assunto: string;
   mensagem: string;
   categoria: string;
@@ -121,7 +122,7 @@ export function TicketThread({ ticketId }: TicketThreadProps) {
         <div className="flex items-start justify-between mb-4">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">{ticket.assunto}</h2>
-            <p className="text-gray-600 text-sm mt-1">#{ticket.id.slice(0, 8)}</p>
+            <p className="text-gray-600 text-sm mt-1">{formatTicketRef(ticket.numero)}</p>
           </div>
           <div className="flex gap-2">
             <span

@@ -435,6 +435,7 @@ model AuditLog {
 
 model SupportTicket {
   id               String                  @id @default(cuid())
+  numero           Int                     @default(autoincrement()) @unique
   userId           String
   categoria        String
   assunto          String

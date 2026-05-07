@@ -79,6 +79,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       tickets: tickets.map((t) => ({
         id: t.id,
+        numero: t.numero,
         assunto: t.assunto,
         categoria: t.categoria,
         estado: t.estado,

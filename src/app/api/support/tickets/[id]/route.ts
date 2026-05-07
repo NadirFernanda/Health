@@ -60,6 +60,7 @@ export async function GET(
     return NextResponse.json({
       ticket: {
         id: ticket.id,
+        numero: ticket.numero,
         assunto: ticket.assunto,
         mensagem: ticket.mensagem,
         categoria: ticket.categoria,
