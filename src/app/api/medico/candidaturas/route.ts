@@ -66,8 +66,14 @@ export async function POST(request: NextRequest) {
   const prof = await getProfissionalFromSession(auth.session);
   if (!prof) return Response.json({ error: "Perfil não encontrado" }, { status: 404 });
 
-  if (!prof.verified) {
-    return Response.json({ error: "Verificação Express necessária para se candidatar." }, { status: 403 });
+  if (prof.estadoVerificacao !== "APROVADO") {
+    const msg =
+      prof.estadoVerificacao === "EM_ANALISE"
+        ? "O teu perfil está em análise. Aguarda a aprovação para te candidatares."
+        : prof.estadoVerificacao === "REJEITADO"
+        ? "A tua verificação foi recusada. Reenvia os documentos corrigidos."
+        : "Completa a verificação do perfil para te candidatares a plantões.";
+    return Response.json({ error: msg }, { status: 403 });
   }
 
   const { plantaoId } = await request.json();

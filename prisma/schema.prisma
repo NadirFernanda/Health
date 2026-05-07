@@ -55,6 +55,7 @@ model Profissional {
   totalAvaliacoes       Int                 @default(0)
   totalPlantoes         Int                 @default(0)
   verified              Boolean             @default(false)
+  estadoVerificacao     String              @default("PENDENTE")
   verificadoEm          DateTime?
   rejeicaoMotivo        String?
   saldoCarteira         Int                 @default(0)
@@ -80,6 +81,7 @@ model Profissional {
   @@index([tipo])
   @@index([especialidade])
   @@index([verified])
+  @@index([estadoVerificacao])
   @@index([disponivelAgora])
 }
 

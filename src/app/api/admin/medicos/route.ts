@@ -41,11 +41,9 @@ export async function GET() {
         totalPlantoes: m.totalPlantoes,
         verified: m.verified,
         isActive: m.user.isActive,
-        estadoVerificacao: m.verified
-          ? !m.user.isActive
-            ? "SUSPENSO"
-            : "APROVADO"
-          : "PENDENTE",
+        estadoVerificacao: !m.user.isActive && m.verified
+          ? "SUSPENSO"
+          : m.estadoVerificacao,
         tipoVerificacao: temCredencialExpress ? "EXPRESS" : "NORMAL",
         documentos: m.documentos
           .filter((doc) => doc.ficheiro && doc.estado !== "NAO_ENVIADO")

@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { Check, X, Star, ClipboardList, MessageCircle, Ban, RotateCcw, Wallet, FileText, ExternalLink } from "lucide-react";
 
-type EstadoVerificacao = "APROVADO" | "PENDENTE" | "REJEITADO" | "SUSPENSO";
-type Filtro = "TODOS" | "PENDENTE" | "APROVADO" | "REJEITADO" | "SUSPENSO";
+type EstadoVerificacao = "APROVADO" | "PENDENTE" | "EM_ANALISE" | "REJEITADO" | "SUSPENSO";
+type Filtro = "TODOS" | "PENDENTE" | "EM_ANALISE" | "APROVADO" | "REJEITADO" | "SUSPENSO";
 
 type Documento = { id: string; tipo: string; estado: string; ficheiro: string };
 
@@ -31,10 +31,11 @@ function formatAOA(v: number) {
 }
 
 const badgeMap: Record<EstadoVerificacao, { cls: string; label: string }> = {
-  APROVADO:  { cls: "bg-green-100 text-green-700",   label: "Verificado" },
-  PENDENTE:  { cls: "bg-yellow-100 text-yellow-700", label: "Pendente"   },
-  REJEITADO: { cls: "bg-red-100 text-red-600",       label: "Rejeitado"  },
-  SUSPENSO:  { cls: "bg-gray-100 text-gray-500",     label: "Suspenso"   },
+  APROVADO:  { cls: "bg-green-100 text-green-700",   label: "Verificado"   },
+  PENDENTE:  { cls: "bg-gray-100 text-gray-500",     label: "Sem docs"     },
+  EM_ANALISE:{ cls: "bg-yellow-100 text-yellow-700", label: "Em Análise"   },
+  REJEITADO: { cls: "bg-red-100 text-red-600",       label: "Rejeitado"    },
+  SUSPENSO:  { cls: "bg-gray-100 text-gray-500",     label: "Suspenso"     },
 };
 
 export default function AdminMedicos() {
@@ -77,10 +78,10 @@ export default function AdminMedicos() {
     // Reflecte a mudança localmente
     setLista((prev) => prev.map((m) => {
       if (m.id !== id) return m;
-      if (a === "APROVAR")   return { ...m, verified: true,  estadoVerificacao: "APROVADO" };
-      if (a === "REJEITAR")  return { ...m, verified: false, estadoVerificacao: "REJEITADO" };
-      if (a === "SUSPENDER") return { ...m, estadoVerificacao: "SUSPENSO" };
-      if (a === "REATIVAR")  return { ...m, estadoVerificacao: "APROVADO" };
+      if (a === "APROVAR")   return { ...m, verified: true,  estadoVerificacao: "APROVADO"  as EstadoVerificacao };
+      if (a === "REJEITAR")  return { ...m, verified: false, estadoVerificacao: "REJEITADO" as EstadoVerificacao };
+      if (a === "SUSPENDER") return { ...m,                  estadoVerificacao: "SUSPENSO"  as EstadoVerificacao };
+      if (a === "REATIVAR")  return { ...m,                  estadoVerificacao: "APROVADO"  as EstadoVerificacao };
       return m;
     }));
   };
@@ -113,7 +114,7 @@ export default function AdminMedicos() {
 
       {/* Filtros */}
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-        {(["TODOS", "PENDENTE", "APROVADO", "REJEITADO", "SUSPENSO"] as Filtro[]).map((f) => (
+        {(["TODOS", "EM_ANALISE", "PENDENTE", "APROVADO", "REJEITADO", "SUSPENSO"] as Filtro[]).map((f) => (
           <button
             key={f}
             onClick={() => setFiltro(f)}
@@ -121,7 +122,7 @@ export default function AdminMedicos() {
               filtro === f ? "bg-[#0B3C74] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
-            {f.charAt(0) + f.slice(1).toLowerCase()} ({count(f)})
+            {{ TODOS: "Todos", EM_ANALISE: "Em Análise", PENDENTE: "Sem docs", APROVADO: "Aprovados", REJEITADO: "Rejeitados", SUSPENSO: "Suspensos" }[f]} ({count(f)})
           </button>
         ))}
       </div>
@@ -171,7 +172,6 @@ export default function AdminMedicos() {
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Documentos</p>
                 {m.documentos.map((doc) => {
                   const est = DOC_ESTADO[doc.estado] ?? DOC_ESTADO.PENDENTE;
-                  const isImage = /\.(jpe?g|png|webp)$/i.test(doc.ficheiro);
                   return (
                     <a
                       key={doc.id}
@@ -195,7 +195,7 @@ export default function AdminMedicos() {
             )}
 
             {/* Acções */}
-            {m.estadoVerificacao === "PENDENTE" && (
+            {(m.estadoVerificacao === "EM_ANALISE" || m.estadoVerificacao === "PENDENTE") && (
               <div className="flex gap-2 mt-3">
                 <button
                   onClick={() => acao(m.id, "APROVAR")}

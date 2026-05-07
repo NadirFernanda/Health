@@ -109,6 +109,14 @@ export async function POST(request: NextRequest) {
         },
       });
 
+  // Move to EM_ANALISE when doc is uploaded (from PENDENTE or REJEITADO states)
+  if (prof.estadoVerificacao === "PENDENTE" || prof.estadoVerificacao === "REJEITADO") {
+    await prisma.profissional.update({
+      where: { id: prof.id },
+      data: { estadoVerificacao: "EM_ANALISE", rejeicaoMotivo: null },
+    });
+  }
+
   return Response.json({
     ok: true,
     documento: {

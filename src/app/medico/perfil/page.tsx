@@ -5,7 +5,7 @@ import { logoutAction } from "@/app/actions/auth";
 import {
   BadgeCheck, Star, ClipboardList, Stethoscope, MapPin,
   CheckCircle, Clock, Paperclip, Lock, Check, ChevronRight,
-  Pencil, X, Save, ToggleRight, ToggleLeft, Award,
+  Pencil, X, Save, ToggleRight, ToggleLeft, Award, XCircle, AlertCircle,
 } from "lucide-react";
 
 type DocEstado = "APROVADO" | "PENDENTE" | "NAO_ENVIADO" | "REJEITADO";
@@ -36,6 +36,7 @@ interface PerfilData {
   totalAvaliacoes: number;
   totalPlantoes: number;
   verified: boolean;
+  estadoVerificacao: string;
   rejeicaoMotivo: string;
   saldoCarteira: number;
   disponivelAgora: boolean;
@@ -226,9 +227,19 @@ export default function PerfilMedico() {
             <div className="w-20 h-20 rounded-2xl bg-white/20 border-2 border-white/40 flex items-center justify-center text-3xl font-black text-white shadow-lg">
               {iniciais}
             </div>
-            {perfil.verified && (
+            {perfil.estadoVerificacao === "APROVADO" && (
               <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center border-2 border-white">
                 <BadgeCheck size={12} strokeWidth={2.5} className="text-white" />
+              </div>
+            )}
+            {perfil.estadoVerificacao === "EM_ANALISE" && (
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-white">
+                <Clock size={12} strokeWidth={2.5} className="text-white" />
+              </div>
+            )}
+            {perfil.estadoVerificacao === "REJEITADO" && (
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-red-400 rounded-full flex items-center justify-center border-2 border-white">
+                <XCircle size={12} strokeWidth={2.5} className="text-white" />
               </div>
             )}
           </div>
@@ -270,9 +281,24 @@ export default function PerfilMedico() {
             {perfil.subEspecialidade && ` · ${perfil.subEspecialidade}`}
           </p>
           <div className="flex items-center gap-3 mt-2.5">
-            {perfil.verified && (
+            {perfil.estadoVerificacao === "APROVADO" && (
               <span className="inline-flex items-center gap-1 bg-green-400/20 text-green-300 text-xs font-bold px-2.5 py-1 rounded-full">
                 <BadgeCheck size={11} strokeWidth={2.5} /> VERIFICADO
+              </span>
+            )}
+            {perfil.estadoVerificacao === "EM_ANALISE" && (
+              <span className="inline-flex items-center gap-1 bg-yellow-400/20 text-yellow-200 text-xs font-bold px-2.5 py-1 rounded-full">
+                <Clock size={11} strokeWidth={2.5} /> EM VERIFICAÇÃO
+              </span>
+            )}
+            {perfil.estadoVerificacao === "REJEITADO" && (
+              <span className="inline-flex items-center gap-1 bg-red-400/20 text-red-300 text-xs font-bold px-2.5 py-1 rounded-full">
+                <XCircle size={11} strokeWidth={2.5} /> RECUSADO
+              </span>
+            )}
+            {perfil.estadoVerificacao === "PENDENTE" && (
+              <span className="inline-flex items-center gap-1 bg-white/10 text-blue-200 text-xs font-bold px-2.5 py-1 rounded-full">
+                <AlertCircle size={11} strokeWidth={2.5} /> NÃO VERIFICADO
               </span>
             )}
             <span className="inline-flex items-center gap-1 text-yellow-300 text-xs font-semibold">
@@ -440,38 +466,71 @@ export default function PerfilMedico() {
         )}
       </div>
 
-      {/* Verificação Express */}
-      {!perfil.verified && (
+      {/* Verificação — banner contextual por estado */}
+      {perfil.estadoVerificacao === "PENDENTE" && (
         <div className="mx-4 mb-3 bg-orange-50 border border-orange-200 rounded-2xl p-4">
           <div className="flex items-start gap-3">
             <Lock size={22} strokeWidth={1.75} className="text-orange-500 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="font-bold text-orange-800 text-sm">Perfil não verificado</p>
+              <p className="font-bold text-orange-800 text-sm">Perfil por verificar</p>
               <p className="text-xs text-orange-600 mt-1 leading-5">
-                A Verificação Express desbloqueia candidaturas a plantões e aumenta a sua taxa de aceitação.
+                Carrega os teus documentos para iniciares a verificação. Só perfis verificados podem candidatar-se a plantões.
               </p>
               <div className="mt-3 space-y-1.5 text-xs text-orange-700">
-                <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> Confirmação da Carteira Profissional / Ordem</p>
-                <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> Validação de BI/Passaporte</p>
-                <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> Prazo: 24–48h · Taxa única: <strong>2.500 AOA</strong></p>
+                <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> Carteira Profissional / OMA obrigatória</p>
+                <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> BI ou Passaporte obrigatório</p>
+                <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> Prazo de análise: 24–48h</p>
               </div>
-              <button className="mt-3 w-full bg-orange-500 text-white font-bold py-2.5 rounded-xl text-sm inline-flex items-center justify-center gap-1">
-                Iniciar Verificação Express <ChevronRight size={14} strokeWidth={2} />
+              <button
+                onClick={() => document.getElementById("sec-documentos")?.scrollIntoView({ behavior: "smooth" })}
+                className="mt-3 w-full bg-orange-500 text-white font-bold py-2.5 rounded-xl text-sm inline-flex items-center justify-center gap-1"
+              >
+                Carregar documentos <ChevronRight size={14} strokeWidth={2} />
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {!perfil.verified && perfil.rejeicaoMotivo && (
-        <div className="mx-4 mb-3 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
-          <p className="font-semibold">Verificação recusada</p>
-          <p className="mt-1 text-xs text-red-700">{perfil.rejeicaoMotivo}</p>
+      {perfil.estadoVerificacao === "EM_ANALISE" && (
+        <div className="mx-4 mb-3 bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
+          <div className="flex items-start gap-3">
+            <Clock size={22} strokeWidth={1.75} className="text-yellow-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-bold text-yellow-800 text-sm">Verificação em análise</p>
+              <p className="text-xs text-yellow-700 mt-1 leading-5">
+                Os teus documentos foram recebidos e estão a ser analisados pela nossa equipa. Receberás uma notificação assim que o processo estiver concluído (24–48h).
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {perfil.estadoVerificacao === "REJEITADO" && (
+        <div className="mx-4 mb-3 bg-red-50 border border-red-200 rounded-2xl p-4">
+          <div className="flex items-start gap-3">
+            <XCircle size={22} strokeWidth={1.75} className="text-red-500 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-bold text-red-800 text-sm">Verificação recusada</p>
+              {perfil.rejeicaoMotivo && (
+                <p className="text-xs text-red-700 mt-1 leading-5">Motivo: {perfil.rejeicaoMotivo}</p>
+              )}
+              <p className="text-xs text-red-600 mt-2 leading-5">
+                Corrige os documentos indicados e reenvia-os abaixo para uma nova análise.
+              </p>
+              <button
+                onClick={() => document.getElementById("sec-documentos")?.scrollIntoView({ behavior: "smooth" })}
+                className="mt-3 w-full bg-red-500 text-white font-bold py-2.5 rounded-xl text-sm inline-flex items-center justify-center gap-1"
+              >
+                Reenviar documentos <ChevronRight size={14} strokeWidth={2} />
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Documentos */}
-      <div className="mx-4 mb-3 bg-white rounded-2xl border border-gray-100 px-4 py-4">
+      <div id="sec-documentos" className="mx-4 mb-3 bg-white rounded-2xl border border-gray-100 px-4 py-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Documentos</h3>
           <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">

@@ -2,20 +2,12 @@
 import { useEffect, useState } from "react";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
-import { UserRoundCheck, CalendarClock, Building2, Star, CreditCard, CheckCircle, Bell, BellRing, type LucideIcon } from "lucide-react";
+import { UserRoundCheck, CalendarClock, Building2, Star, CreditCard, CheckCircle, Bell, BellRing, FileText, MessageCircle, Wallet, XCircle, Unlock, type LucideIcon } from "lucide-react";
 import { requestPushPermission } from "@/components/PushPermissionPrompt";
-
-type TipoNotif =
-  | "CANDIDATURA_RECEBIDA"
-  | "TURNO_HOJE"
-  | "RESERVA_SALA"
-  | "AVALIACAO_RECEBIDA"
-  | "PAGAMENTO_PENDENTE"
-  | "PROFISSIONAL_VERIFICADO";
 
 interface Notificacao {
   id: string;
-  tipo: TipoNotif;
+  tipo: string;
   titulo: string;
   corpo: string;
   href?: string;
@@ -79,7 +71,18 @@ const notificacoesMock: Notificacao[] = [
   },
 ];
 
-const iconeMap: Record<TipoNotif, LucideIcon> = {
+const iconeMap: Record<string, LucideIcon> = {
+  // Real DB values
+  PLANTAO: CalendarClock,
+  PAGAMENTO: Wallet,
+  CANDIDATURA: UserRoundCheck,
+  CONTRATO: FileText,
+  MENSAGEM: MessageCircle,
+  VERIFICACAO_CONCLUIDA: Unlock,
+  VERIFICACAO_RECUSADA: XCircle,
+  support_ticket_user_reply: MessageCircle,
+  support_ticket_status_changed: Bell,
+  // Legacy
   CANDIDATURA_RECEBIDA: UserRoundCheck,
   TURNO_HOJE: CalendarClock,
   RESERVA_SALA: Building2,
@@ -88,7 +91,18 @@ const iconeMap: Record<TipoNotif, LucideIcon> = {
   PROFISSIONAL_VERIFICADO: CheckCircle,
 };
 
-const corMap: Record<TipoNotif, string> = {
+const corMap: Record<string, string> = {
+  // Real DB values
+  PLANTAO: "bg-blue-50",
+  PAGAMENTO: "bg-emerald-50",
+  CANDIDATURA: "bg-brand-50",
+  CONTRATO: "bg-purple-50",
+  MENSAGEM: "bg-blue-50",
+  VERIFICACAO_CONCLUIDA: "bg-green-50",
+  VERIFICACAO_RECUSADA: "bg-red-50",
+  support_ticket_user_reply: "bg-blue-50",
+  support_ticket_status_changed: "bg-gray-50",
+  // Legacy
   CANDIDATURA_RECEBIDA: "bg-brand-50",
   TURNO_HOJE: "bg-blue-50",
   RESERVA_SALA: "bg-purple-50",
@@ -110,7 +124,8 @@ function tempoRelativo(iso: string): string {
 
 export default function NotificacoesClinica() {
   const router = useRouter();
-  const [lista, setLista] = useState<Notificacao[]>(notificacoesMock);
+  const [lista, setLista] = useState<Notificacao[]>([]);
+  const [loading, setLoading] = useState(true);
   const [pushPermission, setPushPermission] = useState<NotificationPermission | null>(null);
   const naoLidas = lista.filter((n) => !n.lida).length;
 
@@ -118,13 +133,45 @@ export default function NotificacoesClinica() {
     if ("Notification" in window) setPushPermission(Notification.permission);
   }, []);
 
-  const marcarTodasLidas = () => setLista((prev) => prev.map((n) => ({ ...n, lida: true })));
-  const marcarLida = (id: string) => setLista((prev) => prev.map((n) => n.id === id ? { ...n, lida: true } : n));
+  useEffect(() => {
+    fetch("/api/notificacoes")
+      .then((res) => res.ok ? res.json() : Promise.reject())
+      .then((data: Notificacao[]) => setLista(Array.isArray(data) ? data : notificacoesMock))
+      .catch(() => setLista(notificacoesMock))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const marcarTodasLidas = async () => {
+    await fetch("/api/notificacoes", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ all: true }),
+    });
+    setLista((prev) => prev.map((n) => ({ ...n, lida: true })));
+  };
+
+  const marcarLida = async (id: string) => {
+    await fetch("/api/notificacoes", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: [id] }),
+    });
+    setLista((prev) => prev.map((n) => n.id === id ? { ...n, lida: true } : n));
+  };
 
   const handleClick = (n: Notificacao) => {
-    marcarLida(n.id);
+    if (!n.lida) marcarLida(n.id);
     if (n.href) router.push(n.href);
   };
+
+  if (loading) return (
+    <div>
+      <TopBar titulo="Notificações" back="/clinica" />
+      <div className="flex justify-center py-20">
+        <div className="w-8 h-8 border-2 border-[#0B3C74] border-t-transparent rounded-full animate-spin" />
+      </div>
+    </div>
+  );
 
   return (
     <div>
@@ -171,12 +218,12 @@ export default function NotificacoesClinica() {
               key={n.id}
               onClick={() => handleClick(n)}
               className={`w-full text-left flex items-start gap-3 p-3.5 rounded-2xl border transition-colors active:opacity-80 ${
-                n.lida ? "bg-white border-gray-100" : `${corMap[n.tipo]} border-transparent shadow-sm`
+                n.lida ? "bg-white border-gray-100" : `${corMap[n.tipo] ?? "bg-gray-50"} border-transparent shadow-sm`
               }`}
             >
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${n.lida ? "bg-gray-100" : "bg-white/70"}`}>
                 {(() => {
-                  const Icon = iconeMap[n.tipo];
+                  const Icon = iconeMap[n.tipo] ?? Bell;
                   return <Icon size={20} strokeWidth={1.75} />;
                 })()}
               </div>

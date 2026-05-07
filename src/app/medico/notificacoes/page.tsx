@@ -2,21 +2,12 @@
 import { useEffect, useState } from "react";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
-import { CheckCircle, XCircle, CalendarClock, Building2, Star, Unlock, Wallet, Bell, BellRing, type LucideIcon } from "lucide-react";
+import { CheckCircle, XCircle, CalendarClock, Building2, Star, Unlock, Wallet, Bell, BellRing, FileText, MessageCircle, type LucideIcon } from "lucide-react";
 import { requestPushPermission } from "@/components/PushPermissionPrompt";
-
-type TipoNotif =
-  | "CANDIDATURA_ACEITE"
-  | "CANDIDATURA_RECUSADA"
-  | "TURNO_AMANHA"
-  | "RESERVA_CONFIRMADA"
-  | "AVALIACAO_RECEBIDA"
-  | "VERIFICACAO_CONCLUIDA"
-  | "PAGAMENTO_PROCESSADO";
 
 interface Notificacao {
   id: string;
-  tipo: TipoNotif;
+  tipo: string;
   titulo: string;
   corpo: string;
   href?: string;
@@ -27,7 +18,7 @@ interface Notificacao {
 const notificacoesMock: Notificacao[] = [
   {
     id: "n-001",
-    tipo: "CANDIDATURA_ACEITE",
+    tipo: "CANDIDATURA",
     titulo: "Candidatura Aceite!",
     corpo: "A Clínica Horizonte aceitou a sua candidatura para o turno de Medicina Geral dia 26/04.",
     href: "/medico/plantoes/plt-001",
@@ -36,7 +27,7 @@ const notificacoesMock: Notificacao[] = [
   },
   {
     id: "n-002",
-    tipo: "TURNO_AMANHA",
+    tipo: "PLANTAO",
     titulo: "Lembrete: Turno Amanhã",
     corpo: "Tem um turno marcado para amanhã, 25/04 às 08:00 na Clínica Central. Não se esqueça!",
     href: "/medico/plantoes/plt-002",
@@ -45,7 +36,7 @@ const notificacoesMock: Notificacao[] = [
   },
   {
     id: "n-003",
-    tipo: "PAGAMENTO_PROCESSADO",
+    tipo: "PAGAMENTO",
     titulo: "Pagamento Recebido",
     corpo: "Foi creditado 15.000 AOA na sua carteira referente ao turno de 20/04 na Clínica Saúde+.",
     href: "/medico/ganhos",
@@ -54,7 +45,7 @@ const notificacoesMock: Notificacao[] = [
   },
   {
     id: "n-004",
-    tipo: "RESERVA_CONFIRMADA",
+    tipo: "CONTRATO",
     titulo: "Reserva de Sala Confirmada",
     corpo: "A sua reserva do Consultório A (Clínica Horizonte) para 26/04 às 09:00 foi confirmada. Código: MF-2026-0042",
     href: "/medico/minhas-reservas",
@@ -63,7 +54,7 @@ const notificacoesMock: Notificacao[] = [
   },
   {
     id: "n-005",
-    tipo: "AVALIACAO_RECEBIDA",
+    tipo: "MENSAGEM",
     titulo: "Nova Avaliação (5 estrelas)",
     corpo: "A Clínica Horizonte avaliou o seu desempenho com 5 estrelas: «Excelente profissional, pontual e muito atencioso.»",
     href: "/medico/perfil",
@@ -72,7 +63,7 @@ const notificacoesMock: Notificacao[] = [
   },
   {
     id: "n-006",
-    tipo: "CANDIDATURA_RECUSADA",
+    tipo: "CANDIDATURA",
     titulo: "Candidatura não seleccionada",
     corpo: "A Clínica Santa Maria não seleccionou a sua candidatura para o turno de Pediatria de 18/04. Continue a candidatar-se!",
     lida: true,
@@ -89,23 +80,43 @@ const notificacoesMock: Notificacao[] = [
   },
 ];
 
-const iconeMap: Record<TipoNotif, LucideIcon> = {
+const iconeMap: Record<string, LucideIcon> = {
+  // Real DB values
+  PLANTAO: CalendarClock,
+  PAGAMENTO: Wallet,
+  CANDIDATURA: CheckCircle,
+  CONTRATO: FileText,
+  MENSAGEM: MessageCircle,
+  VERIFICACAO_CONCLUIDA: Unlock,
+  VERIFICACAO_RECUSADA: XCircle,
+  support_ticket_user_reply: MessageCircle,
+  support_ticket_status_changed: Bell,
+  // Legacy
   CANDIDATURA_ACEITE: CheckCircle,
   CANDIDATURA_RECUSADA: XCircle,
   TURNO_AMANHA: CalendarClock,
   RESERVA_CONFIRMADA: Building2,
   AVALIACAO_RECEBIDA: Star,
-  VERIFICACAO_CONCLUIDA: Unlock,
   PAGAMENTO_PROCESSADO: Wallet,
 };
 
-const corMap: Record<TipoNotif, string> = {
+const corMap: Record<string, string> = {
+  // Real DB values
+  PLANTAO: "bg-blue-50",
+  PAGAMENTO: "bg-emerald-50",
+  CANDIDATURA: "bg-green-50",
+  CONTRATO: "bg-purple-50",
+  MENSAGEM: "bg-blue-50",
+  VERIFICACAO_CONCLUIDA: "bg-brand-50",
+  VERIFICACAO_RECUSADA: "bg-red-50",
+  support_ticket_user_reply: "bg-blue-50",
+  support_ticket_status_changed: "bg-gray-50",
+  // Legacy
   CANDIDATURA_ACEITE: "bg-green-50",
   CANDIDATURA_RECUSADA: "bg-red-50",
   TURNO_AMANHA: "bg-blue-50",
   RESERVA_CONFIRMADA: "bg-purple-50",
   AVALIACAO_RECEBIDA: "bg-yellow-50",
-  VERIFICACAO_CONCLUIDA: "bg-brand-50",
   PAGAMENTO_PROCESSADO: "bg-emerald-50",
 };
 
@@ -222,12 +233,12 @@ export default function Notificacoes() {
               key={n.id}
               onClick={() => handleClick(n)}
               className={`w-full text-left flex items-start gap-3 p-3.5 rounded-2xl border transition-colors active:opacity-80 ${
-                n.lida ? "bg-white border-gray-100" : `${corMap[n.tipo]} border-transparent shadow-sm`
+                n.lida ? "bg-white border-gray-100" : `${corMap[n.tipo] ?? "bg-gray-50"} border-transparent shadow-sm`
               }`}
             >
               {/* Ícone */}
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${n.lida ? "bg-gray-100" : "bg-white/70"}`}>
-                {(() => { const Icon = iconeMap[n.tipo]; return <Icon size={20} strokeWidth={1.75} />; })()}
+                {(() => { const Icon = iconeMap[n.tipo] ?? Bell; return <Icon size={20} strokeWidth={1.75} />; })()}
               </div>
 
               {/* Conteúdo */}

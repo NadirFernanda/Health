@@ -30,7 +30,12 @@ export async function PATCH(
     await prisma.$transaction([
       prisma.profissional.update({
         where: { id },
-        data: { verified: true, verificadoEm: new Date(), rejeicaoMotivo: null },
+        data: {
+          verified: true,
+          estadoVerificacao: "APROVADO",
+          verificadoEm: new Date(),
+          rejeicaoMotivo: null,
+        },
       }),
       prisma.user.update({
         where: { id: profissional.userId },
@@ -40,15 +45,15 @@ export async function PATCH(
         data: {
           userId: profissional.userId,
           tipo: "VERIFICACAO_CONCLUIDA",
-          titulo: "Verificação concluída",
-          corpo: "A sua verificação foi aprovada. Já pode candidatar-se a turnos e usar todas as funcionalidades da plataforma.",
+          titulo: "Perfil verificado!",
+          corpo: "Os teus documentos foram analisados e aprovados. Já podes candidatar-te a plantões.",
           href: "/medico/perfil",
         },
       }),
     ]);
     sendPushToUser(profissional.userId, {
-      title: "Verificação concluída",
-      body: "A sua verificação foi aprovada. Já pode candidatar-se a turnos.",
+      title: "Perfil verificado!",
+      body: "Os teus documentos foram aprovados. Já podes candidatar-te a plantões.",
       href: "/medico/perfil",
       tag: "VERIFICACAO",
     }).catch(() => {});
@@ -57,14 +62,18 @@ export async function PATCH(
     await prisma.$transaction([
       prisma.profissional.update({
         where: { id },
-        data: { verified: false, rejeicaoMotivo: motivoFinal },
+        data: {
+          verified: false,
+          estadoVerificacao: "REJEITADO",
+          rejeicaoMotivo: motivoFinal,
+        },
       }),
       prisma.notificacao.create({
         data: {
           userId: profissional.userId,
           tipo: "VERIFICACAO_RECUSADA",
           titulo: "Verificação recusada",
-          corpo: `A sua verificação foi recusada. Motivo: ${motivoFinal}`,
+          corpo: `Os teus documentos foram recusados. Motivo: ${motivoFinal}. Podes reenviar documentos corrigidos.`,
           href: "/medico/perfil",
         },
       }),

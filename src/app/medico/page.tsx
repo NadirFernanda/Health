@@ -2,9 +2,9 @@
 import { useState, useEffect } from "react";
 import { PlantaoCard } from "@/components/plantao-card";
 import Link from "next/link";
-import { Bell, User, BadgeCheck, HeadphonesIcon } from "lucide-react";
+import { Bell, User, BadgeCheck, Clock, XCircle, AlertCircle, HeadphonesIcon } from "lucide-react";
 
-type Perfil = { nome: string; verified: boolean; disponivelAgora: boolean; saldoCarteira: number };
+type Perfil = { nome: string; verified: boolean; estadoVerificacao: string; disponivelAgora: boolean; saldoCarteira: number };
 type PlantaoAPI = {
   id: string; tipoProfissional: string; especialidade: string; dataInicio: string; dataFim: string;
   valorKwanzas: number; vagas: number; vagasPreenchidas: number; estado: string;
@@ -84,9 +84,24 @@ export default function MedicoDashboard() {
             </Link>
           </div>
         </div>
-        {perfil?.verified && (
+        {perfil?.estadoVerificacao === "APROVADO" && (
           <span className="inline-flex items-center gap-1 bg-[#00A99D]/30 text-green-200 text-xs font-semibold px-2.5 py-1 rounded-full mt-2">
             <BadgeCheck size={13} strokeWidth={2} /> Perfil Verificado
+          </span>
+        )}
+        {perfil?.estadoVerificacao === "EM_ANALISE" && (
+          <span className="inline-flex items-center gap-1 bg-yellow-400/20 text-yellow-200 text-xs font-semibold px-2.5 py-1 rounded-full mt-2">
+            <Clock size={13} strokeWidth={2} /> Em Verificação
+          </span>
+        )}
+        {perfil?.estadoVerificacao === "REJEITADO" && (
+          <span className="inline-flex items-center gap-1 bg-red-400/20 text-red-300 text-xs font-semibold px-2.5 py-1 rounded-full mt-2">
+            <XCircle size={13} strokeWidth={2} /> Verificação Recusada
+          </span>
+        )}
+        {perfil?.estadoVerificacao === "PENDENTE" && (
+          <span className="inline-flex items-center gap-1 bg-white/10 text-blue-200 text-xs font-semibold px-2.5 py-1 rounded-full mt-2">
+            <AlertCircle size={13} strokeWidth={2} /> Perfil por verificar
           </span>
         )}
 
