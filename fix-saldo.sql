@@ -2,7 +2,7 @@
 -- e também criar TransacaoCarteira para pagamentos liberados que ainda não a têm.
 
 -- 1. Criar TransacaoCarteira em falta
-INSERT INTO "TransacaoCarteira" (id, "profissionalId", tipo, "valorCentavos", descricao, referencia, estado, "criadoEm", "atualizadoEm")
+INSERT INTO "TransacaoCarteira" (id, "profissionalId", tipo, "valorCentavos", descricao, referencia, estado, "criadoEm")
 SELECT
   gen_random_uuid()::text,
   p."beneficiarioProfissionalId",
@@ -11,7 +11,6 @@ SELECT
   'Plantao concluido (correcao)',
   p."plantaoId",
   'PROCESSADO',
-  NOW(),
   NOW()
 FROM "Pagamento" p
 WHERE p."liberadoEm" IS NOT NULL
