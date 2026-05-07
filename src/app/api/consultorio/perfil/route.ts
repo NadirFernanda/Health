@@ -7,7 +7,10 @@ export async function GET() {
   if (!session || session.role !== "PROPRIETARIO_SALA") {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
-  const consultorio = await getConsultorioFromSession(session);
+  const consultorio = await prisma.consultorio.findUnique({
+    where: { userId: session.id },
+    include: { user: { select: { email: true } } },
+  });
   if (!consultorio) return NextResponse.json({ error: "Consultório não encontrado" }, { status: 404 });
   return NextResponse.json(consultorio);
 }
