@@ -77,6 +77,7 @@ model Profissional {
   user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   reservas              ReservaSala[]
   transacoes            TransacaoCarteira[]
+  saques                PedidoSaque[]
 
   @@index([tipo])
   @@index([especialidade])
@@ -638,6 +639,31 @@ model DisputaMensagem {
   autor     User     @relation(fields: [autorId], references: [id])
 
   @@index([disputaId])
+}
+
+enum EstadoSaque {
+  PENDENTE
+  APROVADO
+  REJEITADO
+  CANCELADO
+}
+
+model PedidoSaque {
+  id             String       @id @default(cuid())
+  profissionalId String
+  valorAoa       Int
+  valorCentavos  BigInt
+  dadosBancarios Json
+  estado         EstadoSaque  @default(PENDENTE)
+  motivoRejeicao String?
+  adminId        String?
+  criadoEm       DateTime     @default(now())
+  processadoEm   DateTime?
+  profissional   Profissional @relation(fields: [profissionalId], references: [id])
+
+  @@index([profissionalId])
+  @@index([estado])
+  @@index([criadoEm])
 }
 
 enum DisputaTipo {
