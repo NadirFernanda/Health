@@ -25,13 +25,19 @@ export async function GET() {
   });
 
   return Response.json(
-    documentos.map((doc) => ({
-      id: doc.id,
-      tipo: doc.tipo,
-      estado: doc.estado,
-      ficheiro: doc.ficheiro ?? null,
-      criadoEm: doc.criadoEm.toISOString(),
-    }))
+    documentos.map((doc) => {
+      const raw = doc.ficheiro ?? null;
+      // Derive a stable API URL from the stored path /uploads/medicos/{profId}/{filename}
+      const url = raw ? `/api/files${raw.replace("/uploads", "")}` : null;
+      return {
+        id: doc.id,
+        tipo: doc.tipo,
+        estado: doc.estado,
+        ficheiro: raw,
+        url,
+        criadoEm: doc.criadoEm.toISOString(),
+      };
+    })
   );
 }
 

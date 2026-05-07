@@ -8,7 +8,7 @@ git pull origin main
 npm run build
 pm2 restart medfreela --update-env
 
-npx prisma migrate resolve --applied 20260505042222_add_support_tickets
+
 npx prisma migrate deploy
 pm2 restart medfreela
 

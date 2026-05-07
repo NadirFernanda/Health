@@ -276,6 +276,8 @@ export default function PerfilMedicoClinica() {
         {medico.documentos.length > 0 && (() => {
           const cv = medico.documentos[0];
           const isAprovado = cv.estado === "APROVADO";
+          // CV is served via the public files API
+          const cvUrl = `/api/files${cv.ficheiro.replace("/uploads", "")}`;
           return (
             <div className="bg-white rounded-2xl border border-gray-100 p-4">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
@@ -296,7 +298,7 @@ export default function PerfilMedicoClinica() {
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <a
-                    href={cv.ficheiro}
+                    href={cvUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="flex items-center gap-1.5 bg-[#0B3C74] text-white text-xs font-semibold px-3 py-2 rounded-xl"
@@ -304,7 +306,7 @@ export default function PerfilMedicoClinica() {
                     <ExternalLink size={12} strokeWidth={2} /> Ver
                   </a>
                   <a
-                    href={cv.ficheiro}
+                    href={cvUrl}
                     download
                     className="flex items-center gap-1.5 border border-gray-200 text-gray-600 text-xs font-semibold px-3 py-2 rounded-xl"
                   >

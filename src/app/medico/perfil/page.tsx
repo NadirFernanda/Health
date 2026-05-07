@@ -19,6 +19,7 @@ interface Documento {
   label: string;
   estado: DocEstado;
   ficheiro?: string;
+  url?: string;
 }
 
 interface PerfilData {
@@ -59,19 +60,20 @@ export default function PerfilMedico() {
   const [anos, setAnos] = useState("");
 
   const [docs, setDocs] = useState<Documento[]>(docTemplate);
-  const [cv, setCv] = useState<{ ficheiro?: string; estado: DocEstado }>({ estado: "NAO_ENVIADO" });
+  const [cv, setCv] = useState<{ ficheiro?: string; url?: string; estado: DocEstado }>({ estado: "NAO_ENVIADO" });
   const [cvUploading, setCvUploading] = useState(false);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const cvInputRef = useRef<HTMLInputElement | null>(null);
 
-  const mergeDocs = (data: Array<{ tipo: DocTipo; estado: DocEstado; ficheiro?: string }>) => {
+  const mergeDocs = (data: Array<{ tipo: DocTipo; estado: DocEstado; ficheiro?: string; url?: string }>) => {
     return docTemplate.map((base) => {
       const found = data.find((doc) => doc.tipo === base.tipo);
       return {
         ...base,
         estado: found?.estado ?? "NAO_ENVIADO",
         ficheiro: found?.ficheiro ?? undefined,
+        url: found?.url ?? found?.ficheiro ?? undefined,
       };
     });
   };
@@ -81,7 +83,7 @@ export default function PerfilMedico() {
       fetch("/api/medico/perfil").then((r) => r.json()),
       fetch("/api/medico/documentos").then((r) => r.json()),
     ])
-      .then(([profileData, docsData]: [PerfilData, Array<{ tipo: DocTipo; estado: DocEstado; ficheiro?: string }>]) => {
+      .then(([profileData, docsData]: [PerfilData, Array<{ tipo: DocTipo; estado: DocEstado; ficheiro?: string; url?: string }>]) => {
         setPerfil(profileData);
         setNome(profileData.nome ?? "");
         setBio(profileData.bio ?? "");
@@ -90,7 +92,7 @@ export default function PerfilMedico() {
         if (Array.isArray(docsData)) {
           setDocs(mergeDocs(docsData));
           const cvDoc = docsData.find((d) => d.tipo === "CURRICULO");
-          if (cvDoc) setCv({ ficheiro: cvDoc.ficheiro, estado: cvDoc.estado });
+          if (cvDoc) setCv({ ficheiro: cvDoc.ficheiro, url: cvDoc.url ?? cvDoc.ficheiro ?? undefined, estado: cvDoc.estado });
         }
       })
       .catch(() => {
@@ -102,10 +104,10 @@ export default function PerfilMedico() {
   const carregarDocs = async () => {
     const res = await fetch("/api/medico/documentos");
     if (!res.ok) return;
-    const data: Array<{ tipo: DocTipo; estado: DocEstado; ficheiro?: string }> = await res.json();
+    const data: Array<{ tipo: DocTipo; estado: DocEstado; ficheiro?: string; url?: string }> = await res.json();
     setDocs(mergeDocs(data));
     const cvDoc = data.find((d) => d.tipo === "CURRICULO");
-    if (cvDoc) setCv({ ficheiro: cvDoc.ficheiro, estado: cvDoc.estado });
+    if (cvDoc) setCv({ ficheiro: cvDoc.ficheiro, url: cvDoc.url ?? cvDoc.ficheiro ?? undefined, estado: cvDoc.estado });
   };
 
   const handleCvUpload = async (file: File | undefined) => {
@@ -484,9 +486,9 @@ export default function PerfilMedico() {
                 <span className={`shrink-0 ${cfg.cls}`}>{cfg.icon}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-gray-800 truncate font-medium">{doc.label}</p>
-                  {doc.ficheiro ? (
-                    <a href={doc.ficheiro} target="_blank" rel="noreferrer" className="text-xs text-blue-600 font-mono truncate underline">
-                      {doc.ficheiro}
+                  {doc.url ? (
+                    <a href={doc.url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 underline">
+                      Ver documento enviado
                     </a>
                   ) : (
                     <p className="text-xs text-gray-300">Nenhum ficheiro enviado</p>
@@ -524,8 +526,8 @@ export default function PerfilMedico() {
           <span className={`shrink-0 ${estadoConfig[cv.estado].cls}`}>{estadoConfig[cv.estado].icon}</span>
           <div className="flex-1 min-w-0">
             <p className="text-sm text-gray-800 font-medium">Curriculum Vitae</p>
-            {cv.ficheiro ? (
-              <a href={cv.ficheiro} target="_blank" rel="noreferrer" className="text-xs text-blue-600 underline truncate block">
+            {cv.url ? (
+              <a href={cv.url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 underline">
                 Ver currículo carregado
               </a>
             ) : (
