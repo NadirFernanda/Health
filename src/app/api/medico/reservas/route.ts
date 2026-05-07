@@ -30,11 +30,11 @@ export async function GET() {
         nome: r.sala.nome,
         tipo: r.sala.tipo,
         zona: r.sala.zona,
-        proprietario: r.sala.clinica
-          ? { id: r.sala.clinica.id, nome: r.sala.clinica.nome, cidade: r.sala.clinica.cidade }
+        clinica: r.sala.clinica
+          ? { id: r.sala.clinica.id, nome: r.sala.clinica.nome, cidade: r.sala.clinica.cidade ?? "" }
           : r.sala.consultorio
-          ? { id: r.sala.consultorio.id, nome: r.sala.consultorio.nome, cidade: r.sala.consultorio.cidade }
-          : null,
+          ? { id: r.sala.consultorio.id, nome: r.sala.consultorio.nome, cidade: r.sala.consultorio.cidade ?? "" }
+          : { id: "", nome: "–", cidade: "" },
       },
     }))
   );
