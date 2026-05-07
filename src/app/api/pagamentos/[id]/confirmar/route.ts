@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { getAuthSession, getProfissionalFromSession, getClinicaFromSession } from "@/lib/api-auth";
+import { getAuthSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { executarConfirmacao } from "@/lib/confirmar-pagamento";
 
@@ -93,22 +93,25 @@ export async function POST(
   });
 
   if (!pagamento) return Response.json({ error: "Pagamento não encontrado" }, { status: 404 });
-  if (pagamento.estado !== "PENDENTE") {
-    return Response.json({ error: "Pagamento já processado" }, { status: 409 });
+
+  // Only block permanently-confirmed or cancelled payments; allow retrying FALHOU
+  if (pagamento.estado === "CONFIRMADO" || pagamento.estado === "REEMBOLSADO") {
+    return Response.json({ error: "Pagamento já confirmado" }, { status: 409 });
+  }
+
+  // Reset FALHOU → PENDENTE so the retry can proceed cleanly
+  if (pagamento.estado === "FALHOU") {
+    await prisma.pagamento.update({
+      where: { id: pagamentoId },
+      data: { estado: "PENDENTE", falhaMotivo: null, referenciaExt: null },
+    });
   }
 
   // Simular gateway
   const resultado = simularGateway(body, pagamento.valorBrutoAoa);
 
   if (!resultado.sucesso) {
-    await prisma.pagamento.update({
-      where: { id: pagamentoId },
-      data: {
-        estado: "FALHOU",
-        falhaMotivo: resultado.mensagem,
-        referenciaExt: resultado.codigo,
-      },
-    });
+    // Leave payment as PENDENTE so the user can correct input and retry
     return Response.json({ sucesso: false, mensagem: resultado.mensagem, codigo: resultado.codigo }, { status: 422 });
   }
 
