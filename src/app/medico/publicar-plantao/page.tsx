@@ -2,11 +2,13 @@
 import { useState } from "react";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
-import { Sparkles, CheckSquare, Square, Landmark, Clock } from "lucide-react";
-
-function formatAOA(v: number) {
-  return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
-}
+import { CheckSquare, Square, CheckCircle2 } from "lucide-react";
+import {
+  MetodoPagamentoSelector,
+  TransferenciaBancariaInfo,
+  SimulatedPaymentGateway,
+  type MetodoPagamento,
+} from "@/components/payment-gateway";
 
 const especialidades = [
   "Medicina Geral", "Pediatria", "Ginecologia", "Cardiologia",
@@ -30,10 +32,15 @@ const equipamentosOpcoes = [
 export default function PublicarPlantaoMedico() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [publicado, setPublicado] = useState(false);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
-  const [pagamentoInfo, setPagamentoInfo] = useState<{ pagamentoId: string; valorKwanzas: number } | null>(null);
+  const [metodo, setMetodo] = useState<MetodoPagamento>("MULTICAIXA_EXPRESS");
+  const [pagamentoInfo, setPagamentoInfo] = useState<{
+    pagamentoId: string;
+    valorKwanzas: number;
+    metodo: MetodoPagamento;
+  } | null>(null);
+  const [pagamentoSucesso, setPagamentoSucesso] = useState(false);
 
   const [form, setForm] = useState({
     especialidade: "",
@@ -54,7 +61,7 @@ export default function PublicarPlantaoMedico() {
   const toggleEquip = (key: string) =>
     setEquipamentos((prev) => ({ ...prev, [key]: !prev[key] }));
 
-  const set = (k: string, v: string | number) => setForm((prev) => ({ ...prev, [k]: v }));
+  const set = (k: string, v: string) => setForm((prev) => ({ ...prev, [k]: v }));
 
   async function publicar() {
     setLoading(true);
@@ -73,17 +80,21 @@ export default function PublicarPlantaoMedico() {
           valorKwanzas: form.valor,
           vagas: 1,
           descricao: form.descricao,
+          metodo,
           ...equipamentos,
         }),
       });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json() as { error?: string };
         setErro(data.error ?? "Erro ao publicar");
-        setLoading(false);
         return;
       }
-      const data = await res.json();
-      setPagamentoInfo({ pagamentoId: data.pagamentoId, valorKwanzas: data.valorKwanzas });
+      const data = await res.json() as { pagamentoId: string; valorKwanzas: number; metodo: MetodoPagamento };
+      setPagamentoInfo({
+        pagamentoId: data.pagamentoId,
+        valorKwanzas: data.valorKwanzas,
+        metodo: data.metodo ?? metodo,
+      });
     } catch {
       setErro("Erro de rede. Tenta novamente.");
     } finally {
@@ -91,63 +102,15 @@ export default function PublicarPlantaoMedico() {
     }
   }
 
-  if (pagamentoInfo) {
-    return (
-      <div>
-        <TopBar titulo="Pagamento da Vaga" back="/medico/publicar-plantao" />
-        <div className="px-4 py-5 space-y-4">
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800 leading-5">
-            <p className="font-bold mb-1">Vaga criada — aguarda confirmação do pagamento</p>
-            <p>Após confirmarmos o pagamento, a vaga fica visível para outros médicos se candidatarem.</p>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Resumo do pagamento</p>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Valor da vaga</span>
-              <span className="font-bold text-[#0B3C74]">{formatAOA(pagamentoInfo.valorKwanzas)}</span>
-            </div>
-            <div className="flex justify-between text-xs text-gray-400">
-              <span>Comissão plataforma (15%)</span>
-              <span>{formatAOA(Math.round(pagamentoInfo.valorKwanzas * 0.15))}</span>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Dados para transferência</p>
-            <p className="flex items-center gap-2 text-sm text-gray-700">
-              <Landmark size={14} strokeWidth={1.75} className="text-gray-400 shrink-0" />
-              <span>NIB: <strong>0040 0000 12345 67890 10 1</strong></span>
-            </p>
-            <p className="text-xs text-gray-500">Banco: BAI · Titular: Medfreela Lda</p>
-            <p className="text-xs text-gray-500">Referência: <strong className="font-mono">{pagamentoInfo.pagamentoId.slice(-10).toUpperCase()}</strong></p>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-100 rounded-2xl p-3 flex items-start gap-2 text-xs text-blue-700">
-            <Clock size={13} strokeWidth={2} className="shrink-0 mt-0.5" />
-            O pagamento é retido na plataforma e libertado ao substituto após a conclusão do plantão.
-          </div>
-
-          <button
-            onClick={() => router.push("/medico/plantoes")}
-            className="w-full bg-[#0B3C74] text-white font-bold py-4 rounded-2xl"
-          >
-            Ver os meus plantões
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (publicado) {
+  if (pagamentoSucesso) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#f7f8fa] px-6 text-center">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
-          <Sparkles size={40} strokeWidth={1.5} className="text-green-500" />
+          <CheckCircle2 size={40} strokeWidth={1.5} className="text-green-500" />
         </div>
-        <h2 className="text-xl font-bold text-gray-900">Vaga publicada!</h2>
+        <h2 className="text-xl font-bold text-gray-900">Pagamento confirmado!</h2>
         <p className="text-gray-500 mt-2 text-sm leading-6">
-          Médicos com especialidade compatível serão notificados e podem candidatar-se ao teu plantão.
+          A tua vaga está activa. Médicos com especialidade compatível serão notificados.
         </p>
         <button
           onClick={() => router.push("/medico/plantoes")}
@@ -159,17 +122,48 @@ export default function PublicarPlantaoMedico() {
     );
   }
 
+  if (pagamentoInfo) {
+    return (
+      <div>
+        <TopBar titulo="Pagamento da Vaga" back="/medico/publicar-plantao" />
+        <div className="px-4 py-5 space-y-4">
+          {pagamentoInfo.metodo === "TRANSFERENCIA_BANCARIA" ? (
+            <TransferenciaBancariaInfo
+              pagamentoId={pagamentoInfo.pagamentoId}
+              valor={pagamentoInfo.valorKwanzas}
+              onVerPlantoes={() => router.push("/medico/plantoes")}
+            />
+          ) : (
+            <>
+              <SimulatedPaymentGateway
+                pagamentoId={pagamentoInfo.pagamentoId}
+                metodo={pagamentoInfo.metodo}
+                valor={pagamentoInfo.valorKwanzas}
+                onSucesso={() => setPagamentoSucesso(true)}
+                onErro={() => {}}
+              />
+              <button
+                onClick={() => router.push("/medico/plantoes")}
+                className="w-full text-center text-sm text-gray-400 py-2"
+              >
+                Pagar mais tarde
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <TopBar titulo="Publicar Vaga de Substituto" back="/medico" />
 
-      {/* Aviso contextual */}
       <div className="mx-4 mt-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-800 leading-5">
         <p className="font-bold mb-0.5">Não podes comparecer ao plantão?</p>
         Publica a vaga, define o valor que pagarás ao substituto, e escolhe o médico candidato. O pagamento é debitado da tua carteira após aceitação.
       </div>
 
-      {/* Progress */}
       <div className="px-4 pt-4">
         <div className="flex gap-1.5">
           {[1, 2].map((s) => (
@@ -179,12 +173,10 @@ export default function PublicarPlantaoMedico() {
         <p className="text-xs text-gray-400 mt-1.5">Passo {step} de 2</p>
       </div>
 
-      {/* Step 1 — Detalhes */}
       {step === 1 && (
         <div className="px-4 pt-5 space-y-4">
           <h2 className="font-bold text-gray-900">Detalhes do Plantão</h2>
 
-          {/* Especialidade */}
           <div>
             <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Especialidade *</label>
             <select
@@ -197,7 +189,6 @@ export default function PublicarPlantaoMedico() {
             </select>
           </div>
 
-          {/* Datas */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Data início *</label>
@@ -221,7 +212,6 @@ export default function PublicarPlantaoMedico() {
             </div>
           </div>
 
-          {/* Valor */}
           <div>
             <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Valor a pagar ao substituto (AOA) *</label>
             <input
@@ -234,7 +224,6 @@ export default function PublicarPlantaoMedico() {
             <p className="text-xs text-gray-400 mt-1">Este valor será debitado da tua carteira após aceitação.</p>
           </div>
 
-          {/* Descrição */}
           <div>
             <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Notas para o substituto</label>
             <textarea
@@ -256,7 +245,6 @@ export default function PublicarPlantaoMedico() {
         </div>
       )}
 
-      {/* Step 2 — Equipamentos disponíveis */}
       {step === 2 && (
         <div className="px-4 pt-5 space-y-4">
           <h2 className="font-bold text-gray-900">Equipamentos disponíveis no local</h2>
@@ -277,7 +265,6 @@ export default function PublicarPlantaoMedico() {
             ))}
           </div>
 
-          {/* Preview */}
           <div className="bg-[#f0f6ff] border border-blue-100 rounded-xl px-4 py-3 text-sm space-y-1">
             <p className="font-bold text-[#0B3C74] text-xs uppercase tracking-wide mb-1.5">Resumo da vaga</p>
             <p className="text-gray-700"><span className="font-semibold">Especialidade:</span> {form.especialidade}</p>
@@ -285,6 +272,8 @@ export default function PublicarPlantaoMedico() {
             <p className="text-gray-700"><span className="font-semibold">Fim:</span> {form.dataFim} às {form.horaFim}</p>
             <p className="text-gray-700"><span className="font-semibold">Valor:</span> {parseInt(form.valor || "0").toLocaleString("pt-AO")} AOA</p>
           </div>
+
+          <MetodoPagamentoSelector value={metodo} onChange={setMetodo} />
 
           {erro && <p className="text-xs text-red-600 font-medium">{erro}</p>}
 
@@ -295,9 +284,9 @@ export default function PublicarPlantaoMedico() {
             <button
               onClick={publicar}
               disabled={loading}
-              className="flex-1 bg-[#0B3C74] disabled:opacity-60 text-white font-bold py-3.5 rounded-2xl"
+              className="flex-1 bg-[#0B3C74] disabled:opacity-60 text-white font-bold py-3.5 rounded-2xl text-sm"
             >
-              {loading ? "A publicar..." : "Publicar vaga"}
+              {loading ? "A publicar..." : "CONTINUAR PARA PAGAMENTO"}
             </button>
           </div>
         </div>

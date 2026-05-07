@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
   const valorTotal = sala.precoPorHora * duracaoHoras;
   const valorTotalCentavos = BigInt(sala.precoPorHora) * BigInt(duracaoHoras) * 100n;
   const comissao = Math.round(valorTotal * 0.15);
-  const metodoFinal = (metodo === "MULTICAIXA_EXPRESS" ? "MULTICAIXA_EXPRESS" : "TRANSFERENCIA_BANCARIA") as const;
+  const metodoFinal = (["MULTICAIXA_EXPRESS", "TPA"].includes(metodo) ? metodo : "TRANSFERENCIA_BANCARIA") as "MULTICAIXA_EXPRESS" | "TPA" | "TRANSFERENCIA_BANCARIA";
 
   const { reserva, pagamento } = await prisma.$transaction(async (tx) => {
     const r = await tx.reservaSala.create({

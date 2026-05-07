@@ -2,7 +2,13 @@
 import { useState } from "react";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
-import { Info, ChevronRight, ChevronLeft, CheckSquare, Square, Calendar, Users, Check, Landmark, Clock } from "lucide-react";
+import { Info, ChevronRight, ChevronLeft, CheckSquare, Square, Calendar, Users, Check } from "lucide-react";
+import {
+  MetodoPagamentoSelector,
+  TransferenciaBancariaInfo,
+  SimulatedPaymentGateway,
+  type MetodoPagamento,
+} from "@/components/payment-gateway";
 
 const especialidades = [
   "Medicina Geral", "Pediatria", "Ginecologia", "Cardiologia",
@@ -29,16 +35,16 @@ const equipamentosOpcoes = [
   { key: "desfibrilador", label: "Desfibrilador" },
 ];
 
-function formatAOA(v: number) {
-  return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
-}
+type PagamentoInfo = { pagamentoId: string; valorKwanzas: number; metodo: MetodoPagamento };
 
 export default function PublicarPlantao() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
-  const [pagamentoInfo, setPagamentoInfo] = useState<{ pagamentoId: string; valorKwanzas: number } | null>(null);
+  const [metodo, setMetodo] = useState<MetodoPagamento>("MULTICAIXA_EXPRESS");
+  const [pagamentoInfo, setPagamentoInfo] = useState<PagamentoInfo | null>(null);
+  const [pagamentoConcluido, setPagamentoConcluido] = useState(false);
 
   const [form, setForm] = useState({
     tipoProfissional: "MEDICO",
@@ -49,7 +55,6 @@ export default function PublicarPlantao() {
     horaFim: "20:00",
     valor: "",
     vagas: 1,
-    descricao: "",
   });
 
   const [equipamentos, setEquipamentos] = useState<Record<string, boolean>>({
@@ -78,6 +83,7 @@ export default function PublicarPlantao() {
           vagas: form.vagas,
           descricao: "",
           equipamentos,
+          metodo,
         }),
       });
       if (!res.ok) {
@@ -86,7 +92,7 @@ export default function PublicarPlantao() {
         return;
       }
       const data = await res.json();
-      setPagamentoInfo({ pagamentoId: data.pagamentoId, valorKwanzas: data.valorKwanzas });
+      setPagamentoInfo({ pagamentoId: data.pagamentoId, valorKwanzas: data.valorKwanzas, metodo: data.metodo ?? metodo });
     } catch {
       setErro("Erro de rede. Tenta novamente.");
     } finally {
@@ -94,53 +100,58 @@ export default function PublicarPlantao() {
     }
   }
 
+  // Ecrã pós-pagamento simulado com sucesso
+  if (pagamentoConcluido) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f7f8fa] px-6 text-center">
+        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
+          <Check size={40} strokeWidth={1.5} className="text-green-500" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900">Plantão publicado!</h2>
+        <p className="text-gray-500 mt-2 text-sm leading-6">
+          O pagamento foi confirmado e os médicos podem agora candidatar-se.
+        </p>
+        <button
+          onClick={() => router.push("/clinica/plantoes")}
+          className="mt-6 bg-[#0B3C74] text-white font-bold px-8 py-3 rounded-2xl"
+        >
+          Ver plantões publicados
+        </button>
+      </div>
+    );
+  }
+
+  // Ecrã de pagamento (pós-criação do plantão)
   if (pagamentoInfo) {
     return (
       <div>
         <TopBar titulo="Pagamento do Plantão" back="/clinica/publicar" />
         <div className="px-4 py-5 space-y-4">
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800 leading-5">
-            <p className="font-bold mb-1">Plantão criado — aguarda confirmação do pagamento</p>
-            <p>Após confirmarmos o pagamento, o plantão fica visível para os médicos candidatarem-se.</p>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Resumo do pagamento</p>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Valor do plantão</span>
-              <span className="font-bold text-[#0B3C74]">{formatAOA(pagamentoInfo.valorKwanzas)}</span>
-            </div>
-            <div className="flex justify-between text-xs text-gray-400">
-              <span>Comissão plataforma (15%)</span>
-              <span>{formatAOA(Math.round(pagamentoInfo.valorKwanzas * 0.15))}</span>
-            </div>
-            <div className="border-t border-gray-100 pt-2 flex justify-between text-sm font-bold">
-              <span>Total a pagar</span>
-              <span className="text-[#0B3C74]">{formatAOA(pagamentoInfo.valorKwanzas)}</span>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Dados para transferência</p>
-            <p className="flex items-center gap-2 text-sm text-gray-700">
-              <Landmark size={14} strokeWidth={1.75} className="text-gray-400 shrink-0" />
-              <span>NIB: <strong>0040 0000 12345 67890 10 1</strong></span>
-            </p>
-            <p className="text-xs text-gray-500">Banco: BAI · Titular: Medfreela Lda</p>
-            <p className="text-xs text-gray-500">Referência: <strong className="font-mono">{pagamentoInfo.pagamentoId.slice(-10).toUpperCase()}</strong></p>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-100 rounded-2xl p-3 flex items-start gap-2 text-xs text-blue-700">
-            <Clock size={13} strokeWidth={2} className="shrink-0 mt-0.5" />
-            O pagamento é retido na plataforma e só é libertado ao médico após a conclusão do plantão.
-          </div>
-
-          <button
-            onClick={() => router.push("/clinica/plantoes")}
-            className="w-full bg-[#0B3C74] text-white font-bold py-4 rounded-2xl"
-          >
-            Ver os meus plantões
-          </button>
+          {pagamentoInfo.metodo === "TRANSFERENCIA_BANCARIA" ? (
+            <TransferenciaBancariaInfo
+              pagamentoId={pagamentoInfo.pagamentoId}
+              valor={pagamentoInfo.valorKwanzas}
+              onVerPlantoes={() => router.push("/clinica/plantoes")}
+            />
+          ) : (
+            <>
+              <SimulatedPaymentGateway
+                pagamentoId={pagamentoInfo.pagamentoId}
+                metodo={pagamentoInfo.metodo as "MULTICAIXA_EXPRESS" | "TPA"}
+                valor={pagamentoInfo.valorKwanzas}
+                onSucesso={() => setPagamentoConcluido(true)}
+                onErro={() => {}}
+              />
+              {!pagamentoConcluido && (
+                <button
+                  onClick={() => router.push("/clinica/plantoes")}
+                  className="w-full text-gray-400 text-sm py-2 text-center"
+                >
+                  Pagar mais tarde (transferência bancária)
+                </button>
+              )}
+            </>
+          )}
         </div>
       </div>
     );
@@ -256,7 +267,7 @@ export default function PublicarPlantao() {
       {step === 2 && (
         <div className="px-4 pt-5 space-y-4">
           <h2 className="font-bold text-gray-900">Equipamentos Disponíveis</h2>
-          <p className="text-sm text-gray-500">Indique o que está disponível na sala. O médico verá esta informação antes de se candidatar.</p>
+          <p className="text-sm text-gray-500">Indique o que está disponível na sala.</p>
           <div className="space-y-2">
             {equipamentosOpcoes.map((e) => (
               <button
@@ -268,7 +279,7 @@ export default function PublicarPlantao() {
                     : "bg-white border-gray-200 text-gray-500"
                 }`}
               >
-                <span className="text-lg">{equipamentos[e.key] ? <CheckSquare size={18} strokeWidth={2} /> : <Square size={18} strokeWidth={2} />}</span>
+                <span>{equipamentos[e.key] ? <CheckSquare size={18} strokeWidth={2} /> : <Square size={18} strokeWidth={2} />}</span>
                 <span className="text-sm font-medium">{e.label}</span>
               </button>
             ))}
@@ -284,10 +295,12 @@ export default function PublicarPlantao() {
         </div>
       )}
 
-      {/* Step 3 — Preview */}
+      {/* Step 3 — Preview + método de pagamento */}
       {step === 3 && (
-        <div className="px-4 pt-5 space-y-4">
-          <h2 className="font-bold text-gray-900">Pré-visualização</h2>
+        <div className="px-4 pt-5 pb-8 space-y-4">
+          <h2 className="font-bold text-gray-900">Revisão e Pagamento</h2>
+
+          {/* Resumo */}
           <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2 text-sm">
             <p className="font-bold text-gray-900 text-base">{form.especialidade}</p>
             <p className="text-xs text-gray-500 uppercase tracking-wide">{tiposProfissional.find(t => t.value === form.tipoProfissional)?.label}</p>
@@ -295,22 +308,26 @@ export default function PublicarPlantao() {
             <p className="text-[#0B3C74] font-bold text-lg">{parseInt(form.valor || "0").toLocaleString()} AOA</p>
             <p className="text-gray-500 inline-flex items-center gap-1"><Users size={14} strokeWidth={1.75} /> {form.vagas} vaga(s)</p>
             <div className="border-t border-gray-100 pt-3">
-              <p className="text-xs text-gray-400 mb-2 font-semibold">EQUIPAMENTOS</p>
               <div className="flex flex-wrap gap-1.5">
-                {equipamentosOpcoes
-                  .filter((e) => equipamentos[e.key])
-                  .map((e) => (
-                    <span key={e.key} className="bg-green-50 text-green-700 text-xs px-2 py-0.5 rounded-full inline-flex items-center gap-1"><Check size={12} strokeWidth={2} /> {e.label}</span>
-                  ))}
+                {equipamentosOpcoes.filter((e) => equipamentos[e.key]).map((e) => (
+                  <span key={e.key} className="bg-green-50 text-green-700 text-xs px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                    <Check size={12} strokeWidth={2} /> {e.label}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
 
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700 flex items-start gap-2">
-            <Info size={14} strokeWidth={2} className="shrink-0 mt-0.5" /> A plataforma retém <strong>15% de comissão</strong> sobre o valor do plantão. O médico receberá <strong>{Math.round(parseInt(form.valor || "0") * 0.85).toLocaleString()} AOA</strong> líquido.
+            <Info size={14} strokeWidth={2} className="shrink-0 mt-0.5" />
+            A plataforma retém <strong>15% de comissão</strong>. O médico receberá <strong>{Math.round(parseInt(form.valor || "0") * 0.85).toLocaleString()} AOA</strong> líquido.
           </div>
 
+          {/* Selector de método */}
+          <MetodoPagamentoSelector value={metodo} onChange={setMetodo} />
+
           {erro && <p className="text-red-500 text-sm text-center">{erro}</p>}
+
           <div className="flex gap-2">
             <button onClick={() => setStep(2)} className="flex-1 border border-gray-200 text-gray-600 font-semibold py-3.5 rounded-2xl text-sm inline-flex items-center justify-center gap-1">
               <ChevronLeft size={16} strokeWidth={2} /> Voltar
@@ -320,7 +337,7 @@ export default function PublicarPlantao() {
               disabled={loading}
               className="flex-1 bg-[#00A99D] disabled:opacity-60 text-white font-bold py-3.5 rounded-2xl text-sm"
             >
-              {loading ? "A publicar..." : "PUBLICAR"}
+              {loading ? "A criar…" : "CONTINUAR PARA PAGAMENTO"}
             </button>
           </div>
         </div>

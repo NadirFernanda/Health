@@ -16,7 +16,7 @@ export async function POST(
   if (!prof) return Response.json({ error: "Perfil não encontrado" }, { status: 404 });
 
   const { candidaturaId } = await params;
-  const { acao } = await request.json(); // "ASSINAR" | "RECUSAR"
+  const { acao, metodo } = await request.json(); // "ASSINAR" | "RECUSAR", metodo opcional
 
   if (!["ASSINAR", "RECUSAR"].includes(acao)) {
     return Response.json({ error: "Ação inválida" }, { status: 400 });
@@ -78,6 +78,7 @@ export async function POST(
   // A candidatura fica em AGUARDANDO_PAGAMENTO até o admin confirmar o pagamento.
   const plantao = candidatura.plantao;
   const taxaReserva = Math.round(plantao.valorKwanzas * TAXA_RESERVA_PERCENTAGEM);
+  const metodoPagamento = (["MULTICAIXA_EXPRESS", "TPA"].includes(metodo) ? metodo : "TRANSFERENCIA_BANCARIA") as "MULTICAIXA_EXPRESS" | "TPA" | "TRANSFERENCIA_BANCARIA";
 
   let pagamentoId: string;
 
@@ -101,7 +102,7 @@ export async function POST(
           valorBrutoAoa: taxaReserva,
           comissaoAoa: taxaReserva,
           valorLiquidoAoa: 0,
-          metodo: "TRANSFERENCIA_BANCARIA",
+          metodo: metodoPagamento,
           estado: "PENDENTE",
         },
       });
@@ -120,5 +121,6 @@ export async function POST(
     pagamentoId,
     taxaReserva,
     especialidade: plantao.especialidade,
+    metodo: metodoPagamento,
   });
 }

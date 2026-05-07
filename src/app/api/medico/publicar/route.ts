@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const {
     tipoProfissional, especialidade, dataInicio, dataFim,
-    valorKwanzas, vagas, descricao,
+    valorKwanzas, vagas, descricao, metodo,
     maca, estetoscopio, tensiometro, termometro, computador,
     materiaisBasicos, nebulizador, oximetro, glucometro, desfibrilador,
   } = body;
@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Campos obrigatórios em falta" }, { status: 400 });
   }
 
+  const metodoPagamento = (["MULTICAIXA_EXPRESS", "TPA"].includes(metodo) ? metodo : "TRANSFERENCIA_BANCARIA") as "MULTICAIXA_EXPRESS" | "TPA" | "TRANSFERENCIA_BANCARIA";
   const valorInt = parseInt(valorKwanzas);
   const comissao = Math.round(valorInt * 0.15);
 
@@ -91,12 +92,12 @@ export async function POST(request: NextRequest) {
         valorBrutoAoa: valorInt,
         comissaoAoa: comissao,
         valorLiquidoAoa: valorInt - comissao,
-        metodo: "TRANSFERENCIA_BANCARIA",
+        metodo: metodoPagamento,
         estado: "PENDENTE",
       },
     });
     return { plantao: p, pagamento: pag };
   });
 
-  return Response.json({ id: plantao.id, pagamentoId: pagamento.id, valorKwanzas: valorInt }, { status: 201 });
+  return Response.json({ id: plantao.id, pagamentoId: pagamento.id, valorKwanzas: valorInt, metodo: metodoPagamento }, { status: 201 });
 }

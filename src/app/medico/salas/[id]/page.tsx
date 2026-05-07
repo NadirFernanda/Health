@@ -1,8 +1,14 @@
-﻿"use client";
+"use client";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
 import { useState, use, useEffect } from "react";
-import { CheckCircle, XCircle, Building2, MapPin, Clock, Star, Landmark, Smartphone, BadgeCheck, Check, AlertTriangle, ChevronRight } from "lucide-react";
+import { CheckCircle, XCircle, Building2, MapPin, Clock, Star, BadgeCheck, Check, AlertTriangle, ChevronRight } from "lucide-react";
+import {
+  MetodoPagamentoSelector,
+  TransferenciaBancariaInfo,
+  SimulatedPaymentGateway,
+  type MetodoPagamento,
+} from "@/components/payment-gateway";
 
 function formatAOA(v: number) { return new Intl.NumberFormat("pt-AO").format(v) + " AOA"; }
 
@@ -23,6 +29,13 @@ type Sala = {
   equipamentos: Record<string, boolean>;
 };
 
+type PagamentoInfo = {
+  pagamentoId: string;
+  valorTotal: number;
+  metodo: MetodoPagamento;
+  codigoQr: string;
+};
+
 type Step = "detalhe" | "horario" | "pagamento" | "confirmado";
 
 export default function DetalheSala({ params }: { params: Promise<{ id: string }> }) {
@@ -35,8 +48,8 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
   const [data, setData] = useState("");
   const [horaInicio, setHoraInicio] = useState("");
   const [duracao, setDuracao] = useState(2);
-  const [metodo, setMetodo] = useState<"MULTICAIXA_EXPRESS" | "TRANSFERENCIA_BANCARIA">("MULTICAIXA_EXPRESS");
-  const [codigoReserva] = useState(`MF-2026-${String(Math.floor(1000 + Math.random() * 9000))}`);
+  const [metodo, setMetodo] = useState<MetodoPagamento>("MULTICAIXA_EXPRESS");
+  const [pagamentoInfo, setPagamentoInfo] = useState<PagamentoInfo | null>(null);
   const [reservandoLoading, setReservandoLoading] = useState(false);
   const [erro, setErro] = useState("");
 
@@ -73,18 +86,25 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
     const res = await fetch("/api/medico/reservas", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ salaId: id, data, horaInicio, duracaoHoras: duracao }),
+      body: JSON.stringify({ salaId: id, data, horaInicio, duracaoHoras: duracao, metodo }),
     });
     setReservandoLoading(false);
     if (res.ok) {
-      setStep("confirmado");
+      const d = await res.json() as { pagamentoId: string; valorTotal: number; codigoQr: string };
+      setPagamentoInfo({
+        pagamentoId: d.pagamentoId,
+        valorTotal: d.valorTotal,
+        metodo,
+        codigoQr: d.codigoQr,
+      });
     } else {
-      const d = await res.json();
+      const d = await res.json() as { error?: string };
       setErro(d.error ?? "Erro ao confirmar reserva.");
     }
   };
 
   if (step === "confirmado") {
+    const codigoReserva = pagamentoInfo?.codigoQr ?? "—";
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#f7f8fa] px-6 text-center">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
@@ -122,6 +142,41 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
   }
 
   if (step === "pagamento") {
+    // After API call: show gateway
+    if (pagamentoInfo) {
+      return (
+        <div>
+          <TopBar titulo="Pagamento" onBack={() => { setPagamentoInfo(null); }} />
+          <div className="px-4 py-5 space-y-4">
+            {pagamentoInfo.metodo === "TRANSFERENCIA_BANCARIA" ? (
+              <TransferenciaBancariaInfo
+                pagamentoId={pagamentoInfo.pagamentoId}
+                valor={pagamentoInfo.valorTotal}
+                onVerPlantoes={() => router.push("/medico/minhas-reservas")}
+              />
+            ) : (
+              <>
+                <SimulatedPaymentGateway
+                  pagamentoId={pagamentoInfo.pagamentoId}
+                  metodo={pagamentoInfo.metodo}
+                  valor={pagamentoInfo.valorTotal}
+                  onSucesso={() => setStep("confirmado")}
+                  onErro={() => {}}
+                />
+                <button
+                  onClick={() => router.push("/medico/minhas-reservas")}
+                  className="w-full text-center text-sm text-gray-400 py-2"
+                >
+                  Pagar mais tarde
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Before API call: booking summary + method selector
     return (
       <div>
         <TopBar titulo="Pagamento" onBack={() => setStep("horario")} />
@@ -139,32 +194,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
             <p className="text-xs text-gray-400">Comissão Medfreela (15%): {formatAOA(comissao)} já incluída</p>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">Método de Pagamento</p>
-            {([
-              { key: "MULTICAIXA_EXPRESS",     label: "Multicaixa Express",    icon: <Smartphone size={20} strokeWidth={1.75} />, desc: "Pagamento imediato via app ou USSD" },
-              { key: "TRANSFERENCIA_BANCARIA", label: "Transferência Bancária", icon: <Landmark size={20} strokeWidth={1.75} />,  desc: "NIB: 0040-0000-12345-67890 10 1 · BAI" },
-            ] as const).map((m) => (
-              <button key={m.key} onClick={() => setMetodo(m.key)}
-                className={`w-full flex items-start gap-3 p-3 rounded-xl border-2 text-left transition-colors ${metodo === m.key ? "border-[#0B3C74] bg-blue-50" : "border-gray-100 bg-gray-50"}`}
-              >
-                <span className="text-xl">{m.icon}</span>
-                <div>
-                  <p className="font-semibold text-sm text-gray-900">{m.label}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{m.desc}</p>
-                </div>
-                {metodo === m.key && <Check size={16} strokeWidth={2.5} className="ml-auto text-[#0B3C74]" />}
-              </button>
-            ))}
-          </div>
-
-          {metodo === "MULTICAIXA_EXPRESS" && (
-            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
-              <p className="flex items-center gap-1 text-sm font-semibold text-[#0B3C74]"><Smartphone size={14} strokeWidth={2} /> Referência Multicaixa</p>
-              <p className="text-xs text-[#0B3C74] mt-1">Entidade: <strong>30299</strong> · Referência: <strong>987 654 321</strong></p>
-              <p className="text-xs text-blue-500 mt-1">Valor: {formatAOA(valorTotal)} · Válida 30 minutos</p>
-            </div>
-          )}
+          <MetodoPagamentoSelector value={metodo} onChange={setMetodo} />
 
           {erro && <p className="text-red-500 text-sm text-center">{erro}</p>}
 
@@ -173,7 +203,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
             disabled={reservandoLoading}
             className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white font-bold py-4 rounded-2xl text-base transition-colors flex items-center justify-center gap-2"
           >
-            <CheckCircle size={18} strokeWidth={2} /> {reservandoLoading ? "A confirmar..." : "CONFIRMAR PAGAMENTO"}
+            <CheckCircle size={18} strokeWidth={2} /> {reservandoLoading ? "A confirmar..." : "CONFIRMAR RESERVA"}
           </button>
           <button onClick={() => setStep("horario")} className="w-full text-gray-400 text-sm py-2">Voltar</button>
         </div>
