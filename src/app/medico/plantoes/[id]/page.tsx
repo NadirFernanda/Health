@@ -3,7 +3,7 @@ import { getAuthSession, getProfissionalFromSession } from "@/lib/api-auth";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MapPin, Star, Stethoscope, Calendar, Clock, Banknote, Users, CheckCircle, XCircle, BadgeCheck, AlertTriangle, MessageCircle, CheckCircle2, XCircle as XCircleIcon, FileText } from "lucide-react";
+import { MapPin, Star, Stethoscope, Calendar, Clock, Banknote, Users, CheckCircle, XCircle, BadgeCheck, AlertTriangle, MessageCircle, CheckCircle2, XCircle as XCircleIcon, FileText, Activity, Trophy, Lock } from "lucide-react";
 import { DisputaButton } from "./DisputaButton";
 
 function formatAOA(v: number) { return new Intl.NumberFormat("pt-PT").format(v) + " AOA"; }
@@ -100,6 +100,38 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
           </div>
         </div>
       </div>
+
+      {/* Banner de estado do plantão */}
+      {plantao.estado === "EM_ANDAMENTO" && (
+        <div className="mx-4 mt-3 bg-orange-50 border border-orange-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+          <Activity size={18} strokeWidth={2} className="text-orange-500 shrink-0" />
+          <div>
+            <p className="text-sm font-bold text-orange-700">Plantão em andamento</p>
+            <p className="text-xs text-orange-500">A decorrer agora · termina às {formatHora(dataFim)}</p>
+          </div>
+        </div>
+      )}
+      {plantao.estado === "CONCLUIDO" && (
+        <div className="mx-4 mt-3 bg-green-50 border border-green-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+          <Trophy size={18} strokeWidth={2} className="text-green-500 shrink-0" />
+          <div>
+            <p className="text-sm font-bold text-green-700">Plantão concluído</p>
+            <p className="text-xs text-green-500">Pagamento creditado na carteira</p>
+          </div>
+        </div>
+      )}
+      {plantao.estado === "CANCELADO" && (
+        <div className="mx-4 mt-3 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+          <XCircle size={18} strokeWidth={2} className="text-gray-400 shrink-0" />
+          <p className="text-sm text-gray-500">Este plantão foi cancelado</p>
+        </div>
+      )}
+      {plantao.estado === "FECHADO" && !candidatura && (
+        <div className="mx-4 mt-3 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+          <Lock size={18} strokeWidth={2} className="text-gray-400 shrink-0" />
+          <p className="text-sm text-gray-500">Todas as vagas preenchidas</p>
+        </div>
+      )}
 
       {/* Dados */}
       <div className="bg-white mt-2 px-4 py-4 space-y-2.5 border-b border-gray-100">
@@ -209,7 +241,46 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
           </div>
         )}
 
-        {candidatura?.estado === "ACEITE" && (
+        {candidatura?.estado === "ACEITE" && plantao.estado === "EM_ANDAMENTO" && (
+          <div className="space-y-2">
+            <div className="bg-orange-50 border border-orange-100 rounded-2xl px-4 py-3 text-center">
+              <Activity size={20} className="text-orange-500 mx-auto mb-1" strokeWidth={2} />
+              <p className="text-sm font-bold text-orange-700">Estás de plantão agora!</p>
+              <p className="text-xs text-orange-500 mt-0.5">O plantão está em andamento · termina às {formatHora(dataFim)}</p>
+            </div>
+            <Link
+              href={`/medico/plantoes/${plantao.id}/mensagens`}
+              className="relative flex items-center justify-center gap-2 w-full border border-gray-200 text-gray-700 font-semibold py-3 rounded-2xl text-sm"
+            >
+              <MessageCircle size={16} strokeWidth={2} />
+              Mensagens com a clínica
+              {candidatura.naoLidas > 0 && (
+                <span className="absolute right-4 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {candidatura.naoLidas}
+                </span>
+              )}
+            </Link>
+            <DisputaButton candidaturaId={candidatura.id} />
+          </div>
+        )}
+
+        {candidatura?.estado === "ACEITE" && plantao.estado === "CONCLUIDO" && (
+          <div className="space-y-2">
+            <div className="bg-green-50 border border-green-100 rounded-2xl px-4 py-3 text-center">
+              <Trophy size={20} className="text-green-500 mx-auto mb-1" strokeWidth={2} />
+              <p className="text-sm font-bold text-green-700">Plantão concluído!</p>
+              <p className="text-xs text-green-500 mt-0.5">O pagamento foi creditado na tua carteira</p>
+            </div>
+            <Link
+              href="/medico/ganhos"
+              className="block w-full text-center bg-[#00A99D] text-white font-bold py-3 rounded-2xl text-sm"
+            >
+              Ver carteira
+            </Link>
+          </div>
+        )}
+
+        {candidatura?.estado === "ACEITE" && plantao.estado !== "EM_ANDAMENTO" && plantao.estado !== "CONCLUIDO" && (
           <div className="space-y-2">
             <div className="bg-green-50 border border-green-100 rounded-2xl px-4 py-3 text-center">
               <CheckCircle2 size={20} className="text-green-500 mx-auto mb-1" strokeWidth={2} />
