@@ -13,7 +13,9 @@ type Sala = {
   disponivel: boolean;
   avaliacaoMedia: number;
   totalAvaliacoes: number;
-  clinica: { id: string; nome: string; cidade: string; verified: boolean };
+  clinica: { id: string; nome: string; cidade: string; verified: boolean } | null;
+  consultorio: { id: string; nome: string; cidade: string; verified: boolean } | null;
+  proprietario: { id: string; nome: string; cidade: string; verified: boolean } | null;
   equipamentos: Record<string, boolean>;
 };
 
@@ -51,8 +53,8 @@ function SalaCard({ sala }: { sala: Sala }) {
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1">
-              <p className="font-bold text-sm text-gray-900 truncate">{sala.clinica.nome}</p>
-              {sala.clinica.verified && (
+              <p className="font-bold text-sm text-gray-900 truncate">{sala.proprietario?.nome ?? "–"}</p>
+              {sala.proprietario?.verified && (
                 <BadgeCheck size={13} strokeWidth={2} className="text-emerald-500 shrink-0" />
               )}
             </div>
