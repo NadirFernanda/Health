@@ -30,7 +30,6 @@ export async function GET(request: NextRequest) {
 
   const where = {
     estado: "ABERTO" as const,
-    dataInicio: { gt: agora },
     // Exclude the doctor's own published shifts, but keep clinica-published ones (profissionalPublicadorId = null)
     ...(excluirProfissionalId
       ? { OR: [{ profissionalPublicadorId: null }, { profissionalPublicadorId: { not: excluirProfissionalId } }] }
