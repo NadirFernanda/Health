@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { requireSession, getClinicaFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { criarNotificacaoComPush } from "@/lib/push";
+import { recalculateRevenueForProfessional } from "@/lib/payment-service";
 
 export async function POST(
   request: NextRequest,
@@ -36,44 +37,43 @@ export async function POST(
     return Response.json({ error: "O médico ainda não terminou o plantão" }, { status: 409 });
   }
 
-  // Find existing escrow — try by plantaoId alone (simplest, most reliable)
-  let escrow = await prisma.pagamento.findFirst({
+  // Verificar se já foi liberado
+  const jaLiberado = await prisma.pagamento.findFirst({
+    where: { plantaoId, liberadoEm: { not: null } },
+  });
+  if (jaLiberado) {
+    return Response.json({ error: "Pagamento já foi liberado anteriormente" }, { status: 409 });
+  }
+
+  // Encontrar pagamento existente ou preparar para criar
+  const escrow = await prisma.pagamento.findFirst({
     where: { plantaoId, liberadoEm: null },
     orderBy: { criadoEm: "desc" },
   });
 
-  // Check if already released
-  if (!escrow) {
-    const jaLiberado = await prisma.pagamento.findFirst({
-      where: { plantaoId, liberadoEm: { not: null } },
-    });
-    if (jaLiberado) {
-      return Response.json({ error: "Pagamento já foi liberado anteriormente" }, { status: 409 });
-    }
-  }
-
   const valorBruto = candidatura.plantao.valorKwanzas;
   const comissao = Math.round(valorBruto * 0.10);
   const valorLiquido = escrow?.valorLiquidoAoa ?? (valorBruto - comissao);
+  const profId = candidatura.profissional.id;
 
   await prisma.$transaction(async (tx) => {
+    // 1. Criar ou actualizar o pagamento
     if (escrow) {
       await tx.pagamento.update({
         where: { id: escrow.id },
         data: {
           liberadoEm: new Date(),
-          beneficiarioProfissionalId: candidatura.profissional.id,
+          beneficiarioProfissionalId: profId,
           candidaturaId,
         },
       });
     } else {
-      // No pagamento record exists — create and release in one step
       await tx.pagamento.create({
         data: {
           tipo: "TURNO",
           plantaoId,
           candidaturaId,
-          beneficiarioProfissionalId: candidatura.profissional.id,
+          beneficiarioProfissionalId: profId,
           valorBrutoAoa: valorBruto,
           comissaoAoa: comissao,
           valorLiquidoAoa: valorLiquido,
@@ -84,11 +84,37 @@ export async function POST(
       });
     }
 
+    // 2. Creditar carteira do médico
+    await tx.profissional.update({
+      where: { id: profId },
+      data: {
+        saldoCarteira: { increment: valorLiquido },
+        saldoCarteiraCentavos: { increment: BigInt(valorLiquido) * 100n },
+        totalPlantoes: { increment: 1 },
+      },
+    });
+
+    // 3. Registar transação
+    await tx.transacaoCarteira.create({
+      data: {
+        profissionalId: profId,
+        tipo: "CREDITO",
+        valorCentavos: BigInt(valorLiquido) * 100n,
+        descricao: `Plantão concluído — ${candidatura.plantao.especialidade} — ${valorLiquido.toLocaleString()} AOA`,
+        referencia: plantaoId,
+        estado: "PROCESSADO",
+      },
+    });
+
+    // 4. Recalcular receita
+    await recalculateRevenueForProfessional(profId, tx as any);
+
+    // 5. Notificar o médico
     await criarNotificacaoComPush(tx, {
       userId: candidatura.profissional.userId,
       tipo: "PAGAMENTO",
-      titulo: "Pagamento liberado!",
-      corpo: `O teu pagamento de ${valorLiquido.toLocaleString()} AOA pelo plantão de ${candidatura.plantao.especialidade} foi liberado.`,
+      titulo: "Pagamento recebido!",
+      corpo: `Recebeste ${valorLiquido.toLocaleString()} AOA pelo plantão de ${candidatura.plantao.especialidade}. O valor está disponível na tua carteira.`,
       href: `/medico/ganhos`,
     });
   });
