@@ -43,9 +43,10 @@ export default function AdminMedicos() {
   const [lista, setLista]   = useState<Medico[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [actionLoading, setActionLoading] = useState<string | null>(null); // id of doctor being actioned
+  const [actionLoading, setActionLoading] = useState<string | null>(null); // profissional id
   const [actionError, setActionError] = useState<{ id: string; msg: string } | null>(null);
   const [rejecting, setRejecting] = useState<{ id: string; motivo: string } | null>(null);
+  const [docLoading, setDocLoading] = useState<string | null>(null); // documentoId
 
   const carregarLista = useCallback(async () => {
     setLoading(true);
@@ -71,6 +72,32 @@ export default function AdminMedicos() {
   }, []);
 
   useEffect(() => { carregarLista(); }, [carregarLista]);
+
+  const atualizarDoc = async (medicoId: string, docId: string, a: "APROVAR" | "REJEITAR") => {
+    setDocLoading(docId);
+    try {
+      const res = await fetch(`/api/admin/medicos/documentos/${docId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ acao: a }),
+      });
+      if (!res.ok) return;
+      setLista((prev) =>
+        prev.map((m) => {
+          if (m.id !== medicoId) return m;
+          return {
+            ...m,
+            documentos: m.documentos.map((d) =>
+              d.id === docId ? { ...d, estado: a === "APROVAR" ? "APROVADO" : "REJEITADO" } : d
+            ),
+          };
+        })
+      );
+    } finally {
+      setDocLoading(null);
+    }
+  };
 
   const acao = async (id: string, a: string, motivo?: string) => {
     setActionLoading(id);
@@ -184,23 +211,41 @@ export default function AdminMedicos() {
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Documentos</p>
                 {m.documentos.map((doc) => {
                   const est = DOC_ESTADO[doc.estado] ?? DOC_ESTADO.PENDENTE;
+                  const isLoadingDoc = docLoading === doc.id;
                   return (
-                    <a
-                      key={doc.id}
-                      href={`/api/admin/medicos/documentos/${doc.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between gap-2 bg-gray-50 hover:bg-gray-100 rounded-xl px-3 py-2 transition-colors group"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
+                    <div key={doc.id} className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2">
+                      <a
+                        href={`/api/admin/medicos/documentos/${doc.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 min-w-0 flex-1 group"
+                      >
                         <FileText size={13} strokeWidth={1.75} className="text-gray-400 shrink-0" />
                         <span className="text-xs text-gray-700 truncate">{DOC_LABELS[doc.tipo] ?? doc.tipo}</span>
-                      </div>
+                        <ExternalLink size={10} strokeWidth={2} className="text-gray-300 group-hover:text-gray-500 transition-colors shrink-0" />
+                      </a>
                       <div className="flex items-center gap-1.5 shrink-0">
                         <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${est.cls}`}>{est.label}</span>
-                        <ExternalLink size={11} strokeWidth={2} className="text-gray-300 group-hover:text-gray-500 transition-colors" />
+                        {doc.estado === "PENDENTE" && (
+                          <>
+                            <button
+                              disabled={isLoadingDoc}
+                              onClick={() => atualizarDoc(m.id, doc.id, "APROVAR")}
+                              className="text-[10px] font-bold bg-green-100 hover:bg-green-200 text-green-700 px-1.5 py-0.5 rounded-full disabled:opacity-50 transition-colors"
+                            >
+                              {isLoadingDoc ? <Loader2 size={9} className="animate-spin" /> : "✓"}
+                            </button>
+                            <button
+                              disabled={isLoadingDoc}
+                              onClick={() => atualizarDoc(m.id, doc.id, "REJEITAR")}
+                              className="text-[10px] font-bold bg-red-100 hover:bg-red-200 text-red-600 px-1.5 py-0.5 rounded-full disabled:opacity-50 transition-colors"
+                            >
+                              {isLoadingDoc ? <Loader2 size={9} className="animate-spin" /> : "✕"}
+                            </button>
+                          </>
+                        )}
                       </div>
-                    </a>
+                    </div>
                   );
                 })}
               </div>

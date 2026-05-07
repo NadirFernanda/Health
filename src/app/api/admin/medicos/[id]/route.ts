@@ -28,6 +28,11 @@ export async function PATCH(
 
   if (acao === "APROVAR") {
     await prisma.$transaction([
+      // Approve all still-pending documents
+      prisma.documento.updateMany({
+        where: { profissionalId: id, estado: "PENDENTE" },
+        data: { estado: "APROVADO" },
+      }),
       prisma.profissional.update({
         where: { id },
         data: {
@@ -60,6 +65,11 @@ export async function PATCH(
   } else if (acao === "REJEITAR") {
     const motivoFinal = motivo?.trim() || "Documentos ou credenciais não estão em conformidade.";
     await prisma.$transaction([
+      // Mark all pending documents as rejected
+      prisma.documento.updateMany({
+        where: { profissionalId: id, estado: "PENDENTE" },
+        data: { estado: "REJEITADO" },
+      }),
       prisma.profissional.update({
         where: { id },
         data: {
