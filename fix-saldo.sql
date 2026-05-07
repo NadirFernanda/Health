@@ -1,14 +1,12 @@
--- Recalcular saldoCarteira a partir das TransacaoCarteira (CREDITO + PROCESSADO)
--- e também criar TransacaoCarteira para pagamentos liberados que ainda não a têm.
-
--- 1. Criar TransacaoCarteira em falta
-INSERT INTO "TransacaoCarteira" (id, "profissionalId", tipo, "valorCentavos", descricao, referencia, estado, "criadoEm")
+-- Passo 1: criar registos de TransacaoCarteira em falta
+INSERT INTO "TransacaoCarteira"
+  (id, "profissionalId", tipo, "valorCentavos", descricao, referencia, estado, "criadoEm")
 SELECT
   gen_random_uuid()::text,
   p."beneficiarioProfissionalId",
   'CREDITO',
   p."valorLiquidoAoa"::bigint * 100,
-  'Plantao concluido (correcao)',
+  'Plantao concluido',
   p."plantaoId",
   'PROCESSADO',
   NOW()
@@ -21,7 +19,7 @@ WHERE p."liberadoEm" IS NOT NULL
       AND tc.referencia = p."plantaoId"
   );
 
--- 2. Recalcular saldoCarteira como soma de todos os CREDITOs PROCESSADOS
+-- Passo 2: recalcular saldoCarteira a partir das transacoes
 UPDATE "Profissional" prof
 SET
   "saldoCarteira"         = COALESCE(sub.total_aoa, 0),
@@ -29,15 +27,17 @@ SET
 FROM (
   SELECT
     "profissionalId",
-    SUM("valorCentavos"::bigint / 100)   AS total_aoa,
-    SUM("valorCentavos"::bigint)         AS total_centavos
+    SUM("valorCentavos"::bigint / 100) AS total_aoa,
+    SUM("valorCentavos"::bigint)       AS total_centavos
   FROM "TransacaoCarteira"
   WHERE tipo = 'CREDITO' AND estado = 'PROCESSADO'
   GROUP BY "profissionalId"
 ) sub
 WHERE prof.id = sub."profissionalId";
 
--- 3. Mostrar resultado
-SELECT prof.id, prof.nome, prof."saldoCarteira", prof."saldoCarteiraCentavos"
+-- Passo 3: mostrar resultado
+SELECT prof.nome, prof."saldoCarteira", COUNT(tc.id) AS transacoes
 FROM "Profissional" prof
-WHERE prof."saldoCarteira" > 0;
+LEFT JOIN "TransacaoCarteira" tc ON tc."profissionalId" = prof.id
+WHERE prof."saldoCarteira" > 0
+GROUP BY prof.nome, prof."saldoCarteira";
