@@ -4,7 +4,7 @@ import { PlantaoCard } from "@/components/plantao-card";
 import Link from "next/link";
 import { Bell, User, BadgeCheck, Clock, XCircle, AlertCircle, HeadphonesIcon } from "lucide-react";
 
-type Perfil = { nome: string; verified: boolean; estadoVerificacao: string; disponivelAgora: boolean; saldoCarteira: number };
+type Perfil = { nome: string; verified: boolean; estadoVerificacao: string; disponivelAgora: boolean; saldoCarteira: number; totalPlantoes: number };
 type PlantaoAPI = {
   id: string; tipoProfissional: string; especialidade: string; dataInicio: string; dataFim: string;
   valorKwanzas: number; vagas: number; vagasPreenchidas: number; estado: string;
@@ -21,7 +21,6 @@ export default function MedicoDashboard() {
   const [disponivel, setDisponivel] = useState(false);
   const [plantoes, setPlantoes] = useState<PlantaoAPI[]>([]);
   const [ganhosMes, setGanhosMes] = useState(0);
-  const [plantoesMes, setPlantoesMes] = useState(0);
 
   useEffect(() => {
     fetch("/api/medico/perfil").then((r) => r.ok ? r.json() : null).then((d) => {
@@ -30,11 +29,6 @@ export default function MedicoDashboard() {
     fetch("/api/plantoes?pagina=1").then((r) => r.ok ? r.json() : {}).then((d: { plantoes?: PlantaoAPI[] } | PlantaoAPI[]) => {
       const lista: PlantaoAPI[] = Array.isArray(d) ? d : ((d as { plantoes?: PlantaoAPI[] }).plantoes ?? []);
       setPlantoes(lista.filter((p) => p.estado === "ABERTO").slice(0, 5));
-    }).catch(() => {});
-    fetch("/api/medico/candidaturas").then((r) => r.ok ? r.json() : []).then((d) => {
-      if (Array.isArray(d)) {
-        setPlantoesMes(d.filter((c: { estado: string }) => c.estado === "ACEITE").length);
-      }
     }).catch(() => {});
     fetch("/api/medico/ganhos").then((r) => r.ok ? r.json() : null).then((d) => {
       if (d?.transacoes) {
@@ -122,8 +116,8 @@ export default function MedicoDashboard() {
         {/* Resumo */}
         <div className="grid grid-cols-2 gap-3 mt-4">
           <div className="bg-white/15 rounded-xl p-3">
-            <p className="text-blue-200 text-xs">Plantões este mês</p>
-            <p className="text-white text-2xl font-bold mt-0.5">{plantoesMes}</p>
+            <p className="text-blue-200 text-xs">Plantões feitos</p>
+            <p className="text-white text-2xl font-bold mt-0.5">{perfil?.totalPlantoes ?? 0}</p>
           </div>
           <div className="bg-white/15 rounded-xl p-3">
             <p className="text-blue-200 text-xs">Ganhos este mês</p>

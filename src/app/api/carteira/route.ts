@@ -54,7 +54,11 @@ export async function GET() {
     saldo: saldoAoa,
     pendente,
     transacoes: prof.transacoes.map((t) => ({
-      ...t,
+      id: t.id,
+      tipo: t.tipo,
+      descricao: t.descricao,
+      estado: t.estado,
+      referencia: t.referencia ?? null,
       criadoEm: t.criadoEm.toISOString(),
       valorAoa: Number(t.valorCentavos) / 100,
     })),
