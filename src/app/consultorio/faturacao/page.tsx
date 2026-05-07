@@ -27,7 +27,7 @@ export default async function ConsultorioFaturacaoPage() {
   });
 
   const totalBruto = reservas.reduce((s, r) => s + r.valorTotal, 0);
-  const comissao = Math.round(totalBruto * 0.15);
+  const comissao = Math.round(totalBruto * 0.10);
   const totalLiquido = totalBruto - comissao;
 
   return (
@@ -41,7 +41,7 @@ export default async function ConsultorioFaturacaoPage() {
           <p className="text-3xl font-bold mt-1">{formatAOA(totalLiquido)}</p>
           <div className="mt-3 flex gap-4 text-xs text-teal-200">
             <span>Bruto: {formatAOA(totalBruto)}</span>
-            <span>Comissão (15%): {formatAOA(comissao)}</span>
+            <span>Comissão (10%): {formatAOA(comissao)}</span>
           </div>
         </div>
 
@@ -79,7 +79,7 @@ export default async function ConsultorioFaturacaoPage() {
                           {inicio.toLocaleDateString("pt-AO", { day: "2-digit", month: "short", year: "numeric" })}
                         </p>
                       </div>
-                      <p className="font-bold text-[#00A99D] text-sm">+{formatAOA(r.valorTotal - Math.round(r.valorTotal * 0.15))}</p>
+                      <p className="font-bold text-[#00A99D] text-sm">+{formatAOA(r.valorTotal - Math.round(r.valorTotal * 0.10))}</p>
                     </div>
                   </div>
                 );

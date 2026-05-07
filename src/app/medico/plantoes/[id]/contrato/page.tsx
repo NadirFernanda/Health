@@ -46,7 +46,7 @@ export default async function ContratoPage({
   const { plantao } = candidatura;
   const clinica = plantao.clinica;
   const duracao = calcularDuracao(plantao.dataInicio, plantao.dataFim);
-  const valorLiquido = Math.round(plantao.valorKwanzas * 0.85);
+  const valorLiquido = Math.round(plantao.valorKwanzas * 0.90);
   const dataFormatada = formatData(plantao.dataInicio);
   const horaInicio = formatHora(plantao.dataInicio);
   const horaFim = formatHora(plantao.dataFim);
@@ -141,7 +141,7 @@ export default async function ContratoPage({
             <p className="font-semibold text-gray-900 text-xs uppercase tracking-wide mb-2">Cláusula 4 — Remuneração</p>
             <div className="bg-green-50 rounded-xl p-3 text-xs space-y-1">
               <p><span className="font-semibold">Valor bruto:</span> {formatAOA(plantao.valorKwanzas)}</p>
-              <p><span className="font-semibold">Comissão plataforma (15%):</span> {formatAOA(Math.round(plantao.valorKwanzas * 0.15))}</p>
+              <p><span className="font-semibold">Comissão plataforma (10%):</span> {formatAOA(Math.round(plantao.valorKwanzas * 0.10))}</p>
               <p><span className="font-semibold text-green-700">Valor líquido a receber:</span> <strong className="text-green-700">{formatAOA(valorLiquido)}</strong></p>
             </div>
             <p className="text-xs text-gray-400 mt-1.5">O pagamento será processado via plataforma Medfreela após a conclusão do plantão.</p>

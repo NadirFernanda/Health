@@ -1,9 +1,7 @@
 import { NextRequest } from "next/server";
 import { requireSession, getProfissionalFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
-import { sendPushToUser } from "@/lib/push";
-
-const TAXA_RESERVA_PERCENTAGEM = 0.10;
+import { criarNotificacaoComPush } from "@/lib/push";
 
 export async function POST(
   request: NextRequest,
@@ -16,7 +14,7 @@ export async function POST(
   if (!prof) return Response.json({ error: "Perfil não encontrado" }, { status: 404 });
 
   const { candidaturaId } = await params;
-  const { acao, metodo } = await request.json(); // "ASSINAR" | "RECUSAR", metodo opcional
+  const { acao } = await request.json(); // "ASSINAR" | "RECUSAR"
 
   if (!["ASSINAR", "RECUSAR"].includes(acao)) {
     return Response.json({ error: "Ação inválida" }, { status: 400 });
@@ -37,7 +35,6 @@ export async function POST(
   }
 
   if (acao === "RECUSAR") {
-    let clinicaUserId: string | null = null;
     await prisma.$transaction(async (tx) => {
       await tx.candidatura.update({
         where: { id: candidaturaId },
@@ -50,77 +47,75 @@ export async function POST(
           select: { userId: true },
         });
         if (clinicaUser) {
-          clinicaUserId = clinicaUser.userId;
-          await tx.notificacao.create({
-            data: {
-              userId: clinicaUser.userId,
-              tipo: "CONTRATO",
-              titulo: "Contrato recusado",
-              corpo: `${prof.nome} recusou o contrato para o plantão de ${candidatura.plantao.especialidade}.`,
-              href: `/clinica/plantoes/${candidatura.plantaoId}`,
-            },
+          await criarNotificacaoComPush(tx, {
+            userId: clinicaUser.userId,
+            tipo: "CONTRATO",
+            titulo: "Contrato recusado",
+            corpo: `${prof.nome} recusou o contrato para o plantão de ${candidatura.plantao.especialidade}.`,
+            href: `/clinica/plantoes/${candidatura.plantaoId}`,
           });
         }
       }
     });
-    if (clinicaUserId) {
-      sendPushToUser(clinicaUserId, {
-        title: "Contrato recusado",
-        body: `${prof.nome} recusou o contrato para o plantão de ${candidatura.plantao.especialidade}.`,
-        href: `/clinica/plantoes/${candidatura.plantaoId}`,
-        tag: "CONTRATO",
-      }).catch(() => {});
-    }
     return Response.json({ estado: "RECUSADO" });
   }
 
-  // ASSINAR — médico aceita os termos, mas precisa de pagar uma taxa de reserva.
-  // A candidatura fica em AGUARDANDO_PAGAMENTO até o admin confirmar o pagamento.
+  // ASSINAR — aceitar directamente sem pagamento antecipado (comissão de 10% deduzida no escrow)
   const plantao = candidatura.plantao;
-  const taxaReserva = Math.round(plantao.valorKwanzas * TAXA_RESERVA_PERCENTAGEM);
-  const metodoPagamento = (["MULTICAIXA_EXPRESS", "TPA"].includes(metodo) ? metodo : "TRANSFERENCIA_BANCARIA") as "MULTICAIXA_EXPRESS" | "TPA" | "TRANSFERENCIA_BANCARIA";
 
-  let pagamentoId: string;
-
-  try {
-    const result = await prisma.$transaction(async (tx) => {
-      await tx.candidatura.update({
-        where: { id: candidaturaId },
-        data: {
-          estado: "AGUARDANDO_PAGAMENTO",
-          respondidoEm: new Date(),
-          contratoAssinadoEm: new Date(),
-        },
-      });
-
-      const pag = await tx.pagamento.create({
-        data: {
-          tipo: "TURNO",
-          plantaoId: plantao.id,
-          candidaturaId,
-          beneficiarioProfissionalId: null,
-          valorBrutoAoa: taxaReserva,
-          comissaoAoa: taxaReserva,
-          valorLiquidoAoa: 0,
-          metodo: metodoPagamento,
-          estado: "PENDENTE",
-        },
-      });
-
-      return pag;
+  await prisma.$transaction(async (tx) => {
+    await tx.candidatura.update({
+      where: { id: candidaturaId },
+      data: {
+        estado: "ACEITE",
+        respondidoEm: new Date(),
+        contratoAssinadoEm: new Date(),
+      },
     });
 
-    pagamentoId = result.id;
-  } catch (err) {
-    console.error("[contrato] transaction failed:", err);
-    return Response.json({ error: "Erro ao processar contrato. Tente novamente." }, { status: 500 });
-  }
+    const updated = await tx.plantao.update({
+      where: { id: plantao.id },
+      data: { vagasPreenchidas: { increment: 1 } },
+      select: { vagasPreenchidas: true, vagas: true },
+    });
 
-  return Response.json({
-    estado: "AGUARDANDO_PAGAMENTO",
-    pagamentoId,
-    taxaReserva,
-    especialidade: plantao.especialidade,
-    metodo: metodoPagamento,
+    if (updated.vagasPreenchidas >= updated.vagas) {
+      await tx.plantao.update({ where: { id: plantao.id }, data: { estado: "FECHADO" } });
+      await tx.candidatura.updateMany({
+        where: { plantaoId: plantao.id, estado: "PENDENTE", id: { not: candidaturaId } },
+        data: { estado: "RECUSADO", respondidoEm: new Date() },
+      });
+    }
+
+    // Ligar médico como beneficiário do escrow da clínica
+    const escrow = await tx.pagamento.findFirst({
+      where: { plantaoId: plantao.id, estado: "CONFIRMADO", beneficiarioProfissionalId: null, candidaturaId: null },
+    });
+    if (escrow) {
+      await tx.pagamento.update({
+        where: { id: escrow.id },
+        data: { beneficiarioProfissionalId: prof.id, candidaturaId },
+      });
+    }
+
+    await criarNotificacaoComPush(tx, {
+      userId: prof.userId,
+      tipo: "CONTRATO",
+      titulo: "Contrato assinado!",
+      corpo: `Assinaste o contrato para o plantão de ${plantao.especialidade}. Estás confirmado.`,
+      href: `/medico/plantoes/${plantao.id}`,
+    });
+
+    if (plantao.clinica?.userId) {
+      await criarNotificacaoComPush(tx, {
+        userId: plantao.clinica.userId,
+        tipo: "CONTRATO",
+        titulo: "Médico confirmado!",
+        corpo: `${prof.nome} assinou o contrato para o plantão de ${plantao.especialidade}.`,
+        href: `/clinica/plantoes/${plantao.id}`,
+      });
+    }
   });
+
+  return Response.json({ estado: "ACEITE" });
 }

@@ -1,4 +1,3 @@
-import { prisma } from "@/lib/db";
 import { criarNotificacaoComPush } from "@/lib/push";
 import type { Prisma } from "@/generated/prisma/client";
 
@@ -92,57 +91,4 @@ export async function executarConfirmacao(
     return;
   }
 
-  // Taxa de reserva do médico → candidatura ACEITE
-  if (pagamento.candidaturaId && pagamento.candidatura?.estado === "AGUARDANDO_PAGAMENTO") {
-    const cand = pagamento.candidatura;
-    const plantaoCand = cand.plantao;
-
-    await tx.candidatura.update({
-      where: { id: cand.id },
-      data: { estado: "ACEITE", respondidoEm: new Date() },
-    });
-
-    const updated = await tx.plantao.update({
-      where: { id: plantaoCand.id },
-      data: { vagasPreenchidas: { increment: 1 } },
-      select: { vagasPreenchidas: true, vagas: true },
-    });
-
-    if (updated.vagasPreenchidas >= updated.vagas) {
-      await tx.plantao.update({ where: { id: plantaoCand.id }, data: { estado: "FECHADO" } });
-      await tx.candidatura.updateMany({
-        where: { plantaoId: plantaoCand.id, estado: "PENDENTE", id: { not: cand.id } },
-        data: { estado: "RECUSADO", respondidoEm: new Date() },
-      });
-    }
-
-    // Ligar médico como beneficiário do escrow da clínica
-    const escrow = await tx.pagamento.findFirst({
-      where: { plantaoId: plantaoCand.id, estado: "CONFIRMADO", beneficiarioProfissionalId: null, candidaturaId: null },
-    });
-    if (escrow) {
-      await tx.pagamento.update({
-        where: { id: escrow.id },
-        data: { beneficiarioProfissionalId: cand.profissional.id, candidaturaId: cand.id },
-      });
-    }
-
-    await criarNotificacaoComPush(tx, {
-      userId: cand.profissional.userId,
-      tipo: "PAGAMENTO",
-      titulo: "Taxa confirmada — contrato activo!",
-      corpo: `A tua taxa de reserva para o plantão de ${plantaoCand.especialidade} foi confirmada. O contrato está activo.`,
-      href: `/medico/plantoes/${plantaoCand.id}`,
-    });
-
-    if (plantaoCand.clinica?.userId) {
-      await criarNotificacaoComPush(tx, {
-        userId: plantaoCand.clinica.userId,
-        tipo: "CONTRATO",
-        titulo: "Médico confirmado!",
-        corpo: `${cand.profissional.nome} confirmou a presença no plantão de ${plantaoCand.especialidade}.`,
-        href: `/clinica/plantoes/${plantaoCand.id}`,
-      });
-    }
-  }
 }

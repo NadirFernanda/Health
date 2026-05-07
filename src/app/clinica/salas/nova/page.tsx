@@ -148,7 +148,7 @@ export default function NovaSala() {
               min={1000}
               className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-brand-500"
             />
-            {preco && <p className="text-xs text-gray-400 mt-1">Comissão MedFreela (15%): {Math.round(Number(preco) * 0.15).toLocaleString()} AOA já incluída</p>}
+            {preco && <p className="text-xs text-gray-400 mt-1">Comissão MedFreela (10%): {Math.round(Number(preco) * 0.10).toLocaleString()} AOA já incluída</p>}
           </div>
 
           <div>

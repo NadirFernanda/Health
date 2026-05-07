@@ -1,24 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PenLine, X, AlertTriangle, CheckCircle2 } from "lucide-react";
-import {
-  MetodoPagamentoSelector,
-  TransferenciaBancariaInfo,
-  SimulatedPaymentGateway,
-  type MetodoPagamento,
-} from "@/components/payment-gateway";
-
-function formatAOA(v: number) {
-  return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
-}
-
-type PagamentoInfo = {
-  pagamentoId: string;
-  taxaReserva: number;
-  especialidade: string;
-  metodo: MetodoPagamento;
-};
+import { PenLine, X, AlertTriangle } from "lucide-react";
 
 export default function ContratoActions({
   candidaturaId,
@@ -33,9 +16,9 @@ export default function ContratoActions({
   const [loading, setLoading] = useState<"ASSINAR" | "RECUSAR" | null>(null);
   const [aceito, setAceito] = useState(false);
   const [error, setError] = useState("");
-  const [metodo, setMetodo] = useState<MetodoPagamento>("MULTICAIXA_EXPRESS");
-  const [pagamentoInfo, setPagamentoInfo] = useState<PagamentoInfo | null>(null);
-  const [pagamentoSucesso, setPagamentoSucesso] = useState(false);
+
+  // valorKwanzas is referenced only to keep the prop typed (used by parent)
+  void valorKwanzas;
 
   async function handleAction(acao: "ASSINAR" | "RECUSAR") {
     if (acao === "ASSINAR" && !aceito) {
@@ -47,7 +30,7 @@ export default function ContratoActions({
     const res = await fetch(`/api/contrato/${candidaturaId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ acao, metodo }),
+      body: JSON.stringify({ acao }),
     });
     setLoading(null);
     if (!res.ok) {
@@ -55,81 +38,12 @@ export default function ContratoActions({
       setError((d as { error?: string }).error ?? "Erro ao processar. Tente novamente.");
       return;
     }
-    const data = await res.json() as {
-      estado: string;
-      pagamentoId?: string;
-      taxaReserva?: number;
-      especialidade?: string;
-      metodo?: MetodoPagamento;
-    };
-
-    if (acao === "RECUSAR") {
-      router.push(`/medico/plantoes/${plantaoId}`);
-      router.refresh();
-      return;
-    }
-
-    setPagamentoInfo({
-      pagamentoId: data.pagamentoId!,
-      taxaReserva: data.taxaReserva ?? Math.round(valorKwanzas * 0.10),
-      especialidade: data.especialidade ?? "",
-      metodo: data.metodo ?? metodo,
-    });
-  }
-
-  if (pagamentoSucesso) {
-    return (
-      <div className="flex flex-col items-center py-8 gap-4 text-center">
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-          <CheckCircle2 size={32} strokeWidth={1.5} className="text-green-500" />
-        </div>
-        <p className="font-bold text-gray-900">Pagamento confirmado!</p>
-        <p className="text-xs text-gray-400 bg-gray-50 rounded-xl px-3 py-2">
-          A taxa de reserva está retida em escrow. O teu lugar está garantido.
-        </p>
-        <button
-          onClick={() => { router.push(`/medico/plantoes/${plantaoId}`); router.refresh(); }}
-          className="w-full bg-[#0B3C74] text-white font-bold py-4 rounded-2xl"
-        >
-          Ver o meu plantão
-        </button>
-        {pagamentoInfo && (
-          <a href={`/recibo/${pagamentoInfo.pagamentoId}`} className="text-sm text-[#0B3C74] font-semibold underline">
-            Ver comprovativo de pagamento
-          </a>
-        )}
-      </div>
-    );
-  }
-
-  if (pagamentoInfo) {
-    if (pagamentoInfo.metodo === "TRANSFERENCIA_BANCARIA") {
-      return (
-        <TransferenciaBancariaInfo
-          pagamentoId={pagamentoInfo.pagamentoId}
-          valor={pagamentoInfo.taxaReserva}
-          onVerPlantoes={() => { router.push(`/medico/plantoes/${plantaoId}`); router.refresh(); }}
-        />
-      );
-    }
-    return (
-      <SimulatedPaymentGateway
-        pagamentoId={pagamentoInfo.pagamentoId}
-        metodo={pagamentoInfo.metodo}
-        valor={pagamentoInfo.taxaReserva}
-        onSucesso={() => setPagamentoSucesso(true)}
-        onErro={() => {}}
-      />
-    );
+    router.push(`/medico/plantoes/${plantaoId}`);
+    router.refresh();
   }
 
   return (
     <div className="space-y-3">
-      <div className="bg-blue-50 border border-blue-100 rounded-2xl p-3 text-xs text-blue-700 space-y-1">
-        <p className="font-bold">Taxa de reserva: {formatAOA(Math.round(valorKwanzas * 0.10))}</p>
-        <p>Ao assinar, será cobrada uma taxa de 10% do valor do plantão como garantia de presença.</p>
-      </div>
-
       <label className="flex items-start gap-3 cursor-pointer">
         <div
           onClick={() => setAceito(!aceito)}
@@ -144,11 +58,9 @@ export default function ContratoActions({
           )}
         </div>
         <span className="text-xs text-gray-600 leading-relaxed">
-          Li e aceito os termos do contrato acima. Compreendo que ao assinar me comprometo a comparecer no plantão na data e hora indicados e a pagar a taxa de reserva.
+          Li e aceito os termos do contrato acima. Compreendo que ao assinar me comprometo a comparecer no plantão na data e hora indicados.
         </span>
       </label>
-
-      <MetodoPagamentoSelector value={metodo} onChange={setMetodo} />
 
       {error && (
         <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl px-3 py-2.5 text-xs text-red-600">
@@ -163,7 +75,7 @@ export default function ContratoActions({
         className="w-full bg-[#0B3C74] text-white font-bold py-4 rounded-2xl text-base flex items-center justify-center gap-2 disabled:opacity-50 transition-opacity active:scale-[0.99]"
       >
         <PenLine size={18} strokeWidth={2} />
-        {loading === "ASSINAR" ? "A assinar…" : "ASSINAR E PAGAR"}
+        {loading === "ASSINAR" ? "A assinar…" : "ASSINAR CONTRATO"}
       </button>
 
       <button
@@ -174,10 +86,6 @@ export default function ContratoActions({
         <X size={15} strokeWidth={2} />
         {loading === "RECUSAR" ? "A recusar…" : "Recusar contrato"}
       </button>
-
-      <p className="text-center text-xs text-gray-400">
-        Ao assinar, será cobrada uma taxa de reserva de {formatAOA(Math.round(valorKwanzas * 0.10))}. O teu salário de {formatAOA(Math.round(valorKwanzas * 0.85))} será pago após a conclusão do plantão.
-      </p>
     </div>
   );
 }

@@ -65,7 +65,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
   if (!sala) return <div className="p-8 text-center text-gray-400">Sala não encontrada.</div>;
 
   const valorTotal = sala.precoPorHora * duracao;
-  const comissao = Math.round(valorTotal * 0.15);
+  const comissao = Math.round(valorTotal * 0.10);
 
   const equipList = [
     { label: "Maca", ok: sala.equipamentos.maca },
@@ -196,7 +196,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
               <span>Total</span>
               <span className="text-[#0B3C74]">{formatAOA(valorTotal)}</span>
             </div>
-            <p className="text-xs text-gray-400">Comissão Medfreela (15%): {formatAOA(comissao)} já incluída</p>
+            <p className="text-xs text-gray-400">Comissão Medfreela (10%): {formatAOA(comissao)} já incluída</p>
           </div>
 
           <MetodoPagamentoSelector value={metodo} onChange={setMetodo} />
