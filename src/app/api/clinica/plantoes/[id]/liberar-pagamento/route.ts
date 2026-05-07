@@ -33,12 +33,14 @@ export async function POST(
     return Response.json({ error: "Candidatura não encontrada ou não está no estado CONCLUIDO" }, { status: 404 });
   }
 
-  // Encontrar o pagamento escrow da clínica ligado a esta candidatura
+  // Encontrar o pagamento escrow — tenta por candidaturaId primeiro, depois por profissional
   const escrow = await prisma.pagamento.findFirst({
     where: {
       plantaoId,
-      candidaturaId,
-      beneficiarioProfissionalId: candidatura.profissional.id,
+      OR: [
+        { candidaturaId },
+        { beneficiarioProfissionalId: candidatura.profissional.id },
+      ],
       estado: "CONFIRMADO",
       liberadoEm: null,
     },
