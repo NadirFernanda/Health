@@ -25,10 +25,14 @@ const TIPO_LABEL: Record<TipoSala, string> = {
 
 const SLOTS = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00"];
 
+type Proprietario = { id: string; nome: string; cidade: string; morada: string | null; verified: boolean; rating: number };
+
 type Sala = {
   id: string; nome: string; tipo: TipoSala; precoPorHora: number; zona: string;
   descricao: string; disponivel: boolean; avaliacaoMedia: number; totalAvaliacoes: number;
-  clinica: { id: string; nome: string; cidade: string; morada: string | null; verified: boolean; rating: number };
+  clinica: Proprietario | null;
+  consultorio: Proprietario | null;
+  proprietario: Proprietario | null;
   equipamentos: Record<string, boolean>;
 };
 
@@ -128,7 +132,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
         )}
 
         <div className="mt-5 bg-white border border-gray-100 rounded-2xl px-4 py-4 text-sm text-gray-600 text-left w-full max-w-xs space-y-2.5">
-          <p className="flex items-center gap-2"><Building2 size={14} strokeWidth={1.75} className="text-gray-400 shrink-0" /> <span className="font-semibold">{sala.clinica.nome}</span></p>
+          <p className="flex items-center gap-2"><Building2 size={14} strokeWidth={1.75} className="text-gray-400 shrink-0" /> <span className="font-semibold">{sala.proprietario?.nome ?? "–"}</span></p>
           <p className="flex items-center gap-2"><MapPin size={14} strokeWidth={1.75} className="text-gray-400 shrink-0" /> {sala.zona}</p>
           <p className="flex items-center gap-2 font-bold text-[#0B3C74]"><span className="text-gray-400 font-normal">Total</span> {formatAOA(valorTotal)}</p>
         </div>
@@ -171,7 +175,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
           {/* Resumo */}
           <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] rounded-2xl px-5 py-5 text-white">
             <p className="text-blue-200 text-xs font-semibold uppercase tracking-wide">Resumo da reserva</p>
-            <p className="text-white font-black text-lg mt-1">{sala.clinica.nome} — {sala.nome}</p>
+            <p className="text-white font-black text-lg mt-1">{sala.proprietario?.nome ?? "–"} — {sala.nome}</p>
             <p className="text-blue-200 text-xs mt-0.5 flex items-center gap-1"><MapPin size={10} strokeWidth={1.75} />{sala.zona}</p>
             <div className="mt-3 flex items-end justify-between">
               <div>
@@ -272,12 +276,12 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
       <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] px-5 pt-2 pb-8 -mt-px">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-14 h-14 rounded-2xl bg-white/20 border-2 border-white/30 flex items-center justify-center text-2xl font-black text-white shadow-lg">
-            {sala.clinica.nome.charAt(0)}
+            {sala.proprietario?.nome?.charAt(0) ?? "–"}
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <p className="text-white font-bold text-base leading-tight">{sala.clinica.nome}</p>
-              {sala.clinica.verified && <BadgeCheck size={15} strokeWidth={2.5} className="text-emerald-300 shrink-0" />}
+              <p className="text-white font-bold text-base leading-tight">{sala.proprietario?.nome ?? "–"}</p>
+              {sala.proprietario?.verified && <BadgeCheck size={15} strokeWidth={2.5} className="text-emerald-300 shrink-0" />}
             </div>
             <p className="text-blue-200 text-xs mt-0.5 flex items-center gap-1"><MapPin size={10} strokeWidth={1.75} />{sala.zona}</p>
           </div>
