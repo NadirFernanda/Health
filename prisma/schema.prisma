@@ -87,33 +87,52 @@ model Profissional {
 }
 
 model Clinica {
-  id                  String      @id @default(cuid())
-  userId              String      @unique
+  id                  String              @id @default(cuid())
+  userId              String              @unique
   nome                String
   morada              String?
   cidade              String?
-  provincia           String      @default("Luanda")
+  provincia           String              @default("Luanda")
   logo                String?
-  rating              Float       @default(0)
-  totalAvaliacoes     Int         @default(0)
-  verified            Boolean     @default(false)
+  rating              Float               @default(0)
+  totalAvaliacoes     Int                 @default(0)
+  verified            Boolean             @default(false)
+  estadoVerificacao   String              @default("PENDENTE")
+  rejeicaoMotivo      String?
   alvara              String?
   bairro              String?
   contacto            String?
   descricao           String?
-  latitude            Decimal?    @db.Decimal(10, 7)
-  longitude           Decimal?    @db.Decimal(10, 7)
-  updatedEm           DateTime    @updatedAt
+  latitude            Decimal?            @db.Decimal(10, 7)
+  longitude           Decimal?            @db.Decimal(10, 7)
+  updatedEm           DateTime            @updatedAt
   website             String?
   zonaLuanda          String?
-  criadoEm            DateTime    @default(now())
-  avaliacoesRecebidas Avaliacao[] @relation("AlvoClinicaAvaliacao")
-  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  criadoEm            DateTime            @default(now())
+  avaliacoesRecebidas Avaliacao[]         @relation("AlvoClinicaAvaliacao")
+  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   plantoes            Plantao[]
   salas               Sala[]
+  documentos          ClinicaDocumento[]
 
   @@index([zonaLuanda])
   @@index([verified])
+  @@index([estadoVerificacao])
+}
+
+model ClinicaDocumento {
+  id           String          @id @default(cuid())
+  clinicaId    String
+  tipo         String
+  ficheiro     String?
+  estado       EstadoDocumento @default(NAO_ENVIADO)
+  criadoEm     DateTime        @default(now())
+  atualizadoEm DateTime        @updatedAt
+  clinica      Clinica         @relation(fields: [clinicaId], references: [id], onDelete: Cascade)
+
+  @@unique([clinicaId, tipo])
+  @@index([clinicaId])
+  @@index([estado])
 }
 
 model Consultorio {

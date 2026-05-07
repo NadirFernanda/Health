@@ -25,12 +25,43 @@ export async function GET(
     return new Response("Forbidden", { status: 403 });
   }
 
-  // Expected: medicos / {profId} / {filename}
-  if (parts.length !== 3 || parts[0] !== "medicos") {
+  // Expected: medicos/{profId}/{filename}  OR  clinicas/{clinicaId}/{filename}
+  if (parts.length !== 3 || !["medicos", "clinicas"].includes(parts[0])) {
     return new Response("Not Found", { status: 404 });
   }
 
-  const [, profId, filename] = parts;
+  const [tipo, ownerId, filename] = parts;
+
+  if (tipo === "clinicas") {
+    const session = await getAuthSession();
+    if (!session) return new Response("Não autorizado", { status: 401 });
+
+    if (session.role === "CLINICA") {
+      const clinica = await prisma.clinica.findUnique({ where: { userId: session.id }, select: { id: true } });
+      if (clinica?.id !== ownerId) return new Response("Proibido", { status: 403 });
+    } else if (session.role !== "ADMIN") {
+      return new Response("Proibido", { status: 403 });
+    }
+
+    const filePath = path.join(process.cwd(), "public", "uploads", "clinicas", ownerId, filename);
+    try {
+      const buffer = await fs.readFile(filePath);
+      const ext = path.extname(filename).toLowerCase();
+      const mime = MIME[ext] ?? "application/octet-stream";
+      return new Response(buffer, {
+        headers: {
+          "Content-Type": mime,
+          "Content-Disposition": `inline; filename="${filename}"`,
+          "Cache-Control": "private, no-store",
+          "X-Content-Type-Options": "nosniff",
+        },
+      });
+    } catch {
+      return new Response("Ficheiro não encontrado", { status: 404 });
+    }
+  }
+
+  const profId = ownerId;
 
   // Look up in DB to determine visibility
   const doc = await prisma.documento.findFirst({
@@ -51,7 +82,6 @@ export async function GET(
       });
       if (prof?.id !== profId) return new Response("Proibido", { status: 403 });
     } else if (session.role !== "ADMIN") {
-      // CLINICA / CONSULTORIO cannot access private docs
       return new Response("Proibido", { status: 403 });
     }
   }

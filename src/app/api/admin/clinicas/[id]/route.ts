@@ -29,7 +29,7 @@ export async function PATCH(
     await prisma.$transaction([
       prisma.clinica.update({
         where: { id },
-        data: { verified: true },
+        data: { verified: true, estadoVerificacao: "APROVADO" },
       }),
       prisma.user.update({
         where: { id: clinica.userId },
@@ -37,9 +37,10 @@ export async function PATCH(
       }),
     ]);
   } else if (acao === "REJEITAR") {
+    const { motivo } = body as { motivo?: string };
     await prisma.clinica.update({
       where: { id },
-      data: { verified: false },
+      data: { verified: false, estadoVerificacao: "REJEITADO", rejeicaoMotivo: motivo ?? null },
     });
   } else if (acao === "SUSPENDER") {
     await prisma.user.update({

@@ -21,6 +21,8 @@ type MedicoPendente = {
 };
 type ClinicaPendente = {
   id: string; nome: string; email: string; morada: string; alvara: string; criadoEm: string;
+  documentos: DocumentoPendente[];
+  estadoVerificacao: string;
 };
 
 type RejeicaoRazao =
@@ -130,37 +132,43 @@ function CardPendente({
             </div>
           </div>
 
-          {tipo === "profissional" && documentos && (
+          {documentos && documentos.length > 0 && (
             <div className="space-y-3 text-sm">
               <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Documentos submetidos</div>
-              {documentos.length > 0 ? (
-                <div className="space-y-2">
-                  {documentos.map((doc) => (
-                    <div key={doc.id} className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2">
-                      <div className="min-w-0">
-                        <p className="text-xs text-gray-700 truncate">{doc.tipo.replaceAll("_", " ")}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {doc.ficheiro && (
-                          <a href={`/api/admin/medicos/documentos/${doc.id}`} target="_blank" rel="noreferrer" className="text-blue-600 text-xs font-semibold underline">
-                            Ver
-                          </a>
-                        )}
-                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                          doc.estado === "APROVADO" ? "bg-green-100 text-green-700" :
-                          doc.estado === "PENDENTE" ? "bg-yellow-100 text-yellow-700" :
-                          "bg-red-100 text-red-700"
-                        }`}>
-                          {doc.estado}
-                        </span>
-                      </div>
+              <div className="space-y-2">
+                {documentos.map((doc) => (
+                  <div key={doc.id} className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2">
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-700 truncate">{doc.tipo.replaceAll("_", " ")}</p>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-gray-400">Nenhum documento submetido</p>
-              )}
+                    <div className="flex items-center gap-2">
+                      {doc.ficheiro && (
+                        <a
+                          href={tipo === "profissional"
+                            ? `/api/admin/medicos/documentos/${doc.id}`
+                            : `/api/admin/clinicas/documentos/${doc.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-600 text-xs font-semibold underline"
+                        >
+                          Ver
+                        </a>
+                      )}
+                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                        doc.estado === "APROVADO" ? "bg-green-100 text-green-700" :
+                        doc.estado === "PENDENTE" ? "bg-yellow-100 text-yellow-700" :
+                        "bg-red-100 text-red-700"
+                      }`}>
+                        {doc.estado}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
+          )}
+          {documentos && documentos.length === 0 && (
+            <p className="text-xs text-gray-400">Nenhum documento submetido</p>
           )}
 
           <div className="bg-blue-50 rounded-xl px-3 py-2.5 text-xs text-blue-600 flex items-start gap-2">
@@ -168,7 +176,7 @@ function CardPendente({
             <span>Verifique os documentos submetidos antes de aprovar.</span>
           </div>
 
-          {tipo === "profissional" && (
+          {(tipo === "profissional" || tipo === "clinica") && (
             <div className="space-y-3">
               <label className="text-xs font-semibold text-gray-600">Motivo da rejeição</label>
               <select
@@ -234,7 +242,7 @@ export default function AdminVerificacaoPage() {
     ])
       .then(([ms, cs]) => {
         if (Array.isArray(ms)) setMedicos(ms.filter((m: { estadoVerificacao: string }) => m.estadoVerificacao === "PENDENTE"));
-        if (Array.isArray(cs)) setClinicas(cs.filter((c: { estadoVerificacao: string }) => c.estadoVerificacao === "PENDENTE"));
+        if (Array.isArray(cs)) setClinicas(cs.filter((c: { estadoVerificacao: string }) => c.estadoVerificacao === "EM_ANALISE"));
       })
       .catch((err) => {
         console.error(err);
@@ -264,7 +272,8 @@ export default function AdminVerificacaoPage() {
     setClinicas((prev) => prev.filter((c) => c.id !== id));
   };
   const rejeitarClinica = async (id: string) => {
-    await fetch(`/api/admin/clinicas/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ acao: "REJEITAR" }) });
+    const motivo = getMotivoRejeicao(id);
+    await fetch(`/api/admin/clinicas/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ acao: "REJEITAR", motivo }) });
     setClinicas((prev) => prev.filter((c) => c.id !== id));
   };
 
@@ -407,6 +416,11 @@ export default function AdminVerificacaoPage() {
                   email={c.email}
                   criadoEm={c.criadoEm}
                   tipo="clinica"
+                  documentos={c.documentos}
+                  selectedRazao={selecaoRazao[c.id]}
+                  customRazao={textoRazao[c.id]}
+                  onSelectRazao={(valor) => setSelecaoRazao((prev) => ({ ...prev, [c.id]: valor }))}
+                  onCustomRazaoChange={(valor) => setTextoRazao((prev) => ({ ...prev, [c.id]: valor }))}
                   onAprovar={() => aprovarClinica(c.id)}
                   onRejeitar={() => rejeitarClinica(c.id)}
                 />

@@ -16,6 +16,7 @@ export async function GET() {
       include: {
         user: { select: { email: true, isActive: true } },
         _count: { select: { plantoes: true, salas: true } },
+        documentos: { select: { id: true, tipo: true, estado: true, ficheiro: true } },
       },
     });
 
@@ -38,11 +39,10 @@ export async function GET() {
         totalSalas: c._count.salas,
         verified: c.verified,
         isActive: c.user.isActive,
-        estadoVerificacao: c.verified
-          ? !c.user.isActive
-            ? "SUSPENSO"
-            : "APROVADO"
-          : "PENDENTE",
+        estadoVerificacao: !c.user.isActive && c.verified
+          ? "SUSPENSO"
+          : c.estadoVerificacao,
+        documentos: c.documentos,
         criadoEm: c.criadoEm.toISOString(),
       }))
     );

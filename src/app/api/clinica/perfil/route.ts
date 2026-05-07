@@ -23,6 +23,8 @@ export async function GET() {
     rating: clinica.rating,
     totalAvaliacoes: clinica.totalAvaliacoes,
     verified: clinica.verified,
+    estadoVerificacao: clinica.estadoVerificacao,
+    rejeicaoMotivo: clinica.rejeicaoMotivo ?? null,
     criadoEm: clinica.criadoEm.toISOString(),
   });
 }

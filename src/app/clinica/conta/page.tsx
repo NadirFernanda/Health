@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { TopBar } from "@/components/nav";
 import { logoutAction } from "@/app/actions/auth";
+import Link from "next/link";
 import {
   BadgeCheck, Star, Building2, MapPin, Phone, Globe,
-  CheckCircle, Pencil, X, Save, ChevronRight, Lock, Check,
+  CheckCircle, Pencil, X, Save, ChevronRight, Lock, Check, Clock, XCircle,
 } from "lucide-react";
 
 interface ClinicaData {
@@ -22,6 +23,8 @@ interface ClinicaData {
   rating: number;
   totalAvaliacoes: number;
   verified: boolean;
+  estadoVerificacao: string;
+  rejeicaoMotivo: string | null;
 }
 
 export default function ContaClinica() {
@@ -275,23 +278,50 @@ export default function ContaClinica() {
       </div>
 
       {/* Verificação */}
-      {!clinica.verified && (
+      {!clinica.verified && clinica.estadoVerificacao !== "EM_ANALISE" && (
         <div className="mx-4 mb-3 bg-orange-50 border border-orange-200 rounded-2xl p-4">
           <div className="flex items-start gap-3">
             <Lock size={22} strokeWidth={1.75} className="text-orange-500 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="font-bold text-orange-800 text-sm">Clínica não verificada</p>
-              <p className="text-xs text-orange-600 mt-1 leading-5">
-                Verifique a sua clínica para publicar plantões e ganhar a confiança dos profissionais.
+              <p className="font-bold text-orange-800 text-sm">
+                {clinica.estadoVerificacao === "REJEITADO" ? "Verificação rejeitada" : "Clínica não verificada"}
               </p>
-              <div className="mt-3 space-y-1.5 text-xs text-orange-700">
-                <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> Alvará de Funcionamento</p>
-                <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> Licença do MINSA</p>
-                <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> NIF da Clínica</p>
+              {clinica.rejeicaoMotivo && (
+                <p className="text-xs text-red-600 mt-1 bg-red-50 rounded-lg px-2 py-1">{clinica.rejeicaoMotivo}</p>
+              )}
+              <p className="text-xs text-orange-600 mt-1 leading-5">
+                {clinica.estadoVerificacao === "REJEITADO"
+                  ? "Corrija os documentos indicados e resubmeta."
+                  : "Carregue os documentos obrigatórios para verificar a sua clínica."}
+              </p>
+              <div className="mt-2 space-y-1 text-xs text-orange-700">
+                {["Alvará de Funcionamento", "Registo Comercial", "NIF", "Carteira do Director Clínico", "Termo de Responsabilidade"].map((d) => (
+                  <p key={d} className="inline-flex items-center gap-1 mr-2">
+                    <Check size={12} strokeWidth={2} /> {d}
+                  </p>
+                ))}
               </div>
-              <button className="mt-3 w-full bg-orange-500 text-white font-bold py-2.5 rounded-xl text-sm inline-flex items-center justify-center gap-1">
-                Iniciar Verificação <ChevronRight size={14} strokeWidth={2} />
-              </button>
+              <Link
+                href="/clinica/documentos"
+                className="mt-3 w-full bg-orange-500 text-white font-bold py-2.5 rounded-xl text-sm inline-flex items-center justify-center gap-1"
+              >
+                {clinica.estadoVerificacao === "REJEITADO" ? "Corrigir Documentos" : "Iniciar Verificação"}
+                <ChevronRight size={14} strokeWidth={2} />
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+      {clinica.estadoVerificacao === "EM_ANALISE" && !clinica.verified && (
+        <div className="mx-4 mb-3 bg-blue-50 border border-blue-200 rounded-2xl p-4">
+          <div className="flex items-start gap-3">
+            <Clock size={20} strokeWidth={1.75} className="text-blue-500 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-bold text-blue-800 text-sm">Verificação em análise</p>
+              <p className="text-xs text-blue-600 mt-1 leading-5">Os documentos estão a ser analisados pela equipa MedFreela (até 7 dias úteis).</p>
+              <Link href="/clinica/documentos" className="mt-2 text-xs text-blue-700 font-semibold inline-flex items-center gap-1">
+                Ver documentos <ChevronRight size={12} strokeWidth={2} />
+              </Link>
             </div>
           </div>
         </div>
@@ -299,17 +329,15 @@ export default function ContaClinica() {
 
       {/* Documentos */}
       {clinica.verified && (
-        <div className="mx-4 mb-3 bg-white rounded-2xl border border-gray-100 px-4 py-4">
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Documentos Verificados</h3>
-          <div className="space-y-2.5">
-            {docs.map((d) => (
-              <div key={d.label} className="flex items-center gap-3 bg-green-50 rounded-xl px-3 py-2.5">
-                <CheckCircle size={15} strokeWidth={2} className="text-green-500 shrink-0" />
-                <span className="text-sm text-gray-800 font-medium">{d.label}</span>
-              </div>
-            ))}
+        <Link href="/clinica/documentos" className="mx-4 mb-3 bg-white rounded-2xl border border-gray-100 px-4 py-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Documentos</h3>
+            <p className="text-sm text-green-600 font-semibold flex items-center gap-1">
+              <CheckCircle size={14} strokeWidth={2} className="text-green-500" /> Clínica verificada
+            </p>
           </div>
-        </div>
+          <ChevronRight size={16} strokeWidth={2} className="text-gray-400" />
+        </Link>
       )}
 
       {/* Plano */}
