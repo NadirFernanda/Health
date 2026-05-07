@@ -12,6 +12,11 @@ const especialidades = [
   "Medicina Interna", "Oncologia", "Radiologia",
 ];
 
+const zonasLuanda = [
+  "Centralidade Horizonte", "Talatona", "Miramar", "Alvalade", "Kilamba",
+  "Maianga", "Ingombota", "Sambizanga", "Rangel", "Cazenga", "Viana", "Cacuaco",
+];
+
 const tipos = [
   { key: "MEDICO", label: "Médico(a)" },
   { key: "ENFERMEIRO", label: "Enfermeiro(a)" },
@@ -25,6 +30,7 @@ export default function RegistarProfissionalPage() {
     nome: "",
     tipo: "MEDICO",
     especialidade: "",
+    zonaLuanda: "",
     numeroSinome: "",
     email: "",
     password: "",
@@ -63,6 +69,7 @@ export default function RegistarProfissionalPage() {
         <input type="hidden" name="nome" value={form.nome} />
         <input type="hidden" name="tipo" value={form.tipo} />
         <input type="hidden" name="especialidade" value={form.especialidade} />
+        <input type="hidden" name="zonaLuanda" value={form.zonaLuanda} />
         <input type="hidden" name="numeroSinome" value={form.numeroSinome} />
         <input type="hidden" name="email" value={form.email} />
         <input type="hidden" name="password" value={form.password} />
@@ -127,6 +134,23 @@ export default function RegistarProfissionalPage() {
                       <option key={e} value={e}>{e}</option>
                     ))}
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+                    Zona em Luanda
+                  </label>
+                  <select
+                    value={form.zonaLuanda}
+                    onChange={(e) => set("zonaLuanda", e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0B3C74] bg-white transition-colors"
+                  >
+                    <option value="">Seleccione a sua zona (opcional)</option>
+                    {zonasLuanda.map((z) => (
+                      <option key={z} value={z}>{z}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-400 mt-1">Usada para sugerir plantões perto de si</p>
                 </div>
               </div>
 

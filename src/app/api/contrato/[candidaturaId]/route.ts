@@ -156,7 +156,11 @@ export async function POST(
   });
 
   if (pagamento) {
-    await processPaymentEscrow(pagamento.id);
+    // Non-blocking: contract is already signed; payment processing failure
+    // must not roll back the user-visible success response.
+    processPaymentEscrow(pagamento.id).catch((err) => {
+      console.error("[contrato] processPaymentEscrow failed:", err);
+    });
   }
 
   return Response.json({ estado: "ACEITE" });

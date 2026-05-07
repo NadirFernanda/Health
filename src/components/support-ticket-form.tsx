@@ -17,12 +17,13 @@ export function CreateTicketForm({ onSuccess }: CreateTicketFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  const [createdTicketId, setCreatedTicketId] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     categoria: "",
     assunto: "",
     mensagem: "",
     prioridade: "NORMAL",
-    userProvidedId: "",
     contactoEmail: "",
     contactoTelefone: "",
   });
@@ -49,12 +50,12 @@ export function CreateTicketForm({ onSuccess }: CreateTicketFormProps) {
 
       const data = await response.json();
       setSuccess(true);
+      setCreatedTicketId(data.ticket.id);
       setFormData({
         categoria: "",
         assunto: "",
         mensagem: "",
         prioridade: "NORMAL",
-        userProvidedId: "",
         contactoEmail: "",
         contactoTelefone: "",
       });
@@ -75,9 +76,11 @@ export function CreateTicketForm({ onSuccess }: CreateTicketFormProps) {
         </div>
       )}
 
-      {success && (
+      {success && createdTicketId && (
         <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
-          Ticket criado com sucesso! Pode acompanhar o seu pedido na lista de tickets.
+          <p className="font-semibold mb-1">Ticket criado com sucesso!</p>
+          <p className="text-sm">Referência: <span className="font-mono font-bold">#{createdTicketId.slice(0, 8).toUpperCase()}</span></p>
+          <p className="text-sm mt-1">Pode acompanhar o seu pedido na lista de tickets.</p>
         </div>
       )}
 
@@ -161,21 +164,6 @@ export function CreateTicketForm({ onSuccess }: CreateTicketFormProps) {
         <h3 className="text-sm font-medium text-gray-900 mb-4">Informações de Contacto (Opcional)</h3>
 
         <div className="space-y-4">
-          {/* ID do Usuário */}
-          <div>
-            <label htmlFor="userProvidedId" className="block text-sm font-medium text-gray-700 mb-2">
-              Seu ID/Referência
-            </label>
-            <input
-              id="userProvidedId"
-              type="text"
-              value={formData.userProvidedId}
-              onChange={(e) => setFormData({ ...formData, userProvidedId: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Ex: REF-123456"
-            />
-          </div>
-
           {/* Email de Contacto */}
           <div>
             <label htmlFor="contactoEmail" className="block text-sm font-medium text-gray-700 mb-2">

@@ -17,6 +17,7 @@ export async function registerProfissionalAction(
   const password = formData.get("password")?.toString() ?? "";
   const tipo = formData.get("tipo")?.toString() ?? "MEDICO";
   const especialidade = formData.get("especialidade")?.toString().trim() ?? "";
+  const zonaLuanda = formData.get("zonaLuanda")?.toString().trim() ?? "";
   const numeroSinome = formData.get("numeroSinome")?.toString().trim() ?? "";
 
   if (!nome || !email || !password || !especialidade) {
@@ -44,6 +45,7 @@ export async function registerProfissionalAction(
           nome,
           tipo: tipo as "MEDICO" | "ENFERMEIRO" | "TECNICO_SAUDE",
           especialidade,
+          cidade: zonaLuanda || null,
           numeroSinome: numeroSinome || null,
         },
       },

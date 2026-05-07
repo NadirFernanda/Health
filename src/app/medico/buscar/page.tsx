@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { PlantaoCard } from "@/components/plantao-card";
 import { TopBar } from "@/components/nav";
 import { EmptyState } from "@/components/empty-state";
-import { Search, AlertCircle } from "lucide-react";
+import { Search, AlertCircle, Sparkles } from "lucide-react";
 
 type PlantaoAPI = {
   id: string; tipoProfissional: string; especialidade: string; dataInicio: string; dataFim: string;
@@ -45,6 +45,17 @@ const VALOR_MIN: Record<string, number | undefined> = {
   mais20: 20001,
 };
 
+const DURACAO_FILTROS = [
+  { key: "todas", label: "Todas" },
+  { key: "ate4", label: "≤ 4h" },
+  { key: "4a8", label: "4–8h" },
+  { key: "mais8", label: "> 8h" },
+];
+
+function getDuracaoHoras(dataInicio: string, dataFim: string): number {
+  return (new Date(dataFim).getTime() - new Date(dataInicio).getTime()) / (1000 * 60 * 60);
+}
+
 export default function BuscarPlantoes() {
   const [plantoes, setPlantoes] = useState<PlantaoAPI[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,8 +64,19 @@ export default function BuscarPlantoes() {
   const [filtroTipo, setFiltroTipo] = useState<string>("Todos");
   const [filtroValor, setFiltroValor] = useState<string>("todos");
   const [filtroZona, setFiltroZona] = useState<string>("Todas");
+  const [filtroDuracao, setFiltroDuracao] = useState<string>("todas");
   const [disponivelAgora, setDisponivelAgora] = useState(false);
+  const [sugestoes, setSugestoes] = useState<PlantaoAPI[]>([]);
+  const [loadingSugestoes, setLoadingSugestoes] = useState(true);
   const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    fetch("/api/plantoes/sugestoes")
+      .then((r) => r.ok ? r.json() : { sugestoes: [] })
+      .then((d) => setSugestoes(d.sugestoes ?? []))
+      .catch(() => {})
+      .finally(() => setLoadingSugestoes(false));
+  }, []);
 
   useEffect(() => {
     // Cancelar fetch anterior para evitar race conditions
@@ -96,9 +118,44 @@ export default function BuscarPlantoes() {
     return () => ctrl.abort();
   }, [filtroEsp, filtroTipo, filtroZona, disponivelAgora, filtroValor]);
 
+  const plantoesFiltrados = filtroDuracao === "todas" ? plantoes : plantoes.filter((p) => {
+    const h = getDuracaoHoras(p.dataInicio, p.dataFim);
+    if (filtroDuracao === "ate4") return h <= 4;
+    if (filtroDuracao === "4a8") return h > 4 && h <= 8;
+    return h > 8; // mais8
+  });
+
   return (
     <div>
       <TopBar titulo="Buscar Plantões" back="/medico" />
+
+      {/* Sugeridos para Si */}
+      {(loadingSugestoes || sugestoes.length > 0) && (
+        <div className="px-4 pt-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles size={14} strokeWidth={2} className="text-[#00A99D]" />
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Sugeridos para Si</p>
+          </div>
+          {loadingSugestoes ? (
+            <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+              {[1, 2].map((i) => (
+                <div key={i} className="shrink-0 w-64 bg-white rounded-2xl border border-gray-100 p-4 animate-pulse">
+                  <div className="h-3 bg-gray-200 rounded w-2/3 mb-2" />
+                  <div className="h-3 bg-gray-100 rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+              {sugestoes.map((p) => (
+                <div key={p.id} className="shrink-0 w-72">
+                  <PlantaoCard plantao={p as never} showCandidatarBtn />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Toggle Disponível Agora */}
       <div className="mx-4 mt-4 flex items-center justify-between bg-white border border-gray-100 rounded-2xl px-4 py-3">
@@ -199,6 +256,26 @@ export default function BuscarPlantoes() {
         </div>
       </div>
 
+      {/* Filtro duração */}
+      <div className="px-4 pt-3">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Duração</p>
+        <div className="flex gap-2 flex-wrap">
+          {DURACAO_FILTROS.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setFiltroDuracao(f.key)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                filtroDuracao === f.key
+                  ? "bg-[#0B3C74] text-white border-[#0B3C74]"
+                  : "bg-white text-gray-600 border-gray-200"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Resultados */}
       <div className="px-4 pt-4 pb-4">
         {loading ? (
@@ -224,9 +301,9 @@ export default function BuscarPlantoes() {
           </div>
         ) : (
           <>
-            <p className="text-xs text-gray-500 mb-3">{plantoes.length} plantão(ões) encontrado(s)</p>
+            <p className="text-xs text-gray-500 mb-3">{plantoesFiltrados.length} plantão(ões) encontrado(s)</p>
             <div className="space-y-3">
-              {plantoes.length === 0 ? (
+              {plantoesFiltrados.length === 0 ? (
                 <EmptyState
                   icon={Search}
                   title="Nenhum plantão encontrado"
@@ -235,7 +312,7 @@ export default function BuscarPlantoes() {
                   actionHref="/medico/notificacoes"
                 />
               ) : (
-                plantoes.map((p) => (
+                plantoesFiltrados.map((p) => (
                   <PlantaoCard key={p.id} plantao={p as never} showCandidatarBtn />
                 ))
               )}
