@@ -71,6 +71,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
   const [contratoAceite, setContratoAceite] = useState(false);
   const [metodo, setMetodo] = useState<MetodoPagamento>("MULTICAIXA_EXPRESS");
   const [pagamentoInfo, setPagamentoInfo] = useState<PagamentoInfo | null>(null);
+  const [reservaId, setReservaId] = useState<string | null>(null);
   const [reservandoLoading, setReservandoLoading] = useState(false);
   const [erro, setErro] = useState("");
 
@@ -107,7 +108,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
     return `${String(fim.getHours()).padStart(2, "0")}:${String(fim.getMinutes()).padStart(2, "0")}`;
   })();
 
-  const handleReservar = async () => {
+  const handleCriarReserva = async () => {
     setReservandoLoading(true);
     setErro("");
     const res = await fetch("/api/medico/reservas", {
@@ -117,11 +118,32 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
     });
     setReservandoLoading(false);
     if (res.ok) {
-      const d = await res.json() as { pagamentoId: string; valorTotal: number; codigoQr: string };
+      const d = await res.json() as { id: string; pagamentoId: string; valorTotal: number; codigoQr: string };
+      setReservaId(d.id);
       setPagamentoInfo({ pagamentoId: d.pagamentoId, valorTotal: d.valorTotal, metodo, codigoQr: d.codigoQr });
     } else {
       const d = await res.json() as { error?: string };
-      setErro(d.error ?? "Erro ao confirmar reserva.");
+      setErro(d.error ?? "Erro ao criar reserva.");
+    }
+  };
+
+  const handleAssinarContrato = async () => {
+    if (!reservaId) {
+      setErro("Erro: Reserva não encontrada.");
+      return;
+    }
+    setReservandoLoading(true);
+    setErro("");
+    const res = await fetch(`/api/medico/reservas/${reservaId}/contrato`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    setReservandoLoading(false);
+    if (res.ok) {
+      setStep("pagamento");
+    } else {
+      const d = await res.json() as { error?: string };
+      setErro(d.error ?? "Erro ao assinar contrato.");
     }
   };
 
@@ -269,7 +291,7 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
           )}
 
           <button
-            onClick={handleReservar}
+            onClick={handleCriarReserva}
             disabled={reservandoLoading}
             className="w-full bg-gradient-to-r from-[#0B3C74] to-[#00A99D] disabled:opacity-50 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg"
           >
@@ -474,14 +496,24 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
             </p>
           </button>
 
+          {erro && (
+            <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl px-3 py-2.5 text-xs text-red-600">
+              <AlertTriangle size={13} strokeWidth={2} /> {erro}
+            </div>
+          )}
+
           <button
-            disabled={!contratoAceite}
-            onClick={() => setStep("pagamento")}
+            disabled={!contratoAceite || reservandoLoading}
+            onClick={handleAssinarContrato}
             className="w-full bg-gradient-to-r from-[#0B3C74] to-[#00A99D] disabled:from-gray-200 disabled:to-gray-200 disabled:text-gray-400 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-[#0B3C74]/20 transition-all"
           >
-            <ScrollText size={16} strokeWidth={2} />
-            ASSINAR E CONTINUAR
-            <ChevronRight size={15} strokeWidth={2.5} />
+            {reservandoLoading ? (
+              <><Loader2 size={16} className="animate-spin" /> A processar…</>
+            ) : (
+              <><ScrollText size={16} strokeWidth={2} />
+              ASSINAR E CONTINUAR
+              <ChevronRight size={15} strokeWidth={2.5} /></>
+            )}
           </button>
           <button onClick={() => setStep("horario")} className="w-full text-gray-400 text-sm py-2">
             Voltar

@@ -71,7 +71,8 @@ export async function POST(request: NextRequest) {
         duracaoHoras,
         valorTotal,
         valorTotalCentavos,
-        estado: "PENDENTE_PAGAMENTO",
+        estado: "CONTRATO_PENDENTE",
+        contratoGeradoEm: new Date(),
       },
     });
     const pag = await tx.pagamento.create({
@@ -94,6 +95,6 @@ export async function POST(request: NextRequest) {
     valorTotal,
     valorTotalCentavos: valorTotalCentavos.toString(),
     pagamentoId: pagamento.id,
-    estado: "PENDENTE_PAGAMENTO",
+    estado: "CONTRATO_PENDENTE",
   }, { status: 201 });
 }

@@ -279,27 +279,34 @@ model Sala {
 }
 
 model ReservaSala {
-  id                 String        @id @default(cuid())
-  salaId             String
-  profissionalId     String
-  data               DateTime
-  horaInicio         String
-  duracaoHoras       Int
-  valorTotal         Int
-  estado             EstadoReserva @default(CONFIRMADA)
-  codigoQr           String        @default(cuid())
-  criadoEm           DateTime      @default(now())
-  atualizadoEm       DateTime      @updatedAt
-  canceladoEm        DateTime?
-  comissaoAoa        Int?
-  dataFim            DateTime?
-  motivoCancelamento String?
-  pagoEm             DateTime?
-  valorClinicaAoa    Int?
-  valorTotalCentavos BigInt?
-  pagamentos         Pagamento[]
-  profissional       Profissional  @relation(fields: [profissionalId], references: [id])
-  sala               Sala          @relation(fields: [salaId], references: [id])
+  id                    String        @id @default(cuid())
+  salaId                String
+  profissionalId        String
+  data                  DateTime
+  horaInicio            String
+  duracaoHoras          Int
+  valorTotal            Int
+  estado                EstadoReserva @default(CONFIRMADA)
+  codigoQr              String        @default(cuid())
+  criadoEm              DateTime      @default(now())
+  atualizadoEm          DateTime      @updatedAt
+  canceladoEm           DateTime?
+  comissaoAoa           Int?
+  dataFim               DateTime?
+  motivoCancelamento    String?
+  pagoEm                DateTime?
+  valorClinicaAoa       Int?
+  valorTotalCentavos    BigInt?
+  terminadoEm           DateTime?
+  vistoriaOk            Boolean?
+  vistoriaNotas         String?
+  vistoriaEquipamentos  String?
+  vistoriaEm            DateTime?
+  contratoGeradoEm      DateTime?
+  contratoAssinadoEm    DateTime?
+  pagamentos            Pagamento[]
+  profissional          Profissional  @relation(fields: [profissionalId], references: [id])
+  sala                  Sala          @relation(fields: [salaId], references: [id])
 
   @@index([salaId])
   @@index([profissionalId])
@@ -574,6 +581,9 @@ enum EstadoReserva {
   PENDENTE_PAGAMENTO
   CANCELADA_PROFISSIONAL
   CANCELADA_CLINICA
+  AGUARDANDO_VISTORIA
+  DISPUTA_SALA
+  CONTRATO_PENDENTE
 }
 
 enum CredencialTipo {

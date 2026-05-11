@@ -5,10 +5,14 @@ import { TopBar } from "@/components/nav";
 import {
   DoorOpen, Check, Loader2, Pencil, Save, X, Trash2,
   ToggleLeft, ToggleRight, Calendar, Star, Banknote,
-  AlertTriangle, CheckCircle2, XCircle,
+  AlertTriangle, CheckCircle2, XCircle, ClipboardCheck,
+  Clock, User, ChevronRight, AlertCircle,
 } from "lucide-react";
 
 function formatAOA(v: number) { return new Intl.NumberFormat("pt-AO").format(v) + " AOA"; }
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" });
+}
 
 type TipoSala = "CONSULTORIO" | "OBSERVACAO" | "PROCEDIMENTOS";
 
@@ -40,6 +44,16 @@ type SalaData = {
   equipamentos: Record<string, boolean>;
 };
 
+type VistoriaReserva = {
+  id: string;
+  data: string;
+  horaInicio: string;
+  duracaoHoras: number;
+  valorTotal: number;
+  terminadoEm: string | null;
+  profissional: { id: string; nome: string; especialidade: string };
+};
+
 export default function GerirSalaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
@@ -60,6 +74,15 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
   const [descricao, setDescricao] = useState("");
   const [equip, setEquip] = useState<Record<string, boolean>>({});
 
+  // vistoria state
+  const [vistorias, setVistorias] = useState<VistoriaReserva[]>([]);
+  const [loadingVistorias, setLoadingVistorias] = useState(false);
+  const [vistoriaAtiva, setVistoriaAtiva] = useState<VistoriaReserva | null>(null);
+  const [vistoriaEquip, setVistoriaEquip] = useState<Record<string, boolean>>({});
+  const [vistoriaNotas, setVistoriaNotas] = useState("");
+  const [enviandoVistoria, setEnviandoVistoria] = useState(false);
+  const [vistoriaErro, setVistoriaErro] = useState("");
+
   useEffect(() => {
     fetch(`/api/consultorio/salas/${id}`)
       .then((r) => r.ok ? r.json() : null)
@@ -74,6 +97,16 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    setLoadingVistorias(true);
+    fetch(`/api/consultorio/reservas?salaId=${id}&estado=AGUARDANDO_VISTORIA`)
+      .then((r) => r.ok ? r.json() : [])
+      .then((data: VistoriaReserva[]) => setVistorias(data))
+      .catch(() => {})
+      .finally(() => setLoadingVistorias(false));
   }, [id]);
 
   const toggleDisponivel = async () => {
@@ -112,6 +145,42 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
     else { setApagando(false); setConfirmDelete(false); }
   };
 
+  const abrirVistoria = (r: VistoriaReserva) => {
+    const equipInicial: Record<string, boolean> = {};
+    if (sala) {
+      EQUIP.forEach(({ key }) => {
+        if (sala.equipamentos[key]) equipInicial[key] = true;
+      });
+    }
+    setVistoriaEquip(equipInicial);
+    setVistoriaNotas("");
+    setVistoriaErro("");
+    setVistoriaAtiva(r);
+  };
+
+  const submeterVistoria = async (tudoOk: boolean) => {
+    if (!vistoriaAtiva) return;
+    setEnviandoVistoria(true);
+    setVistoriaErro("");
+    const res = await fetch(`/api/consultorio/reservas/${vistoriaAtiva.id}/vistoria`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tudo_ok: tudoOk,
+        equipamentos: vistoriaEquip,
+        notas: vistoriaNotas.trim() || undefined,
+      }),
+    });
+    if (res.ok) {
+      setVistorias((prev) => prev.filter((v) => v.id !== vistoriaAtiva.id));
+      setVistoriaAtiva(null);
+    } else {
+      const d = await res.json().catch(() => ({}));
+      setVistoriaErro((d as { error?: string }).error ?? "Erro ao submeter vistoria.");
+    }
+    setEnviandoVistoria(false);
+  };
+
   if (loading) return (
     <div className="flex justify-center items-center min-h-screen">
       <Loader2 size={28} className="animate-spin text-[#00A99D]" />
@@ -125,6 +194,7 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
   );
 
   const equipDisponiveis = EQUIP.filter(({ key }) => sala.equipamentos[key]);
+  const equipVistoria = EQUIP.filter(({ key }) => sala.equipamentos[key]);
 
   return (
     <div className="pb-28">
@@ -149,6 +219,12 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
                   <span className={`w-1.5 h-1.5 rounded-full ${sala.disponivel ? "bg-emerald-300" : "bg-red-300"}`} />
                   {sala.disponivel ? "Disponível" : "Indisponível"}
                 </span>
+                {vistorias.length > 0 && (
+                  <span className="bg-amber-400/40 text-amber-100 text-[11px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                    <ClipboardCheck size={9} strokeWidth={2.5} />
+                    {vistorias.length} vistoria{vistorias.length > 1 ? "s" : ""}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -222,6 +298,58 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
         </button>
       </div>
 
+      {/* ── Vistorias Pendentes ── */}
+      {(loadingVistorias || vistorias.length > 0) && (
+        <div className="mx-4 mt-3 bg-white rounded-2xl border border-amber-100 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3 bg-amber-50 border-b border-amber-100">
+            <ClipboardCheck size={15} strokeWidth={2} className="text-amber-600 shrink-0" />
+            <h3 className="text-xs font-bold text-amber-700 uppercase tracking-widest flex-1">
+              Vistorias Pendentes
+            </h3>
+            {vistorias.length > 0 && (
+              <span className="bg-amber-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
+                {vistorias.length}
+              </span>
+            )}
+          </div>
+
+          {loadingVistorias ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 size={20} className="animate-spin text-amber-400" />
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-50">
+              {vistorias.map((v) => (
+                <button
+                  key={v.id}
+                  onClick={() => abrirVistoria(v)}
+                  className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-amber-50/60 transition-colors text-left"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+                    <User size={16} strokeWidth={1.75} className="text-amber-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-gray-900 truncate">{v.profissional.nome}</p>
+                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                      <span className="flex items-center gap-1 text-[11px] text-gray-500">
+                        <Calendar size={10} strokeWidth={2} /> {formatDate(v.data)}
+                      </span>
+                      <span className="flex items-center gap-1 text-[11px] text-gray-500">
+                        <Clock size={10} strokeWidth={2} /> {v.horaInicio} · {v.duracaoHoras}h
+                      </span>
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="text-xs font-bold text-[#00A99D]">{formatAOA(v.valorTotal)}</p>
+                    <ChevronRight size={14} strokeWidth={2} className="text-amber-400 ml-auto mt-0.5" />
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Edição / Info ── */}
       <div className="mx-4 mt-3 bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-4">
         <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">
@@ -278,7 +406,6 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
               />
             </div>
 
-            {/* Equipamentos no modo edição */}
             <div>
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">Equipamentos</label>
               <div className="grid grid-cols-2 gap-2">
@@ -401,6 +528,149 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Vistoria Modal ── */}
+      {vistoriaAtiva && (
+        <div className="fixed inset-0 z-[70] flex flex-col">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => !enviandoVistoria && setVistoriaAtiva(null)}
+          />
+
+          {/* Sheet */}
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[92vh] flex flex-col shadow-2xl">
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-1 shrink-0">
+              <div className="w-10 h-1 bg-gray-200 rounded-full" />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-start gap-3 px-5 pt-2 pb-4 border-b border-gray-100 shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+                <ClipboardCheck size={18} strokeWidth={1.75} className="text-amber-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-base font-black text-gray-900">Vistoria da Sala</h2>
+                <p className="text-xs text-gray-500 mt-0.5 truncate">{vistoriaAtiva.profissional.nome}</p>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                    <Calendar size={10} strokeWidth={2} /> {formatDate(vistoriaAtiva.data)}
+                  </span>
+                  <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                    <Clock size={10} strokeWidth={2} /> {vistoriaAtiva.horaInicio} · {vistoriaAtiva.duracaoHoras}h
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => !enviandoVistoria && setVistoriaAtiva(null)}
+                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0"
+              >
+                <X size={14} strokeWidth={2.5} className="text-gray-500" />
+              </button>
+            </div>
+
+            {/* Scrollable body */}
+            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+              {/* Info banner */}
+              <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-3.5 py-3 text-xs text-amber-700">
+                <AlertCircle size={13} strokeWidth={2} className="shrink-0 mt-0.5" />
+                <p>Verifique o estado dos equipamentos. Se tudo estiver em ordem, libere o pagamento. Caso contrário, abra uma disputa.</p>
+              </div>
+
+              {/* Equipment checklist */}
+              {equipVistoria.length > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">
+                    Estado dos Equipamentos
+                  </p>
+                  <div className="space-y-2">
+                    {equipVistoria.map(({ key, label }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setVistoriaEquip((e) => ({ ...e, [key]: !e[key] }))}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors text-left ${
+                          vistoriaEquip[key]
+                            ? "border-emerald-200 bg-emerald-50"
+                            : "border-red-200 bg-red-50"
+                        }`}
+                      >
+                        <span className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 transition-colors ${
+                          vistoriaEquip[key]
+                            ? "bg-emerald-500 border-emerald-500"
+                            : "bg-red-400 border-red-400"
+                        }`}>
+                          {vistoriaEquip[key]
+                            ? <Check size={11} strokeWidth={3} className="text-white" />
+                            : <X size={11} strokeWidth={3} className="text-white" />
+                          }
+                        </span>
+                        <span className={`text-sm font-semibold ${vistoriaEquip[key] ? "text-emerald-700" : "text-red-600"}`}>
+                          {label}
+                        </span>
+                        <span className={`ml-auto text-[10px] font-bold uppercase ${vistoriaEquip[key] ? "text-emerald-500" : "text-red-400"}`}>
+                          {vistoriaEquip[key] ? "OK" : "Problema"}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Notas */}
+              <div>
+                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest block mb-2">
+                  Notas (opcional)
+                </label>
+                <textarea
+                  value={vistoriaNotas}
+                  onChange={(e) => setVistoriaNotas(e.target.value)}
+                  rows={3}
+                  maxLength={500}
+                  placeholder="Descreva qualquer problema encontrado…"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-300 transition-colors resize-none text-gray-700 placeholder:text-gray-300"
+                />
+              </div>
+
+              {vistoriaErro && (
+                <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl px-3 py-2.5 text-xs text-red-600">
+                  <AlertTriangle size={13} strokeWidth={2} className="shrink-0" /> {vistoriaErro}
+                </div>
+              )}
+            </div>
+
+            {/* Action buttons */}
+            <div className="px-5 py-4 border-t border-gray-100 space-y-2.5 shrink-0">
+              <p className="text-[11px] text-gray-400 text-center">
+                Valor a liberar: <span className="font-bold text-gray-700">{formatAOA(vistoriaAtiva.valorTotal)}</span>
+              </p>
+              <div className="flex gap-2.5">
+                <button
+                  onClick={() => submeterVistoria(false)}
+                  disabled={enviandoVistoria}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-orange-500 text-white text-sm font-bold py-3.5 rounded-2xl disabled:opacity-50 transition-opacity"
+                >
+                  {enviandoVistoria
+                    ? <Loader2 size={15} className="animate-spin" />
+                    : <><AlertTriangle size={14} strokeWidth={2.5} /> Abrir Disputa</>
+                  }
+                </button>
+                <button
+                  onClick={() => submeterVistoria(true)}
+                  disabled={enviandoVistoria}
+                  className="flex-[1.4] flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#00A99D] to-[#007a72] text-white text-sm font-black py-3.5 rounded-2xl disabled:opacity-50 transition-opacity shadow-md"
+                >
+                  {enviandoVistoria
+                    ? <Loader2 size={15} className="animate-spin" />
+                    : <><CheckCircle2 size={14} strokeWidth={2.5} /> Liberar Pagamento</>
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -1,15 +1,16 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-referen
+pm2 restart medfreela --updatce/cli/create-next-app).
 
 ## Getting Started
 
 First, run the development server:
-cd /var/www/medfreela
+
+
 git pull origin main
-npm run build
-pm2 restart medfreela --update-env
+npm run builde-env
 
 
-npx prisma migrate deploy
+npx prisma migrate deploy 
 pm2 restart medfreela
 
 git pull origin main && npm run build && pm2 restart medfreela
