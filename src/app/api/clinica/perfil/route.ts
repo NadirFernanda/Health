@@ -1,6 +1,14 @@
 import { NextRequest } from "next/server";
 import { requireSession, getClinicaFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
+import { z } from "zod";
+
+const patchSchema = z.object({
+  morada: z.string().min(5).max(200).optional(),
+  contacto: z.string().max(50).optional(),
+  website: z.union([z.url().max(200), z.literal("")]).optional(),
+  descricao: z.string().max(2000).optional(),
+});
 
 export async function GET() {
   const auth = await requireSession("CLINICA");
@@ -35,15 +43,18 @@ export async function PATCH(request: NextRequest) {
   const clinica = await getClinicaFromSession(auth.session);
   if (!clinica) return Response.json({ error: "Clínica não encontrada" }, { status: 404 });
 
-  const body = await request.json();
-  const { morada, contacto, website, descricao } = body as Record<string, string>;
+  let rawBody: unknown;
+  try { rawBody = await request.json(); } catch { return Response.json({ error: "Body inválido" }, { status: 400 }); }
+  const parsed = patchSchema.safeParse(rawBody);
+  if (!parsed.success) return Response.json({ error: parsed.error.issues[0]?.message ?? "Dados inválidos" }, { status: 400 });
+  const { morada, contacto, website, descricao } = parsed.data;
 
   const updated = await prisma.clinica.update({
     where: { id: clinica.id },
     data: {
       ...(morada !== undefined && { morada }),
       ...(contacto !== undefined && { contacto }),
-      ...(website !== undefined && { website }),
+      ...(website !== undefined && { website: website || null }),
       ...(descricao !== undefined && { descricao }),
     },
   });

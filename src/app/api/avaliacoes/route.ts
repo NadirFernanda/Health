@@ -1,18 +1,28 @@
 import { NextRequest } from "next/server";
 import { requireSession, getProfissionalFromSession, getClinicaFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
+import { z } from "zod";
+
+const avaliacaoSchema = z.object({
+  estrelas: z.number().int().min(1).max(5),
+  comentario: z.string().max(1000).optional(),
+  alvoClinicaId: z.string().optional(),
+  alvoMedicoId: z.string().optional(),
+  salaId: z.string().optional(),
+  plantaoId: z.string().optional(),
+  tipo: z.enum(["TURNO", "SALA"]).optional(),
+});
 
 export async function POST(request: NextRequest) {
   const auth = await requireSession();
   if (auth instanceof Response) return auth;
   const { session } = auth;
 
-  const body = await request.json();
-  const { estrelas, comentario, alvoClinicaId, alvoMedicoId, salaId, plantaoId, tipo } = body;
-
-  if (!estrelas || estrelas < 1 || estrelas > 5) {
-    return Response.json({ error: "Avaliação inválida (1-5 estrelas)" }, { status: 400 });
-  }
+  let rawBody: unknown;
+  try { rawBody = await request.json(); } catch { return Response.json({ error: "Body inválido" }, { status: 400 }); }
+  const parsed = avaliacaoSchema.safeParse(rawBody);
+  if (!parsed.success) return Response.json({ error: parsed.error.issues[0]?.message ?? "Dados inválidos" }, { status: 400 });
+  const { estrelas, comentario, alvoClinicaId, alvoMedicoId, salaId, plantaoId, tipo } = parsed.data;
 
   let autorId: string | undefined;
 

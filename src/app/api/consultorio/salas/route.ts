@@ -1,6 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession, getConsultorioFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
+import { z } from "zod";
+
+const TIPOS_SALA = ["CONSULTORIO", "OBSERVACAO", "PROCEDIMENTOS", "SALA_CURATIVO", "OUTRO"] as const;
+
+const criarSalaSchema = z.object({
+  nome: z.string().min(2).max(120),
+  tipo: z.enum(TIPOS_SALA),
+  precoPorHora: z.number().int().min(500).max(5_000_000),
+  descricao: z.string().max(2000).optional(),
+  maca: z.boolean().default(false),
+  estetoscopio: z.boolean().default(false),
+  tensiometro: z.boolean().default(false),
+  termometro: z.boolean().default(false),
+  computador: z.boolean().default(false),
+  materiaisBasicos: z.boolean().default(true),
+  nebulizador: z.boolean().default(false),
+  oximetro: z.boolean().default(false),
+  glucometro: z.boolean().default(false),
+  desfibrilador: z.boolean().default(false),
+});
 
 export async function GET() {
   const session = await getAuthSession();
@@ -39,23 +59,28 @@ export async function POST(req: NextRequest) {
   const consultorio = await getConsultorioFromSession(session);
   if (!consultorio) return NextResponse.json({ error: "Consultório não encontrado" }, { status: 404 });
 
-  const body = await req.json();
-  const { nome, tipo, precoPorHora, descricao, ...equipamentos } = body;
+  let rawBody: unknown;
+  try { rawBody = await req.json(); } catch { return NextResponse.json({ error: "Body inválido" }, { status: 400 }); }
+  const parsed = criarSalaSchema.safeParse(rawBody);
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dados inválidos" }, { status: 400 });
 
-  if (!nome || !tipo || !precoPorHora) {
-    return NextResponse.json({ error: "Campos obrigatórios em falta" }, { status: 400 });
-  }
+  const {
+    nome, tipo, precoPorHora, descricao,
+    maca, estetoscopio, tensiometro, termometro, computador,
+    materiaisBasicos, nebulizador, oximetro, glucometro, desfibrilador,
+  } = parsed.data;
 
   const sala = await prisma.sala.create({
     data: {
       consultorioId: consultorio.id,
       nome,
       tipo,
-      precoPorHora: parseInt(precoPorHora),
-      precoPorHoraCentavos: BigInt(parseInt(precoPorHora)) * 100n,
+      precoPorHora,
+      precoPorHoraCentavos: BigInt(precoPorHora) * 100n,
       zona: consultorio.zonaLuanda ?? "Outra",
       descricao: descricao ?? null,
-      ...equipamentos,
+      maca, estetoscopio, tensiometro, termometro, computador,
+      materiaisBasicos, nebulizador, oximetro, glucometro, desfibrilador,
     },
   });
 

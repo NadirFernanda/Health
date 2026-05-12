@@ -1,6 +1,35 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAuthSession, getProfissionalFromSession } from "@/lib/api-auth";
+import { z } from "zod";
+
+const TIPOS_PROFISSIONAL = ["MEDICO", "ENFERMEIRO", "TECNICO_SAUDE", "OUTRO"] as const;
+const METODOS_PAGAMENTO = ["MULTICAIXA_EXPRESS", "TPA", "TRANSFERENCIA_BANCARIA"] as const;
+
+const isoDateString = z.string().refine((s) => !isNaN(new Date(s).getTime()), {
+  message: "Data inválida — use formato ISO 8601",
+});
+
+const publicarSchema = z.object({
+  tipoProfissional: z.enum(TIPOS_PROFISSIONAL).default("MEDICO"),
+  especialidade: z.string().min(2).max(100),
+  dataInicio: isoDateString,
+  dataFim: isoDateString,
+  valorKwanzas: z.number().int().min(500).max(5_000_000),
+  vagas: z.number().int().min(1).max(50),
+  descricao: z.string().max(2000).optional(),
+  metodo: z.enum(METODOS_PAGAMENTO).default("TRANSFERENCIA_BANCARIA"),
+  maca: z.boolean().default(false),
+  estetoscopio: z.boolean().default(false),
+  tensiometro: z.boolean().default(false),
+  termometro: z.boolean().default(false),
+  computador: z.boolean().default(false),
+  materiaisBasicos: z.boolean().default(true),
+  nebulizador: z.boolean().default(false),
+  oximetro: z.boolean().default(false),
+  glucometro: z.boolean().default(false),
+  desfibrilador: z.boolean().default(false),
+});
 
 export async function GET() {
   const session = await getAuthSession();
@@ -43,61 +72,56 @@ export async function POST(request: NextRequest) {
   const prof = await getProfissionalFromSession(session);
   if (!prof) return Response.json({ error: "Profissional não encontrado" }, { status: 404 });
 
-  const body = await request.json();
+  let rawBody: unknown;
+  try { rawBody = await request.json(); } catch { return Response.json({ error: "Body inválido" }, { status: 400 }); }
+  const parsed = publicarSchema.safeParse(rawBody);
+  if (!parsed.success) return Response.json({ error: parsed.error.issues[0]?.message ?? "Dados inválidos" }, { status: 400 });
+
   const {
     tipoProfissional, especialidade, dataInicio, dataFim,
     valorKwanzas, vagas, descricao, metodo,
     maca, estetoscopio, tensiometro, termometro, computador,
     materiaisBasicos, nebulizador, oximetro, glucometro, desfibrilador,
-  } = body;
+  } = parsed.data;
 
-  if (!especialidade || !dataInicio || !dataFim || !valorKwanzas || !vagas) {
-    return Response.json({ error: "Campos obrigatórios em falta" }, { status: 400 });
-  }
+  const inicio = new Date(dataInicio);
+  const fim = new Date(dataFim);
+  if (fim <= inicio) return Response.json({ error: "dataFim deve ser posterior a dataInicio" }, { status: 400 });
+  if (inicio < new Date()) return Response.json({ error: "Não é possível publicar plantões no passado" }, { status: 400 });
 
-  const metodoPagamento = (["MULTICAIXA_EXPRESS", "TPA"].includes(metodo) ? metodo : "TRANSFERENCIA_BANCARIA") as "MULTICAIXA_EXPRESS" | "TPA" | "TRANSFERENCIA_BANCARIA";
-  const valorInt = parseInt(valorKwanzas);
-  const comissao = Math.round(valorInt * 0.10);
+  const comissao = Math.round(valorKwanzas * 0.10);
 
   const { plantao, pagamento } = await prisma.$transaction(async (tx) => {
     const p = await tx.plantao.create({
       data: {
         profissionalPublicadorId: prof.id,
         publicadoPorMedico: true,
-        tipoProfissional: tipoProfissional ?? "MEDICO",
+        tipoProfissional,
         especialidade,
-        dataInicio: new Date(dataInicio),
-        dataFim: new Date(dataFim),
-        valorKwanzas: valorInt,
-        valorCentavos: BigInt(valorInt) * 100n,
-        vagas: parseInt(vagas),
+        dataInicio: inicio,
+        dataFim: fim,
+        valorKwanzas,
+        valorCentavos: BigInt(valorKwanzas) * 100n,
+        vagas,
         descricao: descricao ?? null,
         estado: "AGUARDANDO_PAGAMENTO",
-        maca: maca ?? false,
-        estetoscopio: estetoscopio ?? false,
-        tensiometro: tensiometro ?? false,
-        termometro: termometro ?? false,
-        computador: computador ?? false,
-        materiaisBasicos: materiaisBasicos ?? true,
-        nebulizador: nebulizador ?? false,
-        oximetro: oximetro ?? false,
-        glucometro: glucometro ?? false,
-        desfibrilador: desfibrilador ?? false,
+        maca, estetoscopio, tensiometro, termometro, computador,
+        materiaisBasicos, nebulizador, oximetro, glucometro, desfibrilador,
       },
     });
     const pag = await tx.pagamento.create({
       data: {
         tipo: "TURNO",
         plantaoId: p.id,
-        valorBrutoAoa: valorInt,
+        valorBrutoAoa: valorKwanzas,
         comissaoAoa: comissao,
-        valorLiquidoAoa: valorInt - comissao,
-        metodo: metodoPagamento,
+        valorLiquidoAoa: valorKwanzas - comissao,
+        metodo,
         estado: "PENDENTE",
       },
     });
     return { plantao: p, pagamento: pag };
   });
 
-  return Response.json({ id: plantao.id, pagamentoId: pagamento.id, valorKwanzas: valorInt, metodo: metodoPagamento }, { status: 201 });
+  return Response.json({ id: plantao.id, pagamentoId: pagamento.id, valorKwanzas, metodo }, { status: 201 });
 }

@@ -2,7 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifySessionToken, getPayloadFromToken, COOKIE_NAME } from "@/lib/auth";
 
 export const config = {
-  matcher: ["/admin/:path*", "/medico/:path*", "/clinica/:path*", "/consultorio/:path*"],
+  matcher: [
+    "/api/:path*",
+    "/admin/:path*",
+    "/medico/:path*",
+    "/clinica/:path*",
+    "/consultorio/:path*",
+    "/support/:path*",
+    "/recibo/:path*",
+    "/login/:path*",
+    "/registar/:path*",
+  ],
 };
 
 const ROLE_PREFIXES: Record<string, string> = {
@@ -20,11 +30,39 @@ const DASHBOARDS: Record<string, string> = {
   PROFISSIONAL:      "/medico",
 };
 
-export async function proxy(request: NextRequest): Promise<NextResponse> {
-  const token = request.cookies.get(COOKIE_NAME)?.value;
-  const pathname = request.nextUrl.pathname;
+const PUBLIC_API_PREFIXES = ["/api/push/subscribe"];
 
-  // Sem token ou assinatura HMAC inválida → login
+export async function proxy(request: NextRequest): Promise<NextResponse> {
+  const { pathname } = request.nextUrl;
+
+  // API routes: prevent caching of session-dependent responses
+  if (pathname.startsWith("/api/")) {
+    const response = NextResponse.next();
+    const isPublicApi = PUBLIC_API_PREFIXES.some((p) => pathname.startsWith(p));
+    if (!isPublicApi) {
+      response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+      response.headers.set("Pragma", "no-cache");
+    }
+    response.headers.set("Vary", "Cookie");
+    return response;
+  }
+
+  const token = request.cookies.get(COOKIE_NAME)?.value;
+
+  // Redirect authenticated users away from login/register pages
+  if (pathname.startsWith("/login") || pathname.startsWith("/registar")) {
+    if (token && (await verifySessionToken(token))) {
+      const payload = getPayloadFromToken(token);
+      if (payload) {
+        return NextResponse.redirect(
+          new URL(DASHBOARDS[payload.role] ?? "/", request.url)
+        );
+      }
+    }
+    return NextResponse.next();
+  }
+
+  // Protected pages: require a valid session
   if (!token || !(await verifySessionToken(token))) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
@@ -38,7 +76,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Verificar se o role corresponde à rota acedida
+  // Verify role matches the route being accessed
   const requiredRole = Object.entries(ROLE_PREFIXES).find(([prefix]) =>
     pathname === prefix || pathname.startsWith(prefix + "/")
   )?.[1];
@@ -51,4 +89,3 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
   return NextResponse.next();
 }
-

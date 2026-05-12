@@ -1,6 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession, getConsultorioFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
+import { z } from "zod";
+
+const TIPOS_SALA = ["CONSULTORIO", "OBSERVACAO", "PROCEDIMENTOS", "SALA_CURATIVO", "OUTRO"] as const;
+
+const patchSalaSchema = z.object({
+  nome: z.string().min(2).max(120).optional(),
+  tipo: z.enum(TIPOS_SALA).optional(),
+  precoPorHora: z.number().int().min(500).max(5_000_000).optional(),
+  descricao: z.string().max(2000).optional(),
+  disponivel: z.boolean().optional(),
+  maca: z.boolean().optional(),
+  estetoscopio: z.boolean().optional(),
+  tensiometro: z.boolean().optional(),
+  termometro: z.boolean().optional(),
+  computador: z.boolean().optional(),
+  materiaisBasicos: z.boolean().optional(),
+  nebulizador: z.boolean().optional(),
+  oximetro: z.boolean().optional(),
+  glucometro: z.boolean().optional(),
+  desfibrilador: z.boolean().optional(),
+});
 
 async function getSala(salaId: string, consultorioId: string) {
   return prisma.sala.findFirst({ where: { id: salaId, consultorioId } });
@@ -59,12 +80,16 @@ export async function PATCH(
   const sala = await getSala(id, consultorio.id);
   if (!sala) return NextResponse.json({ error: "Sala não encontrada" }, { status: 404 });
 
-  const body = await req.json();
+  let rawBody: unknown;
+  try { rawBody = await req.json(); } catch { return NextResponse.json({ error: "Body inválido" }, { status: 400 }); }
+  const parsed = patchSalaSchema.safeParse(rawBody);
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dados inválidos" }, { status: 400 });
+
   const {
     nome, tipo, precoPorHora, descricao, disponivel,
     maca, estetoscopio, tensiometro, termometro, computador,
     materiaisBasicos, nebulizador, oximetro, glucometro, desfibrilador,
-  } = body;
+  } = parsed.data;
 
   const updated = await prisma.sala.update({
     where: { id },
@@ -72,8 +97,8 @@ export async function PATCH(
       ...(nome !== undefined && { nome }),
       ...(tipo !== undefined && { tipo }),
       ...(precoPorHora !== undefined && {
-        precoPorHora: parseInt(precoPorHora),
-        precoPorHoraCentavos: BigInt(parseInt(precoPorHora)) * 100n,
+        precoPorHora,
+        precoPorHoraCentavos: BigInt(precoPorHora) * 100n,
       }),
       ...(descricao !== undefined && { descricao }),
       ...(disponivel !== undefined && { disponivel }),
