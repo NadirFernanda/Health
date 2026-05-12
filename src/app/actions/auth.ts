@@ -78,6 +78,7 @@ export async function loginAction(
     ADMIN: "/admin",
     MEDICO: "/medico",
     CLINICA: "/clinica",
+    PROPRIETARIO_SALA: "/consultorio",
   };
 
   const token = await createSessionToken(user.id, email, user.role);

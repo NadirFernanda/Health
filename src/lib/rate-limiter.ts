@@ -10,7 +10,16 @@ let redisInstance: Redis | null = null;
 
 function getRedis(): Redis {
   if (!redisInstance) {
-    redisInstance = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
+    const url = process.env.REDIS_URL || "redis://localhost:6379";
+    redisInstance = new Redis(url, {
+      maxRetriesPerRequest: 1,
+      connectTimeout: 2000,
+      enableOfflineQueue: false,
+      lazyConnect: true,
+    });
+    redisInstance.on("error", () => {
+      // silenced — callers have try/catch
+    });
   }
   return redisInstance;
 }
@@ -72,6 +81,10 @@ export async function checkRateLimit(config: RateLimitConfig): Promise<{
  * Reset manual do rate limit de um utilizador
  */
 export async function resetRateLimit(key: string): Promise<void> {
-  const redis = getRedis();
-  await redis.del(`ratelimit:${key}`);
+  try {
+    const redis = getRedis();
+    await redis.del(`ratelimit:${key}`);
+  } catch {
+    // non-critical — login already succeeded
+  }
 }
