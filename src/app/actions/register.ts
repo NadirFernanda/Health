@@ -5,6 +5,37 @@ import { redirect } from "next/navigation";
 import { createSessionToken, COOKIE_NAME, COOKIE_MAX_AGE } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
+import { z } from "zod";
+
+const TIPOS_PROFISSIONAL = ["MEDICO", "ENFERMEIRO", "TECNICO_SAUDE"] as const;
+
+const profissionalSchema = z.object({
+  nome: z.string().min(3, "Nome demasiado curto").max(120, "Nome demasiado longo"),
+  email: z.email("E-mail inválido"),
+  password: z.string().min(8, "Palavra-passe deve ter pelo menos 8 caracteres").max(128),
+  tipo: z.enum(TIPOS_PROFISSIONAL).default("MEDICO"),
+  especialidade: z.string().min(2, "Especialidade obrigatória").max(100),
+  zonaLuanda: z.string().max(100).optional(),
+  numeroSinome: z.string().max(50).optional(),
+});
+
+const clinicaSchema = z.object({
+  nome: z.string().min(3, "Nome demasiado curto").max(120, "Nome demasiado longo"),
+  email: z.email("E-mail inválido"),
+  password: z.string().min(8, "Palavra-passe deve ter pelo menos 8 caracteres").max(128),
+  zonaLuanda: z.string().min(1, "Zona obrigatória").max(100),
+  morada: z.string().max(200).optional(),
+  contacto: z.string().max(50).optional(),
+});
+
+const consultorioSchema = z.object({
+  nome: z.string().min(3, "Nome demasiado curto").max(120, "Nome demasiado longo"),
+  email: z.email("E-mail inválido"),
+  password: z.string().min(8, "Palavra-passe deve ter pelo menos 8 caracteres").max(128),
+  zonaLuanda: z.string().min(1, "Zona obrigatória").max(100),
+  morada: z.string().max(200).optional(),
+  contacto: z.string().max(50).optional(),
+});
 
 export type RegisterState = { error: string } | null;
 
@@ -12,21 +43,21 @@ export async function registerProfissionalAction(
   _prev: RegisterState,
   formData: FormData
 ): Promise<RegisterState> {
-  const nome = formData.get("nome")?.toString().trim() ?? "";
-  const email = formData.get("email")?.toString().trim().toLowerCase() ?? "";
-  const password = formData.get("password")?.toString() ?? "";
-  const tipo = formData.get("tipo")?.toString() ?? "MEDICO";
-  const especialidade = formData.get("especialidade")?.toString().trim() ?? "";
-  const zonaLuanda = formData.get("zonaLuanda")?.toString().trim() ?? "";
-  const numeroSinome = formData.get("numeroSinome")?.toString().trim() ?? "";
+  const raw = {
+    nome: formData.get("nome")?.toString().trim() ?? "",
+    email: formData.get("email")?.toString().trim().toLowerCase() ?? "",
+    password: formData.get("password")?.toString() ?? "",
+    tipo: formData.get("tipo")?.toString() ?? "MEDICO",
+    especialidade: formData.get("especialidade")?.toString().trim() ?? "",
+    zonaLuanda: formData.get("zonaLuanda")?.toString().trim() || undefined,
+    numeroSinome: formData.get("numeroSinome")?.toString().trim() || undefined,
+  };
 
-  if (!nome || !email || !password || !especialidade) {
-    return { error: "Preencha todos os campos obrigatórios." };
+  const parsed = profissionalSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Dados inválidos." };
   }
-
-  if (password.length < 8) {
-    return { error: "A palavra-passe deve ter pelo menos 8 caracteres." };
-  }
+  const { nome, email, password, tipo, especialidade, zonaLuanda, numeroSinome } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -43,10 +74,10 @@ export async function registerProfissionalAction(
       profissional: {
         create: {
           nome,
-          tipo: tipo as "MEDICO" | "ENFERMEIRO" | "TECNICO_SAUDE",
+          tipo,
           especialidade,
-          cidade: zonaLuanda || null,
-          numeroSinome: numeroSinome || null,
+          cidade: zonaLuanda ?? null,
+          numeroSinome: numeroSinome ?? null,
         },
       },
     },
@@ -69,20 +100,20 @@ export async function registerClinicaAction(
   _prev: RegisterState,
   formData: FormData
 ): Promise<RegisterState> {
-  const nome = formData.get("nome")?.toString().trim() ?? "";
-  const email = formData.get("email")?.toString().trim().toLowerCase() ?? "";
-  const password = formData.get("password")?.toString() ?? "";
-  const zonaLuanda = formData.get("zonaLuanda")?.toString().trim() ?? "";
-  const morada = formData.get("morada")?.toString().trim() ?? "";
-  const contacto = formData.get("contacto")?.toString().trim() ?? "";
+  const raw = {
+    nome: formData.get("nome")?.toString().trim() ?? "",
+    email: formData.get("email")?.toString().trim().toLowerCase() ?? "",
+    password: formData.get("password")?.toString() ?? "",
+    zonaLuanda: formData.get("zonaLuanda")?.toString().trim() ?? "",
+    morada: formData.get("morada")?.toString().trim() || undefined,
+    contacto: formData.get("contacto")?.toString().trim() || undefined,
+  };
 
-  if (!nome || !email || !password || !zonaLuanda) {
-    return { error: "Preencha todos os campos obrigatórios." };
+  const parsed = clinicaSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Dados inválidos." };
   }
-
-  if (password.length < 8) {
-    return { error: "A palavra-passe deve ter pelo menos 8 caracteres." };
-  }
+  const { nome, email, password, zonaLuanda, morada, contacto } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -99,9 +130,9 @@ export async function registerClinicaAction(
       clinica: {
         create: {
           nome,
-          zonaLuanda: zonaLuanda || null,
-          morada: morada || null,
-          contacto: contacto || null,
+          zonaLuanda: zonaLuanda ?? null,
+          morada: morada ?? null,
+          contacto: contacto ?? null,
         },
       },
     },
@@ -124,20 +155,20 @@ export async function registerConsultorioAction(
   _prev: RegisterState,
   formData: FormData
 ): Promise<RegisterState> {
-  const nome = formData.get("nome")?.toString().trim() ?? "";
-  const email = formData.get("email")?.toString().trim().toLowerCase() ?? "";
-  const password = formData.get("password")?.toString() ?? "";
-  const zonaLuanda = formData.get("zonaLuanda")?.toString().trim() ?? "";
-  const morada = formData.get("morada")?.toString().trim() ?? "";
-  const contacto = formData.get("contacto")?.toString().trim() ?? "";
+  const raw = {
+    nome: formData.get("nome")?.toString().trim() ?? "",
+    email: formData.get("email")?.toString().trim().toLowerCase() ?? "",
+    password: formData.get("password")?.toString() ?? "",
+    zonaLuanda: formData.get("zonaLuanda")?.toString().trim() ?? "",
+    morada: formData.get("morada")?.toString().trim() || undefined,
+    contacto: formData.get("contacto")?.toString().trim() || undefined,
+  };
 
-  if (!nome || !email || !password || !zonaLuanda) {
-    return { error: "Preencha todos os campos obrigatórios." };
+  const parsed = consultorioSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Dados inválidos." };
   }
-
-  if (password.length < 8) {
-    return { error: "A palavra-passe deve ter pelo menos 8 caracteres." };
-  }
+  const { nome, email, password, zonaLuanda, morada, contacto } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -154,9 +185,9 @@ export async function registerConsultorioAction(
       consultorio: {
         create: {
           nome,
-          zonaLuanda: zonaLuanda || null,
-          morada: morada || null,
-          contacto: contacto || null,
+          zonaLuanda: zonaLuanda ?? null,
+          morada: morada ?? null,
+          contacto: contacto ?? null,
         },
       },
     },

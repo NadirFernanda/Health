@@ -7,6 +7,11 @@ import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { checkRateLimit as redisCheckRateLimit, resetRateLimit } from "@/lib/rate-limiter";
 
+// Validates a redirect path: must start with / but NOT // (protocol-relative open redirect)
+function safeRedirectPath(path: string, fallback: string): string {
+  return path && /^\/[^/]/.test(path) ? path : fallback;
+}
+
 export type LoginState = { error: string } | null;
 
 const MAX_ATTEMPTS = 10;
@@ -86,8 +91,7 @@ export async function loginAction(
     path: "/",
   });
 
-  const destination =
-    redirectTo && redirectTo.startsWith("/") ? redirectTo : dashboards[user.role] ?? "/";
+  const destination = safeRedirectPath(redirectTo, dashboards[user.role] ?? "/");
 
   redirect(destination);
 }
