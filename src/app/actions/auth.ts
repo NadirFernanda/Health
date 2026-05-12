@@ -5,28 +5,24 @@ import { redirect } from "next/navigation";
 import { createSessionToken, COOKIE_NAME, COOKIE_MAX_AGE } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
+import { checkRateLimit as redisCheckRateLimit, resetRateLimit } from "@/lib/rate-limiter";
 
 export type LoginState = { error: string } | null;
 
-// Rate limiting simples em memória — máx. 10 tentativas por IP em 15 min
-const loginAttempts = new Map<string, { count: number; resetAt: number }>();
 const MAX_ATTEMPTS = 10;
-const WINDOW_MS = 15 * 60 * 1000; // 15 minutos
+const WINDOW_SECONDS = 15 * 60; // 15 minutos
 
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = loginAttempts.get(ip);
-  if (!entry || now > entry.resetAt) {
-    loginAttempts.set(ip, { count: 1, resetAt: now + WINDOW_MS });
-    return true;
-  }
-  if (entry.count >= MAX_ATTEMPTS) return false;
-  entry.count += 1;
-  return true;
+async function checkLoginRateLimit(ip: string): Promise<boolean> {
+  const result = await redisCheckRateLimit({
+    key: `login:${ip}`,
+    maxRequests: MAX_ATTEMPTS,
+    windowSeconds: WINDOW_SECONDS,
+  });
+  return result.allowed;
 }
 
-function clearRateLimit(ip: string) {
-  loginAttempts.delete(ip);
+async function clearLoginRateLimit(ip: string): Promise<void> {
+  await resetRateLimit(`login:${ip}`);
 }
 
 export async function loginAction(
@@ -41,14 +37,15 @@ export async function loginAction(
     return { error: "Preencha o e-mail e a palavra-passe." };
   }
 
-  // Rate limit por IP
+  // Rate limit por IP (Redis — persistente entre processos e restarts)
   const headerStore = await headers();
   const ip =
     headerStore.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     headerStore.get("x-real-ip") ??
     "unknown";
 
-  if (!checkRateLimit(ip)) {
+  const allowed = await checkLoginRateLimit(ip);
+  if (!allowed) {
     return { error: "Demasiadas tentativas. Aguarde 15 minutos e tente novamente." };
   }
 
@@ -70,7 +67,7 @@ export async function loginAction(
   }
 
   // Login bem-sucedido — limpar rate limit
-  clearRateLimit(ip);
+  await clearLoginRateLimit(ip);
 
   const dashboards: Record<string, string> = {
     ADMIN: "/admin",

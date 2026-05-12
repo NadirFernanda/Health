@@ -1,9 +1,9 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { PlantaoCard } from "@/components/plantao-card";
 import { TopBar } from "@/components/nav";
 import { EmptyState } from "@/components/empty-state";
-import { Search, AlertCircle, Sparkles } from "lucide-react";
+import { Search, AlertCircle, Sparkles, List, CalendarDays, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 
 type PlantaoAPI = {
   id: string; tipoProfissional: string; especialidade: string; dataInicio: string; dataFim: string;
@@ -52,8 +52,148 @@ const DURACAO_FILTROS = [
   { key: "mais8", label: "> 8h" },
 ];
 
+const DIAS_PT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const MESES_PT = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
 function getDuracaoHoras(dataInicio: string, dataFim: string): number {
   return (new Date(dataFim).getTime() - new Date(dataInicio).getTime()) / (1000 * 60 * 60);
+}
+
+function toDateStr(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
+type CalendarProps = {
+  plantoes: PlantaoAPI[];
+  onDaySelect: (day: string) => void;
+  selectedDay: string | null;
+};
+
+function CalendarioPlantoes({ plantoes, onDaySelect, selectedDay }: CalendarProps) {
+  const today = new Date();
+  const [cursor, setCursor] = useState({ year: today.getFullYear(), month: today.getMonth() });
+
+  const diasComPlantoes = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const p of plantoes) {
+      const d = toDateStr(new Date(p.dataInicio));
+      map[d] = (map[d] ?? 0) + 1;
+    }
+    return map;
+  }, [plantoes]);
+
+  const firstDay = new Date(cursor.year, cursor.month, 1);
+  const lastDay = new Date(cursor.year, cursor.month + 1, 0);
+  const startOffset = firstDay.getDay();
+  const totalCells = Math.ceil((startOffset + lastDay.getDate()) / 7) * 7;
+
+  const cells: (Date | null)[] = Array.from({ length: totalCells }, (_, i) => {
+    const dayNum = i - startOffset + 1;
+    if (dayNum < 1 || dayNum > lastDay.getDate()) return null;
+    return new Date(cursor.year, cursor.month, dayNum);
+  });
+
+  const prevMonth = () =>
+    setCursor((c) => {
+      const m = c.month === 0 ? 11 : c.month - 1;
+      const y = c.month === 0 ? c.year - 1 : c.year;
+      return { year: y, month: m };
+    });
+
+  const nextMonth = () =>
+    setCursor((c) => {
+      const m = c.month === 11 ? 0 : c.month + 1;
+      const y = c.month === 11 ? c.year + 1 : c.year;
+      return { year: y, month: m };
+    });
+
+  const todayStr = toDateStr(today);
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 mx-4 mt-4 overflow-hidden">
+      {/* Header do calendário */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <button
+          onClick={prevMonth}
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500"
+        >
+          <ChevronLeft size={16} />
+        </button>
+        <span className="text-sm font-bold text-gray-800">
+          {MESES_PT[cursor.month]} {cursor.year}
+        </span>
+        <button
+          onClick={nextMonth}
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500"
+        >
+          <ChevronRight size={16} />
+        </button>
+      </div>
+
+      {/* Cabeçalho dos dias */}
+      <div className="grid grid-cols-7 border-b border-gray-50">
+        {DIAS_PT.map((d) => (
+          <div key={d} className="text-center py-2 text-xs font-semibold text-gray-400">
+            {d}
+          </div>
+        ))}
+      </div>
+
+      {/* Células */}
+      <div className="grid grid-cols-7">
+        {cells.map((date, idx) => {
+          if (!date) return <div key={idx} className="h-12" />;
+          const ds = toDateStr(date);
+          const count = diasComPlantoes[ds] ?? 0;
+          const isToday = ds === todayStr;
+          const isSelected = ds === selectedDay;
+          const isPast = date < today && !isToday;
+
+          return (
+            <button
+              key={ds}
+              onClick={() => onDaySelect(isSelected ? "" : ds)}
+              disabled={isPast}
+              className={`h-12 flex flex-col items-center justify-center relative transition-colors
+                ${isPast ? "opacity-35 cursor-not-allowed" : "hover:bg-gray-50"}
+                ${isSelected ? "bg-[#0B3C74] rounded-xl" : ""}
+              `}
+            >
+              <span
+                className={`text-sm font-semibold leading-none
+                  ${isSelected ? "text-white" : isToday ? "text-[#00A99D]" : "text-gray-700"}
+                `}
+              >
+                {date.getDate()}
+              </span>
+              {count > 0 && (
+                <span
+                  className={`mt-0.5 text-[9px] font-bold leading-none
+                    ${isSelected ? "text-blue-200" : "text-[#0B3C74]"}
+                  `}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Legenda */}
+      <div className="flex items-center gap-4 px-4 py-2.5 border-t border-gray-50">
+        <span className="flex items-center gap-1 text-[11px] text-gray-400">
+          <span className="text-[#00A99D] font-bold">●</span> Hoje
+        </span>
+        <span className="flex items-center gap-1 text-[11px] text-gray-400">
+          <span className="text-[#0B3C74] font-bold">●</span> Com plantão
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export default function BuscarPlantoes() {
@@ -68,6 +208,8 @@ export default function BuscarPlantoes() {
   const [disponivelAgora, setDisponivelAgora] = useState(false);
   const [sugestoes, setSugestoes] = useState<PlantaoAPI[]>([]);
   const [loadingSugestoes, setLoadingSugestoes] = useState(true);
+  const [vistaCalendario, setVistaCalendario] = useState(false);
+  const [diaSeleccionado, setDiaSeleccionado] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -118,19 +260,109 @@ export default function BuscarPlantoes() {
     return () => ctrl.abort();
   }, [filtroEsp, filtroTipo, filtroZona, disponivelAgora, filtroValor]);
 
-  const plantoesFiltrados = filtroDuracao === "todas" ? plantoes : plantoes.filter((p) => {
-    const h = getDuracaoHoras(p.dataInicio, p.dataFim);
-    if (filtroDuracao === "ate4") return h <= 4;
-    if (filtroDuracao === "4a8") return h > 4 && h <= 8;
-    return h > 8; // mais8
-  });
+  const plantoesFiltrados = useMemo(() => {
+    let lista = plantoes;
+    if (filtroDuracao !== "todas") {
+      lista = lista.filter((p) => {
+        const h = getDuracaoHoras(p.dataInicio, p.dataFim);
+        if (filtroDuracao === "ate4") return h <= 4;
+        if (filtroDuracao === "4a8") return h > 4 && h <= 8;
+        return h > 8;
+      });
+    }
+    if (diaSeleccionado) {
+      lista = lista.filter((p) => toDateStr(new Date(p.dataInicio)) === diaSeleccionado);
+    }
+    return lista;
+  }, [plantoes, filtroDuracao, diaSeleccionado]);
+
+  const diaLabel = diaSeleccionado
+    ? new Date(diaSeleccionado + "T12:00:00").toLocaleDateString("pt-AO", {
+        weekday: "long", day: "numeric", month: "long",
+      })
+    : null;
 
   return (
     <div>
       <TopBar titulo="Buscar Plantões" back="/medico" />
 
-      {/* Sugeridos para Si */}
-      {(loadingSugestoes || sugestoes.length > 0) && (
+      {/* Toggle Vista Lista / Calendário */}
+      <div className="mx-4 mt-4 flex items-center bg-gray-100 rounded-xl p-1 gap-1">
+        <button
+          onClick={() => setVistaCalendario(false)}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-colors ${
+            !vistaCalendario ? "bg-white text-[#0B3C74] shadow-sm" : "text-gray-500"
+          }`}
+        >
+          <List size={13} strokeWidth={2.5} />
+          Lista
+        </button>
+        <button
+          onClick={() => setVistaCalendario(true)}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-colors ${
+            vistaCalendario ? "bg-white text-[#0B3C74] shadow-sm" : "text-gray-500"
+          }`}
+        >
+          <CalendarDays size={13} strokeWidth={2.5} />
+          Calendário
+        </button>
+      </div>
+
+      {/* Vista Calendário */}
+      {vistaCalendario && (
+        <>
+          <CalendarioPlantoes
+            plantoes={plantoes}
+            onDaySelect={(d) => setDiaSeleccionado(d || null)}
+            selectedDay={diaSeleccionado}
+          />
+          {diaSeleccionado && (
+            <div className="px-4 pt-4 pb-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-bold text-gray-800 capitalize">{diaLabel}</p>
+                <button
+                  onClick={() => setDiaSeleccionado(null)}
+                  className="text-xs text-gray-400 underline"
+                >
+                  Limpar
+                </button>
+              </div>
+              {plantoesFiltrados.length === 0 ? (
+                <EmptyState
+                  icon={CalendarDays}
+                  title="Sem plantões neste dia"
+                  description="Não há turnos disponíveis nesta data."
+                />
+              ) : (
+                <div className="space-y-3">
+                  {plantoesFiltrados.map((p) => (
+                    <div key={p.id} className="flex items-start gap-2">
+                      <div className="shrink-0 mt-3 flex flex-col items-center">
+                        <Clock size={12} className="text-gray-400" />
+                        <span className="text-[10px] text-gray-400 mt-0.5">
+                          {new Date(p.dataInicio).toLocaleTimeString("pt-AO", { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <PlantaoCard plantao={p as never} showCandidatarBtn />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          {!diaSeleccionado && (
+            <div className="px-4 pt-6 pb-4 text-center">
+              <CalendarDays size={32} strokeWidth={1.5} className="text-gray-300 mx-auto mb-2" />
+              <p className="text-sm text-gray-400">Seleccione um dia para ver os plantões disponíveis</p>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Vista Lista — Sugeridos para Si */}
+      {!vistaCalendario && (loadingSugestoes || sugestoes.length > 0) && (
         <div className="px-4 pt-4">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles size={14} strokeWidth={2} className="text-[#00A99D]" />
@@ -156,6 +388,9 @@ export default function BuscarPlantoes() {
           )}
         </div>
       )}
+
+      {/* Filtros e lista — apenas na vista de lista */}
+      {!vistaCalendario && <>
 
       {/* Toggle Disponível Agora */}
       <div className="mx-4 mt-4 flex items-center justify-between bg-white border border-gray-100 rounded-2xl px-4 py-3">
@@ -320,6 +555,8 @@ export default function BuscarPlantoes() {
           </>
         )}
       </div>
+
+      </>}
     </div>
   );
 }

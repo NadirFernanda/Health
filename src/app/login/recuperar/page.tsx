@@ -2,23 +2,37 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Mail, ChevronLeft, KeyRound } from "lucide-react";
+import { Mail, ChevronLeft, KeyRound, XCircle } from "lucide-react";
 
 export default function RecuperarPassword() {
   const [email, setEmail] = useState("");
   const [enviado, setEnviado] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
     setLoading(true);
-    // Simular delay de envio
-    setTimeout(() => {
-      setLoading(false);
+    setError(null);
+    try {
+      const res = await fetch("/api/auth/recuperar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Ocorreu um erro. Tente novamente.");
+        return;
+      }
       setEnviado(true);
-    }, 1200);
+    } catch {
+      setError("Erro de ligação. Verifique a sua internet e tente novamente.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (enviado) {
@@ -71,6 +85,13 @@ export default function RecuperarPassword() {
             Insira o seu email para receber um link de recuperação de password.
           </p>
         </div>
+
+        {error && (
+          <div className="mb-4 bg-red-50 border border-red-100 rounded-xl px-4 py-3 flex items-start gap-2">
+            <XCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

@@ -3,6 +3,14 @@ import fs from "fs/promises";
 import path from "path";
 import { requireSession, getProfissionalFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
+import {
+  validateFileMagicBytes,
+  sanitizeFilename,
+  ALLOWED_DOC_MIMES,
+  ALLOWED_DOC_EXTS,
+  ALLOWED_CURRICULO_MIMES,
+  ALLOWED_CURRICULO_EXTS,
+} from "@/lib/file-validation";
 
 const allowedTipos = [
   "CEDULA_OMA",
@@ -63,30 +71,34 @@ export async function POST(request: NextRequest) {
   if (arquivo.size > 10 * 1024 * 1024) {
     return Response.json({ error: "Ficheiro demasiado grande. Máximo 10 MB." }, { status: 400 });
   }
+  if (arquivo.size === 0) {
+    return Response.json({ error: "Ficheiro vazio." }, { status: 400 });
+  }
 
-  const allowedMimes = [
-    "application/pdf", "image/jpeg", "image/png", "image/webp",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ];
   const isCurriculo = tipo === "CURRICULO";
-  const allowedForTipo = isCurriculo
-    ? allowedMimes
-    : ["application/pdf", "image/jpeg", "image/png", "image/webp"];
-  if (!allowedForTipo.includes(arquivo.type)) {
+  const allowedMimes = isCurriculo ? ALLOWED_CURRICULO_MIMES : ALLOWED_DOC_MIMES;
+  const allowedExts = isCurriculo ? ALLOWED_CURRICULO_EXTS : ALLOWED_DOC_EXTS;
+
+  // Validate by magic bytes — client Content-Type is untrusted
+  const buffer = Buffer.from(await arquivo.arrayBuffer());
+  const magicCheck = validateFileMagicBytes(buffer, allowedMimes);
+  if (!magicCheck.ok) {
     return Response.json({
       error: isCurriculo
-        ? "Formato não suportado. Use PDF, DOC ou DOCX."
+        ? "Formato não suportado. Use PDF, DOC, DOCX, JPG ou PNG."
         : "Formato não suportado. Use PDF, JPG ou PNG.",
     }, { status: 400 });
   }
 
-  const safeName = arquivo.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+  const safeBasename = sanitizeFilename(arquivo.name, allowedExts);
+  if (!safeBasename) {
+    return Response.json({ error: "Extensão de ficheiro não permitida." }, { status: 400 });
+  }
+
   const uploadsDir = path.join(process.cwd(), "public", "uploads", "medicos", prof.id);
   await fs.mkdir(uploadsDir, { recursive: true });
-  const filename = `${Date.now()}-${safeName}`;
+  const filename = `${Date.now()}-${safeBasename}`;
   const filePath = path.join(uploadsDir, filename);
-  const buffer = Buffer.from(await arquivo.arrayBuffer());
   await fs.writeFile(filePath, buffer);
 
   const relativePath = `/uploads/medicos/${prof.id}/${filename}`;

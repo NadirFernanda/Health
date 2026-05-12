@@ -2,6 +2,34 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAuthSession } from "@/lib/api-auth";
 import type { TipoProfissional } from "@/generated/prisma/enums";
+import { z } from "zod";
+
+const TIPOS_PROFISSIONAL_VALIDOS = ["MEDICO", "ENFERMEIRO", "TECNICO_SAUDE", "OUTRO"] as const;
+
+const isoDateString = z.string().refine((s) => !isNaN(new Date(s).getTime()), {
+  message: "Data inválida — use formato ISO 8601",
+});
+
+const criarPlantaoSchema = z.object({
+  tipoProfissional: z.enum(TIPOS_PROFISSIONAL_VALIDOS).default("MEDICO"),
+  especialidade: z.string().min(2).max(100),
+  dataInicio: isoDateString,
+  dataFim: isoDateString,
+  valorKwanzas: z.number().int().min(500).max(5_000_000),
+  vagas: z.number().int().min(1).max(50),
+  descricao: z.string().max(2000).optional(),
+  salaId: z.string().optional().nullable(),
+  maca: z.boolean().default(false),
+  estetoscopio: z.boolean().default(false),
+  tensiometro: z.boolean().default(false),
+  termometro: z.boolean().default(false),
+  computador: z.boolean().default(false),
+  materiaisBasicos: z.boolean().default(true),
+  nebulizador: z.boolean().default(false),
+  oximetro: z.boolean().default(false),
+  glucometro: z.boolean().default(false),
+  desfibrilador: z.boolean().default(false),
+});
 
 const PAGE_SIZE = 20;
 
@@ -135,60 +163,65 @@ export async function POST(request: NextRequest) {
   const clinica = await prisma.clinica.findUnique({ where: { userId: session.id } });
   if (!clinica) return Response.json({ error: "Clínica não encontrada" }, { status: 404 });
 
-  const body = await request.json();
+  let rawBody: unknown;
+  try { rawBody = await request.json(); } catch { return Response.json({ error: "Body inválido" }, { status: 400 }); }
+
+  const parsed = criarPlantaoSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return Response.json({ error: parsed.error.issues[0]?.message ?? "Dados inválidos" }, { status: 400 });
+  }
+
   const {
     tipoProfissional, especialidade, dataInicio, dataFim,
     valorKwanzas, vagas, descricao, salaId,
     maca, estetoscopio, tensiometro, termometro, computador,
     materiaisBasicos, nebulizador, oximetro, glucometro, desfibrilador,
-  } = body;
-
-  if (!especialidade || !dataInicio || !dataFim || !valorKwanzas || !vagas) {
-    return Response.json({ error: "Campos obrigatórios em falta" }, { status: 400 });
-  }
+  } = parsed.data;
 
   const inicio = new Date(dataInicio);
   const fim = new Date(dataFim);
-  if (isNaN(inicio.getTime()) || isNaN(fim.getTime()) || fim <= inicio) {
-    return Response.json({ error: "Datas inválidas" }, { status: 400 });
+  if (fim <= inicio) {
+    return Response.json({ error: "dataFim deve ser posterior a dataInicio" }, { status: 400 });
+  }
+  if (inicio < new Date()) {
+    return Response.json({ error: "Não é possível publicar plantões no passado" }, { status: 400 });
   }
 
-  const valorInt = parseInt(valorKwanzas);
-  const comissao = Math.round(valorInt * 0.10);
+  const comissao = Math.round(valorKwanzas * 0.10);
 
   const { plantao, pagamento } = await prisma.$transaction(async (tx) => {
     const p = await tx.plantao.create({
       data: {
         clinicaId: clinica.id,
-        tipoProfissional: tipoProfissional ?? "MEDICO",
+        tipoProfissional,
         especialidade,
         dataInicio: inicio,
         dataFim: fim,
-        valorKwanzas: valorInt,
-        valorCentavos: BigInt(valorInt) * 100n,
-        vagas: parseInt(vagas),
+        valorKwanzas,
+        valorCentavos: BigInt(valorKwanzas) * 100n,
+        vagas,
         descricao: descricao ?? null,
         salaId: salaId ?? null,
         estado: "AGUARDANDO_PAGAMENTO",
-        maca: maca ?? false,
-        estetoscopio: estetoscopio ?? false,
-        tensiometro: tensiometro ?? false,
-        termometro: termometro ?? false,
-        computador: computador ?? false,
-        materiaisBasicos: materiaisBasicos ?? true,
-        nebulizador: nebulizador ?? false,
-        oximetro: oximetro ?? false,
-        glucometro: glucometro ?? false,
-        desfibrilador: desfibrilador ?? false,
+        maca,
+        estetoscopio,
+        tensiometro,
+        termometro,
+        computador,
+        materiaisBasicos,
+        nebulizador,
+        oximetro,
+        glucometro,
+        desfibrilador,
       },
     });
     const pag = await tx.pagamento.create({
       data: {
         tipo: "TURNO",
         plantaoId: p.id,
-        valorBrutoAoa: valorInt,
+        valorBrutoAoa: valorKwanzas,
         comissaoAoa: comissao,
-        valorLiquidoAoa: valorInt - comissao,
+        valorLiquidoAoa: valorKwanzas - comissao,
         metodo: "TRANSFERENCIA_BANCARIA",
         estado: "PENDENTE",
       },
@@ -196,5 +229,5 @@ export async function POST(request: NextRequest) {
     return { plantao: p, pagamento: pag };
   });
 
-  return Response.json({ id: plantao.id, pagamentoId: pagamento.id, valorKwanzas: valorInt }, { status: 201 });
+  return Response.json({ id: plantao.id, pagamentoId: pagamento.id, valorKwanzas }, { status: 201 });
 }

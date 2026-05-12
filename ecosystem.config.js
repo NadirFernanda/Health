@@ -3,8 +3,7 @@ module.exports = {
     // ── Main Next.js application ───────────────────────────────────────────
     {
       name: "medfreela",
-      script: "node_modules/.bin/next",
-      args: "start --port 3000",
+      script: "/var/www/medfreela/start-server.sh",
       cwd: "/var/www/medfreela",
       instances: 1,
       autorestart: true,

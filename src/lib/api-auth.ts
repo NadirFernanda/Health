@@ -6,6 +6,13 @@ import { cookies } from "next/headers";
 import { verifySessionToken, getPayloadFromToken, COOKIE_NAME, UserRole } from "./auth";
 import { prisma } from "./db";
 import { type AdminModule, type AccessLevel, checkModuleAccess } from "./admin-permissions";
+import Redis from "ioredis";
+
+let _redis: Redis | null = null;
+function getRedis(): Redis {
+  if (!_redis) _redis = new Redis(process.env.REDIS_URL ?? "redis://localhost:6379");
+  return _redis;
+}
 
 export type SessionPayload = { id: string; sub: string; role: UserRole };
 
@@ -14,7 +21,23 @@ export async function getAuthSession(): Promise<SessionPayload | null> {
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token) return null;
   if (!(await verifySessionToken(token))) return null;
-  return getPayloadFromToken(token);
+
+  const payload = getPayloadFromToken(token);
+  if (!payload) return null;
+
+  // Rejeitar sessões emitidas antes de um reset de password
+  try {
+    const r = getRedis();
+    const changedAt = await r.get(`pwchanged:${payload.id}`);
+    if (changedAt) {
+      const tokenIat = (payload as unknown as { iat?: number }).iat ?? 0;
+      if (tokenIat < Number(changedAt)) return null;
+    }
+  } catch {
+    // Redis indisponível — falhar aberto (não bloquear utilizadores legítimos)
+  }
+
+  return payload;
 }
 
 export async function requireSession(
