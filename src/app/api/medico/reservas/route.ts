@@ -1,6 +1,20 @@
 import { NextRequest } from "next/server";
 import { requireSession, getProfissionalFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
+import { z } from "zod";
+
+const METODOS = ["MULTICAIXA_EXPRESS", "TPA", "TRANSFERENCIA_BANCARIA"] as const;
+
+const reservaSchema = z.object({
+  salaId: z.string().min(1),
+  data: z.string().refine((s) => {
+    const d = new Date(s);
+    return !isNaN(d.getTime()) && d > new Date();
+  }, { message: "Data inválida ou no passado" }),
+  horaInicio: z.string().regex(/^\d{2}:\d{2}$/, "Hora inválida — use HH:MM"),
+  duracaoHoras: z.number().int().min(1).max(12),
+  metodo: z.enum(METODOS).default("TRANSFERENCIA_BANCARIA"),
+});
 
 export async function GET() {
   const auth = await requireSession("MEDICO");
@@ -46,10 +60,12 @@ export async function POST(request: NextRequest) {
   const prof = await getProfissionalFromSession(auth.session);
   if (!prof) return Response.json({ error: "Perfil não encontrado" }, { status: 404 });
 
-  const { salaId, data, horaInicio, duracaoHoras, metodo } = await request.json();
-  if (!salaId || !data || !horaInicio || !duracaoHoras) {
-    return Response.json({ error: "Campos obrigatórios em falta" }, { status: 400 });
-  }
+  let rawBody: unknown;
+  try { rawBody = await request.json(); } catch { return Response.json({ error: "Body inválido" }, { status: 400 }); }
+  const parsed = reservaSchema.safeParse(rawBody);
+  if (!parsed.success) return Response.json({ error: parsed.error.issues[0]?.message ?? "Dados inválidos" }, { status: 400 });
+
+  const { salaId, data, horaInicio, duracaoHoras, metodo: metodoFinal } = parsed.data;
 
   const sala = await prisma.sala.findUnique({ where: { id: salaId } });
   if (!sala || !sala.disponivel) {
@@ -59,7 +75,6 @@ export async function POST(request: NextRequest) {
   const valorTotal = sala.precoPorHora * duracaoHoras;
   const valorTotalCentavos = BigInt(sala.precoPorHora) * BigInt(duracaoHoras) * 100n;
   const comissao = Math.round(valorTotal * 0.10);
-  const metodoFinal = (["MULTICAIXA_EXPRESS", "TPA"].includes(metodo) ? metodo : "TRANSFERENCIA_BANCARIA") as "MULTICAIXA_EXPRESS" | "TPA" | "TRANSFERENCIA_BANCARIA";
 
   const { reserva, pagamento } = await prisma.$transaction(async (tx) => {
     const r = await tx.reservaSala.create({

@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession, getConsultorioFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
+import type { EstadoReserva } from "@/generated/prisma/enums";
+
+const ESTADOS_RESERVA_VALIDOS: EstadoReserva[] = [
+  "CONFIRMADA", "CANCELADA", "CONCLUIDA", "PENDENTE_PAGAMENTO",
+  "CANCELADA_PROFISSIONAL", "CANCELADA_CLINICA", "AGUARDANDO_VISTORIA",
+  "DISPUTA_SALA", "CONTRATO_PENDENTE",
+];
 
 export async function GET(req: NextRequest) {
   const session = await getAuthSession();
@@ -12,13 +19,16 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = req.nextUrl;
   const salaId = searchParams.get("salaId");
-  const estado = searchParams.get("estado");
+  const estadoParam = searchParams.get("estado");
+  const estadoValido = estadoParam && (ESTADOS_RESERVA_VALIDOS as string[]).includes(estadoParam)
+    ? estadoParam as EstadoReserva
+    : undefined;
 
   const reservas = await prisma.reservaSala.findMany({
     where: {
       sala: { consultorioId: consultorio.id },
       ...(salaId ? { salaId } : {}),
-      ...(estado ? { estado: estado as never } : {}),
+      ...(estadoValido ? { estado: estadoValido } : {}),
     },
     include: {
       sala: { select: { id: true, nome: true, tipo: true } },
