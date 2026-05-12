@@ -46,7 +46,7 @@ model Profissional {
   tipo                  TipoProfissional    @default(MEDICO)
   especialidade         String
   numeroOrdem           String?
-  numeroSinome          String?             @unique(where: raw("(\"numeroSinome\" IS NOT NULL)"))
+  numeroSinome          String?             @unique
   provincia             String              @default("Luanda")
   foto                  String?
   bio                   String?
