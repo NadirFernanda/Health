@@ -1,6 +1,7 @@
-const CACHE_NAME = "medfreela-v1";
+const CACHE_NAME = "medfreela-v2";
 
-const PRECACHE = ["/login", "/medico", "/clinica", "/consultorio"];
+// Only cache public, always-accessible routes
+const PRECACHE = ["/login"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -24,12 +25,20 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+
   const url = new URL(event.request.url);
+
+  // Never intercept cross-origin requests — let the browser handle them directly
+  // (fonts.googleapis.com, gstatic.com, cloudflareinsights.com, etc.)
+  if (url.origin !== self.location.origin) return;
+
+  // Never intercept Next.js internals or API routes
   if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/_next/")) return;
 
   event.respondWith(
     fetch(event.request)
       .then((response) => {
+        // Cache successful navigation responses for offline fallback
         if (response.ok && event.request.mode === "navigate") {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
