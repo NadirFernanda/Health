@@ -195,8 +195,7 @@ model Plantao {
   @@index([clinicaId])
   @@index([especialidade])
   @@index([tipoProfissional])
-  @@index([dataInicio])
-  @@index([estado])
+  @@index([estado, dataInicio])
 }
 
 model Candidatura {
@@ -273,6 +272,7 @@ model Sala {
 
   @@index([clinicaId])
   @@index([tipo])
+  @@index([disponivel, zona])
   @@index([ativo])
   @@index([consultorioId])
 }
@@ -308,7 +308,7 @@ model ReservaSala {
   sala                  Sala          @relation(fields: [salaId], references: [id])
 
   @@index([salaId])
-  @@index([profissionalId])
+  @@index([profissionalId, criadoEm(sort: Desc)])
   @@index([estado])
 }
 
@@ -443,8 +443,7 @@ model Notificacao {
   criadoEm DateTime @default(now())
   user     User     @relation(fields: [userId], references: [id])
 
-  @@index([userId])
-  @@index([lida])
+  @@index([userId, criadoEm(sort: Desc)])
 }
 
 model AuditLog {

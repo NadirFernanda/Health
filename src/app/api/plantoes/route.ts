@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       where: { userId: session.id },
       select: { id: true },
     });
-    if (prof) excluirProfissionalId = prof.id;
+    excluirProfissionalId = prof?.id;
   }
 
   const where = {
@@ -84,9 +84,34 @@ export async function GET(request: NextRequest) {
   const [plantoes, total] = await prisma.$transaction([
     prisma.plantao.findMany({
       where,
-      include: {
-        clinica: true,
-        profissionalPublicador: true,
+      select: {
+        id: true,
+        publicadoPorMedico: true,
+        tipoProfissional: true,
+        especialidade: true,
+        dataInicio: true,
+        dataFim: true,
+        valorKwanzas: true,
+        vagas: true,
+        vagasPreenchidas: true,
+        estado: true,
+        descricao: true,
+        maca: true,
+        estetoscopio: true,
+        tensiometro: true,
+        termometro: true,
+        computador: true,
+        materiaisBasicos: true,
+        nebulizador: true,
+        oximetro: true,
+        glucometro: true,
+        desfibrilador: true,
+        clinica: {
+          select: { id: true, nome: true, morada: true, cidade: true, provincia: true, logo: true, rating: true, totalAvaliacoes: true, verified: true },
+        },
+        profissionalPublicador: {
+          select: { id: true, nome: true, especialidade: true, rating: true, verified: true },
+        },
         _count: { select: { candidaturas: true } },
       },
       orderBy: { dataInicio: "asc" },

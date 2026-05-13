@@ -44,6 +44,15 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Service worker must never be served from HTTP cache — browser caches the old
+        // version otherwise, blocking updates from deploying for hours
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-store, no-cache, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
+      {
         source: "/(.*)",
         headers: securityHeaders,
       },

@@ -10,6 +10,7 @@ export async function GET() {
   const transacoes = await prisma.transacaoCarteira.findMany({
     where: { profissionalId: prof.id },
     orderBy: { criadoEm: "desc" },
+    take: 100,
   });
 
   return Response.json({

@@ -12,7 +12,7 @@ function createPrismaClient() {
         "Crie o ficheiro .env na raiz do projecto com DATABASE_URL=postgresql://USER:PASS@HOST:5432/DB"
     );
   }
-  const pool = new Pool({ connectionString: url });
+  const pool = new Pool({ connectionString: url, max: 20, idleTimeoutMillis: 30_000 });
   const adapter = new PrismaPg(pool);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return new PrismaClient({ adapter } as any);
