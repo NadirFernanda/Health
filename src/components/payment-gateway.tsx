@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import { Landmark, Smartphone, CreditCard, Check, Loader2, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
 
@@ -57,7 +57,7 @@ export function MetodoPagamentoSelector({
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-sm text-gray-900">{o.label}</span>
               {o.badge && (
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 uppercase">
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-teal-100 text-teal-700 uppercase">
                   {o.badge}
                 </span>
               )}
@@ -84,7 +84,7 @@ export function TransferenciaBancariaInfo({
 }) {
   return (
     <div className="space-y-4">
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800 leading-5">
+      <div className="bg-teal-50 border border-teal-200 rounded-2xl p-4 text-sm text-[#0B3C74] leading-5">
         <p className="font-bold mb-1">Aguarda confirmação do pagamento</p>
         <p>Efectua a transferência bancária abaixo. O plantão/reserva fica activo assim que confirmarmos o pagamento.</p>
       </div>
@@ -235,7 +235,7 @@ export function SimulatedPaymentGateway({
           <span className="font-bold text-[#0B3C74]">{formatAOA(valor)}</span>
         </div>
         <div className="flex items-center gap-1.5 mt-1">
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 uppercase">Simulado</span>
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-teal-100 text-teal-700 uppercase">Simulado</span>
           <span className="text-xs text-gray-400">Nenhum valor real é cobrado</span>
         </div>
       </div>

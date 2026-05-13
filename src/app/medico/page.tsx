@@ -1,4 +1,4 @@
-import { getAuthSession, getProfissionalFromSession } from "@/lib/api-auth";
+﻿import { getAuthSession, getProfissionalFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { PlantaoCard } from "@/components/plantao-card";
@@ -143,10 +143,10 @@ export default async function MedicoDashboard() {
             <p className="text-xs text-[#0B3C74]/70 mt-0.5">Ver todos os plantões aos quais te candidataste →</p>
           </div>
         </Link>
-        <Link href="/medico/publicar-plantao" className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
+        <Link href="/medico/publicar-plantao" className="flex items-center justify-between bg-teal-50 border border-teal-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
           <div>
-            <p className="font-bold text-sm text-amber-800">Tens um plantão que não podes fazer?</p>
-            <p className="text-xs text-amber-600 mt-0.5">Publica a vaga e paga um substituto →</p>
+            <p className="font-bold text-sm text-[#0B3C74]">Tens um plantão que não podes fazer?</p>
+            <p className="text-xs text-[#00A99D] mt-0.5">Publica a vaga e paga um substituto →</p>
           </div>
         </Link>
         <Link href="/medico/plantoes" className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { TopBar } from "@/components/nav";
@@ -246,8 +246,8 @@ export default function ClinicaDocumentosPage() {
               <ChevronRight size={16} strokeWidth={2.5} />
             </button>
           ) : (
-            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 text-center">
-              <p className="text-xs text-orange-700 font-semibold">
+            <div className="bg-teal-50 border border-teal-200 rounded-2xl p-4 text-center">
+              <p className="text-xs text-teal-700 font-semibold">
                 {algumRejeitado
                   ? "Substitua os documentos rejeitados antes de resubmeter."
                   : `Ainda faltam ${DOCS_CONFIG.filter((d) => !docs.find((x) => x.tipo === d.tipo) || docs.find((x) => x.tipo === d.tipo)?.estado === "NAO_ENVIADO").length} documento(s) para poder submeter.`}

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState, useRef, useEffect } from "react";
 import { TopBar } from "@/components/nav";
 import { logoutAction } from "@/app/actions/auth";
@@ -418,8 +418,8 @@ export default function PerfilMedico() {
               </div>
             )}
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-purple-50 rounded-xl flex items-center justify-center shrink-0">
-                <Stethoscope size={14} strokeWidth={1.75} className="text-purple-600" />
+              <div className="w-8 h-8 bg-[#0B3C74]/5 rounded-xl flex items-center justify-center shrink-0">
+                <Stethoscope size={14} strokeWidth={1.75} className="text-[#0B3C74]" />
               </div>
               <div>
                 <p className="text-xs text-gray-400">Especialidade</p>
@@ -431,8 +431,8 @@ export default function PerfilMedico() {
             </div>
             {perfil.anosExperiencia > 0 && (
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-orange-50 rounded-xl flex items-center justify-center shrink-0">
-                  <Award size={14} strokeWidth={1.75} className="text-orange-500" />
+                <div className="w-8 h-8 bg-teal-50 rounded-xl flex items-center justify-center shrink-0">
+                  <Award size={14} strokeWidth={1.75} className="text-[#00A99D]" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-400">Experiência</p>
@@ -468,22 +468,22 @@ export default function PerfilMedico() {
 
       {/* Verificação — banner contextual por estado */}
       {perfil.estadoVerificacao === "PENDENTE" && (
-        <div className="mx-4 mb-3 bg-orange-50 border border-orange-200 rounded-2xl p-4">
+        <div className="mx-4 mb-3 bg-teal-50 border border-teal-200 rounded-2xl p-4">
           <div className="flex items-start gap-3">
-            <Lock size={22} strokeWidth={1.75} className="text-orange-500 shrink-0 mt-0.5" />
+            <Lock size={22} strokeWidth={1.75} className="text-[#00A99D] shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="font-bold text-orange-800 text-sm">Perfil por verificar</p>
-              <p className="text-xs text-orange-600 mt-1 leading-5">
+              <p className="font-bold text-[#0B3C74] text-sm">Perfil por verificar</p>
+              <p className="text-xs text-[#00A99D] mt-1 leading-5">
                 Carrega os teus documentos para iniciares a verificação. Só perfis verificados podem candidatar-se a plantões.
               </p>
-              <div className="mt-3 space-y-1.5 text-xs text-orange-700">
+              <div className="mt-3 space-y-1.5 text-xs text-teal-700">
                 <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> Carteira Profissional / OMA obrigatória</p>
                 <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> BI ou Passaporte obrigatório</p>
                 <p className="inline-flex items-center gap-1"><Check size={13} strokeWidth={2} /> Prazo de análise: 24–48h</p>
               </div>
               <button
                 onClick={() => document.getElementById("sec-documentos")?.scrollIntoView({ behavior: "smooth" })}
-                className="mt-3 w-full bg-orange-500 text-white font-bold py-2.5 rounded-xl text-sm inline-flex items-center justify-center gap-1"
+                className="mt-3 w-full bg-[#00A99D] text-white font-bold py-2.5 rounded-xl text-sm inline-flex items-center justify-center gap-1"
               >
                 Carregar documentos <ChevronRight size={14} strokeWidth={2} />
               </button>

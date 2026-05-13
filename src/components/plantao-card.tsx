@@ -1,4 +1,4 @@
-import { Plantao, formatAOA, formatData, formatHora, calcularDuracao } from "@/lib/mock-data";
+﻿import { Plantao, formatAOA, formatData, formatHora, calcularDuracao } from "@/lib/mock-data";
 import Link from "next/link";
 import { MapPin, Calendar, Clock, BadgeCheck, UserRound } from "lucide-react";
 
@@ -12,7 +12,7 @@ const tipoProfissionalLabel: Record<string, string> = {
 const estadoMap: Record<string, { label: string; cls: string }> = {
   ABERTO:       { label: "Aberto",       cls: "bg-emerald-50 text-emerald-700" },
   FECHADO:      { label: "Fechado",      cls: "bg-blue-50 text-blue-700" },
-  EM_ANDAMENTO: { label: "Em andamento", cls: "bg-amber-50 text-amber-700" },
+  EM_ANDAMENTO: { label: "Em andamento", cls: "bg-teal-50 text-teal-700" },
   CONCLUIDO:    { label: "Concluído",    cls: "bg-gray-100 text-gray-500" },
   CANCELADO:    { label: "Cancelado",    cls: "bg-red-50 text-red-600" },
 };
@@ -67,7 +67,7 @@ export function PlantaoCard({
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             {isSubstituto && (
-              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded-full">
+              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-teal-50 text-teal-700 px-1.5 py-0.5 rounded-full">
                 <UserRound size={9} strokeWidth={2} /> Substituto
               </span>
             )}

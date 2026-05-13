@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Componente para listar tickets de suporte do utilizador
  */
 
@@ -68,7 +68,7 @@ export function TicketList({ selectedTicketId }: TicketListProps) {
       case "URGENTE":
         return "text-red-700 bg-red-50";
       case "ALTA":
-        return "text-orange-700 bg-orange-50";
+        return "text-teal-700 bg-teal-50";
       default:
         return "text-green-700 bg-green-50";
     }

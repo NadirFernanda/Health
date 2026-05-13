@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
 import { useState, use, useEffect } from "react";
@@ -385,8 +385,8 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
             {/* Obrigações do cessionário */}
             <div className="px-4 py-4 border-b border-gray-50">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
-                  <Scale size={13} strokeWidth={2} className="text-amber-600" />
+                <div className="w-6 h-6 rounded-lg bg-teal-50 flex items-center justify-center shrink-0">
+                  <Scale size={13} strokeWidth={2} className="text-[#00A99D]" />
                 </div>
                 <p className="text-xs font-black text-gray-700 uppercase tracking-wider">Obrigações do Cessionário</p>
               </div>
@@ -401,8 +401,8 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
                   "Reportar imediatamente qualquer avaria ou dano nos equipamentos.",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="w-4 h-4 bg-amber-50 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                      <Check size={9} strokeWidth={3} className="text-amber-600" />
+                    <span className="w-4 h-4 bg-teal-50 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                      <Check size={9} strokeWidth={3} className="text-[#00A99D]" />
                     </span>
                     {item}
                   </li>
@@ -451,8 +451,8 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
                   Cancelamento com antecedência superior a 24h: reembolso de 100% do valor pago.
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="w-4 h-4 bg-amber-50 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                    <AlertTriangle size={9} strokeWidth={3} className="text-amber-500" />
+                  <span className="w-4 h-4 bg-teal-50 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                    <AlertTriangle size={9} strokeWidth={3} className="text-teal-500" />
                   </span>
                   Cancelamento com menos de 24h de antecedência: sem direito a reembolso.
                 </li>
@@ -695,8 +695,8 @@ export default function DetalheSala({ params }: { params: Promise<{ id: string }
             Cancelamento com &gt;24h — reembolso 100%
           </p>
           <p className="flex items-center gap-2">
-            <span className="w-5 h-5 bg-amber-50 rounded-full flex items-center justify-center shrink-0">
-              <AlertTriangle size={11} strokeWidth={2} className="text-amber-500" />
+            <span className="w-5 h-5 bg-teal-50 rounded-full flex items-center justify-center shrink-0">
+              <AlertTriangle size={11} strokeWidth={2} className="text-teal-500" />
             </span>
             Cancelamento com &lt;24h — sem reembolso
           </p>

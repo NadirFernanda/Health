@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import { TopBar } from "@/components/nav";
 import { EmptyState } from "@/components/empty-state";
@@ -37,7 +37,7 @@ function formatHora(d: string) {
 }
 
 const estadoMap: Record<string, { label: string; cls: string }> = {
-  AGUARDANDO_PAGAMENTO: { label: "Ag. pagamento", cls: "bg-amber-50 text-amber-700" },
+  AGUARDANDO_PAGAMENTO: { label: "Ag. pagamento", cls: "bg-teal-50 text-teal-700" },
   ABERTO:    { label: "Aberto",    cls: "bg-green-50 text-green-700" },
   FECHADO:   { label: "Fechado",   cls: "bg-gray-100 text-gray-600" },
   CANCELADO: { label: "Cancelado", cls: "bg-red-50 text-red-600" },

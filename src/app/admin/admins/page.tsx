@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import { Plus, Shield, ShieldOff, ChevronDown } from "lucide-react";
 
@@ -17,8 +17,8 @@ type Admin = {
 
 const roleBadge: Record<string, { cls: string; label: string }> = {
   FINANCEIRO: { cls: "bg-blue-100 text-blue-700",   label: "Financeiro" },
-  GESTOR:     { cls: "bg-purple-100 text-purple-700", label: "Gestor" },
-  SUPORTE:    { cls: "bg-orange-100 text-orange-700", label: "Suporte" },
+  GESTOR:     { cls: "bg-[#0B3C74]/10 text-[#0B3C74]", label: "Gestor" },
+  SUPORTE:    { cls: "bg-teal-100 text-teal-700", label: "Suporte" },
   ANALISTA:   { cls: "bg-teal-100 text-teal-700",    label: "Analista" },
   MASTER:     { cls: "bg-[#0B3C74]/10 text-[#0B3C74]", label: "Master" },
 };

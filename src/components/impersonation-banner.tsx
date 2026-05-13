@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+﻿import { cookies } from "next/headers";
 import { getPayloadFromToken } from "@/lib/auth";
 import { exitImpersonationAction } from "@/app/actions/impersonate";
 import { ShieldAlert, LogOut } from "lucide-react";
@@ -14,7 +14,7 @@ export default async function ImpersonationBanner() {
   const adminEmail = adminPayload?.sub ?? "Admin";
 
   return (
-    <div className="sticky top-0 z-50 bg-amber-500 text-white px-4 py-2.5 flex items-center justify-between gap-3 shadow-lg">
+    <div className="sticky top-0 z-50 bg-[#00A99D] text-white px-4 py-2.5 flex items-center justify-between gap-3 shadow-lg">
       <div className="flex items-center gap-2 min-w-0">
         <ShieldAlert size={15} strokeWidth={2.5} className="shrink-0" />
         <p className="text-xs font-bold truncate">

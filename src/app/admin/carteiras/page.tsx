@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { Loader2, User, ChevronRight, AlertCircle, Search } from "lucide-react";
@@ -48,7 +48,7 @@ export default function AdminContas() {
       <div className="flex items-center justify-between">
         <h1 className="text-base font-bold text-gray-900">Contas de Profissionais</h1>
         {totalPendentes > 0 && (
-          <Link href="/admin/saques" className="flex items-center gap-1 text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-1.5 rounded-full">
+          <Link href="/admin/saques" className="flex items-center gap-1 text-xs font-semibold text-[#00A99D] bg-teal-50 px-2.5 py-1.5 rounded-full">
             <AlertCircle size={12} strokeWidth={2} />
             {totalPendentes} levantamento{totalPendentes !== 1 ? "s" : ""} pendente{totalPendentes !== 1 ? "s" : ""}
           </Link>
@@ -107,7 +107,7 @@ export default function AdminContas() {
                 <div>
                   <p className="text-sm font-bold text-[#0B3C74]">{formatAOA(c.saldo)}</p>
                   {c.saquesPendentes > 0 && (
-                    <p className="text-[11px] text-amber-600 font-semibold">{c.saquesPendentes} pendente{c.saquesPendentes !== 1 ? "s" : ""}</p>
+                    <p className="text-[11px] text-[#00A99D] font-semibold">{c.saquesPendentes} pendente{c.saquesPendentes !== 1 ? "s" : ""}</p>
                   )}
                 </div>
                 <ChevronRight size={15} strokeWidth={2} className="text-gray-300" />

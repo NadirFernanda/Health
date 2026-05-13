@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Clock, Printer, ArrowLeft } from "lucide-react";
@@ -116,12 +116,12 @@ export default function ReciboPage({ params }: { params: Promise<{ id: string }>
 
         {/* Status */}
         <div className="px-6 py-5 flex flex-col items-center border-b border-gray-100">
-          <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-2.5 ${confirmado ? "bg-green-100" : "bg-amber-100"}`}>
+          <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-2.5 ${confirmado ? "bg-green-100" : "bg-teal-100"}`}>
             {confirmado
               ? <CheckCircle2 size={28} strokeWidth={1.5} className="text-green-500" />
-              : <Clock size={28} strokeWidth={1.5} className="text-amber-500" />}
+              : <Clock size={28} strokeWidth={1.5} className="text-teal-500" />}
           </div>
-          <span className={`text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full ${confirmado ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"}`}>
+          <span className={`text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full ${confirmado ? "bg-green-50 text-green-700" : "bg-teal-50 text-teal-700"}`}>
             {confirmado ? "✓ Pagamento Confirmado" : "Aguarda Confirmação"}
           </span>
           <p className="text-xs text-gray-400 mt-2">{formatDateTime(recibo.pagoEm)}</p>

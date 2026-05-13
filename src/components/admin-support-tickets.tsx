@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { ChevronLeft, MessageCircle, Clock, Tag, CheckCircle, Circle, Send } from "lucide-react";
@@ -41,7 +41,7 @@ const estadoBadge: Record<string, { cls: string; label: string; icon: typeof Cir
 
 const prioridadeBadge: Record<string, { cls: string; label: string }> = {
   NORMAL:  { cls: "bg-gray-100 text-gray-500",      label: "Normal" },
-  ALTA:    { cls: "bg-orange-100 text-orange-600",   label: "Alta" },
+  ALTA:    { cls: "bg-teal-100 text-[#00A99D]",   label: "Alta" },
   URGENTE: { cls: "bg-red-100 text-red-600",         label: "Urgente" },
 };
 

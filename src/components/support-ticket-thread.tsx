@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Componente para visualizar e responder a um ticket de suporte
  */
 
@@ -141,7 +141,7 @@ export function TicketThread({ ticketId }: TicketThreadProps) {
                 ticket.prioridade === "URGENTE"
                   ? "bg-red-100 text-red-800"
                   : ticket.prioridade === "ALTA"
-                    ? "bg-orange-100 text-orange-800"
+                    ? "bg-teal-100 text-[#0B3C74]"
                     : "bg-green-100 text-green-800"
               }`}
             >

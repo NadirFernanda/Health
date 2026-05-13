@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState, useEffect } from "react";
 import { TopBar } from "@/components/nav";
 import { logoutAction } from "@/app/actions/auth";
@@ -251,8 +251,8 @@ export default function ContaClinica() {
             )}
             {clinica.website && (
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-purple-50 rounded-xl flex items-center justify-center shrink-0">
-                  <Globe size={14} strokeWidth={1.75} className="text-purple-600" />
+                <div className="w-8 h-8 bg-[#0B3C74]/5 rounded-xl flex items-center justify-center shrink-0">
+                  <Globe size={14} strokeWidth={1.75} className="text-[#0B3C74]" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-400">Website</p>
@@ -279,22 +279,22 @@ export default function ContaClinica() {
 
       {/* Verificação */}
       {!clinica.verified && clinica.estadoVerificacao !== "EM_ANALISE" && (
-        <div className="mx-4 mb-3 bg-orange-50 border border-orange-200 rounded-2xl p-4">
+        <div className="mx-4 mb-3 bg-teal-50 border border-teal-200 rounded-2xl p-4">
           <div className="flex items-start gap-3">
-            <Lock size={22} strokeWidth={1.75} className="text-orange-500 shrink-0 mt-0.5" />
+            <Lock size={22} strokeWidth={1.75} className="text-[#00A99D] shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="font-bold text-orange-800 text-sm">
+              <p className="font-bold text-[#0B3C74] text-sm">
                 {clinica.estadoVerificacao === "REJEITADO" ? "Verificação rejeitada" : "Clínica não verificada"}
               </p>
               {clinica.rejeicaoMotivo && (
                 <p className="text-xs text-red-600 mt-1 bg-red-50 rounded-lg px-2 py-1">{clinica.rejeicaoMotivo}</p>
               )}
-              <p className="text-xs text-orange-600 mt-1 leading-5">
+              <p className="text-xs text-[#00A99D] mt-1 leading-5">
                 {clinica.estadoVerificacao === "REJEITADO"
                   ? "Corrija os documentos indicados e resubmeta."
                   : "Carregue os documentos obrigatórios para verificar a sua clínica."}
               </p>
-              <div className="mt-2 space-y-1 text-xs text-orange-700">
+              <div className="mt-2 space-y-1 text-xs text-teal-700">
                 {["Alvará de Funcionamento", "Registo Comercial", "NIF", "Carteira do Director Clínico", "Termo de Responsabilidade"].map((d) => (
                   <p key={d} className="inline-flex items-center gap-1 mr-2">
                     <Check size={12} strokeWidth={2} /> {d}
@@ -303,7 +303,7 @@ export default function ContaClinica() {
               </div>
               <Link
                 href="/clinica/documentos"
-                className="mt-3 w-full bg-orange-500 text-white font-bold py-2.5 rounded-xl text-sm inline-flex items-center justify-center gap-1"
+                className="mt-3 w-full bg-[#00A99D] text-white font-bold py-2.5 rounded-xl text-sm inline-flex items-center justify-center gap-1"
               >
                 {clinica.estadoVerificacao === "REJEITADO" ? "Corrigir Documentos" : "Iniciar Verificação"}
                 <ChevronRight size={14} strokeWidth={2} />
@@ -343,7 +343,7 @@ export default function ContaClinica() {
       {/* Plano */}
       <div className="mx-4 mb-3 bg-white rounded-2xl border border-gray-100 px-4 py-4">
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Plano Actual</h3>
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-blue-50 to-[#0B3C74]/5 border border-blue-100 rounded-xl p-4 flex items-center justify-between">
           <div>
             <p className="font-bold text-[#0B3C74]">Plano Gratuito</p>
             <p className="text-xs text-gray-500 mt-0.5">Comissão de 10% por plantão</p>

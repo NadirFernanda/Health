@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { TopBar } from "@/components/nav";
@@ -220,7 +220,7 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
                   {sala.disponivel ? "Disponível" : "Indisponível"}
                 </span>
                 {vistorias.length > 0 && (
-                  <span className="bg-amber-400/40 text-amber-100 text-[11px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                  <span className="bg-[#00A99D]/40 text-teal-100 text-[11px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
                     <ClipboardCheck size={9} strokeWidth={2.5} />
                     {vistorias.length} vistoria{vistorias.length > 1 ? "s" : ""}
                   </span>
@@ -300,14 +300,14 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
 
       {/* ── Vistorias Pendentes ── */}
       {(loadingVistorias || vistorias.length > 0) && (
-        <div className="mx-4 mt-3 bg-white rounded-2xl border border-amber-100 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-3 bg-amber-50 border-b border-amber-100">
-            <ClipboardCheck size={15} strokeWidth={2} className="text-amber-600 shrink-0" />
-            <h3 className="text-xs font-bold text-amber-700 uppercase tracking-widest flex-1">
+        <div className="mx-4 mt-3 bg-white rounded-2xl border border-teal-100 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3 bg-teal-50 border-b border-teal-100">
+            <ClipboardCheck size={15} strokeWidth={2} className="text-[#00A99D] shrink-0" />
+            <h3 className="text-xs font-bold text-teal-700 uppercase tracking-widest flex-1">
               Vistorias Pendentes
             </h3>
             {vistorias.length > 0 && (
-              <span className="bg-amber-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
+              <span className="bg-[#00A99D] text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
                 {vistorias.length}
               </span>
             )}
@@ -315,7 +315,7 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
 
           {loadingVistorias ? (
             <div className="flex items-center justify-center py-6">
-              <Loader2 size={20} className="animate-spin text-amber-400" />
+              <Loader2 size={20} className="animate-spin text-teal-400" />
             </div>
           ) : (
             <div className="divide-y divide-gray-50">
@@ -323,10 +323,10 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
                 <button
                   key={v.id}
                   onClick={() => abrirVistoria(v)}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-amber-50/60 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-teal-50/60 transition-colors text-left"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-                    <User size={16} strokeWidth={1.75} className="text-amber-600" />
+                  <div className="w-9 h-9 rounded-xl bg-teal-100 flex items-center justify-center shrink-0">
+                    <User size={16} strokeWidth={1.75} className="text-[#00A99D]" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-gray-900 truncate">{v.profissional.nome}</p>
@@ -341,7 +341,7 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
                   </div>
                   <div className="shrink-0 text-right">
                     <p className="text-xs font-bold text-[#00A99D]">{formatAOA(v.valorTotal)}</p>
-                    <ChevronRight size={14} strokeWidth={2} className="text-amber-400 ml-auto mt-0.5" />
+                    <ChevronRight size={14} strokeWidth={2} className="text-teal-400 ml-auto mt-0.5" />
                   </div>
                 </button>
               ))}
@@ -456,8 +456,8 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
-                <Calendar size={14} strokeWidth={1.75} className="text-amber-600" />
+              <div className="w-8 h-8 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
+                <Calendar size={14} strokeWidth={1.75} className="text-[#00A99D]" />
               </div>
               <div>
                 <p className="text-xs text-gray-400">Reservas realizadas</p>
@@ -549,8 +549,8 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
 
             {/* Header */}
             <div className="flex items-start gap-3 px-5 pt-2 pb-4 border-b border-gray-100 shrink-0">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-                <ClipboardCheck size={18} strokeWidth={1.75} className="text-amber-600" />
+              <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center shrink-0">
+                <ClipboardCheck size={18} strokeWidth={1.75} className="text-[#00A99D]" />
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="text-base font-black text-gray-900">Vistoria da Sala</h2>
@@ -575,7 +575,7 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
             {/* Scrollable body */}
             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
               {/* Info banner */}
-              <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-3.5 py-3 text-xs text-amber-700">
+              <div className="flex items-start gap-2.5 bg-teal-50 border border-teal-100 rounded-xl px-3.5 py-3 text-xs text-teal-700">
                 <AlertCircle size={13} strokeWidth={2} className="shrink-0 mt-0.5" />
                 <p>Verifique o estado dos equipamentos. Se tudo estiver em ordem, libere o pagamento. Caso contrário, abra uma disputa.</p>
               </div>
@@ -631,7 +631,7 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
                   rows={3}
                   maxLength={500}
                   placeholder="Descreva qualquer problema encontrado…"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-300 transition-colors resize-none text-gray-700 placeholder:text-gray-300"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-300 transition-colors resize-none text-gray-700 placeholder:text-gray-300"
                 />
               </div>
 
@@ -651,7 +651,7 @@ export default function GerirSalaPage({ params }: { params: Promise<{ id: string
                 <button
                   onClick={() => submeterVistoria(false)}
                   disabled={enviandoVistoria}
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-orange-500 text-white text-sm font-bold py-3.5 rounded-2xl disabled:opacity-50 transition-opacity"
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-[#00A99D] text-white text-sm font-bold py-3.5 rounded-2xl disabled:opacity-50 transition-opacity"
                 >
                   {enviandoVistoria
                     ? <Loader2 size={15} className="animate-spin" />

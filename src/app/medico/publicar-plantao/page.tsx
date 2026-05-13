@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
@@ -164,7 +164,7 @@ export default function PublicarPlantaoMedico() {
     <div>
       <TopBar titulo="Publicar Vaga de Substituto" back="/medico" />
 
-      <div className="mx-4 mt-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-800 leading-5">
+      <div className="mx-4 mt-4 bg-teal-50 border border-teal-200 rounded-xl px-4 py-3 text-xs text-[#0B3C74] leading-5">
         <p className="font-bold mb-0.5">Não podes comparecer ao plantão?</p>
         Publica a vaga, define o valor que pagarás ao substituto, e escolhe o médico candidato. O pagamento é debitado da tua carteira após aceitação.
       </div>

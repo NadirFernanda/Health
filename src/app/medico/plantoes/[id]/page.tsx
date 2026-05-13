@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+﻿import { prisma } from "@/lib/db";
 import { getAuthSession, getProfissionalFromSession } from "@/lib/api-auth";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
@@ -75,9 +75,9 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
     }
 
     const estadoCand: Record<string, { label: string; cls: string }> = {
-      PENDENTE:             { label: "Pendente",          cls: "bg-amber-50 text-amber-700" },
+      PENDENTE:             { label: "Pendente",          cls: "bg-teal-50 text-teal-700" },
       CONTRATO_PENDENTE:    { label: "Contrato enviado",  cls: "bg-blue-50 text-blue-700" },
-      AGUARDANDO_PAGAMENTO: { label: "Ag. pagamento",     cls: "bg-orange-50 text-orange-700" },
+      AGUARDANDO_PAGAMENTO: { label: "Ag. pagamento",     cls: "bg-teal-50 text-teal-700" },
       ACEITE:               { label: "Aceite",            cls: "bg-emerald-50 text-emerald-700" },
       CONCLUIDO:            { label: "Concluído",         cls: "bg-teal-50 text-teal-700" },
       RECUSADO:             { label: "Recusado",          cls: "bg-red-50 text-red-600" },
@@ -156,7 +156,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
                       </div>
                       <p className="text-xs text-gray-500 mt-0.5">{c.profissional.especialidade}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-amber-500 text-xs inline-flex items-center gap-0.5">
+                        <span className="text-teal-500 text-xs inline-flex items-center gap-0.5">
                           <Star size={10} strokeWidth={1.75} fill="currentColor" />
                           {c.profissional.rating.toFixed(1)}
                         </span>
@@ -296,7 +296,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
                   <MapPin size={10} strokeWidth={1.75} />
                   {clinica.cidade}, {clinica.provincia}
                 </p>
-                <p className="flex items-center gap-1 text-amber-300 text-xs mt-0.5">
+                <p className="flex items-center gap-1 text-teal-300 text-xs mt-0.5">
                   <Star size={10} strokeWidth={1.75} fill="currentColor" />
                   {clinica.rating.toFixed(1)} · {clinica.totalAvaliacoes} avaliações
                 </p>
@@ -348,13 +348,13 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
 
       {/* ── Status banners ── */}
       {plantao.estado === "EM_ANDAMENTO" && (
-        <div className="mx-4 mt-3 bg-orange-50 border border-orange-200 rounded-2xl px-4 py-3 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
-            <Activity size={16} strokeWidth={2} className="text-orange-500" />
+        <div className="mx-4 mt-3 bg-teal-50 border border-teal-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-teal-100 flex items-center justify-center shrink-0">
+            <Activity size={16} strokeWidth={2} className="text-[#00A99D]" />
           </div>
           <div>
-            <p className="text-sm font-bold text-orange-700">Plantão em andamento</p>
-            <p className="text-xs text-orange-500">A decorrer agora · termina às {formatHora(dataFim)}</p>
+            <p className="text-sm font-bold text-teal-700">Plantão em andamento</p>
+            <p className="text-xs text-[#00A99D]">A decorrer agora · termina às {formatHora(dataFim)}</p>
           </div>
         </div>
       )}
@@ -459,7 +459,7 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
                 CANDIDATAR-ME
               </Link>
               <p className="text-center text-xs text-gray-400 flex items-center justify-center gap-1">
-                <AlertTriangle size={11} strokeWidth={2} className="text-amber-400" />
+                <AlertTriangle size={11} strokeWidth={2} className="text-teal-400" />
                 Só médicos com perfil verificado podem candidatar-se
               </p>
             </>
@@ -501,13 +501,13 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
           {/* Candidatura pendente */}
           {candidatura?.estado === "PENDENTE" && (
             <>
-              <div className="bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-                  <CheckCircle2 size={15} strokeWidth={2} className="text-amber-600" />
+              <div className="bg-teal-50 border border-teal-100 rounded-2xl px-4 py-3 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-teal-100 flex items-center justify-center shrink-0">
+                  <CheckCircle2 size={15} strokeWidth={2} className="text-[#00A99D]" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-amber-700">Candidatura enviada</p>
-                  <p className="text-xs text-amber-500 mt-0.5">A aguardar resposta da clínica</p>
+                  <p className="text-sm font-bold text-teal-700">Candidatura enviada</p>
+                  <p className="text-xs text-teal-500 mt-0.5">A aguardar resposta da clínica</p>
                 </div>
               </div>
               <Link
@@ -528,13 +528,13 @@ export default async function DetalhePlantao({ params }: { params: Promise<{ id:
           {/* Aceite + em andamento */}
           {candidatura?.estado === "ACEITE" && plantao.estado === "EM_ANDAMENTO" && (
             <>
-              <div className="bg-orange-50 border border-orange-100 rounded-2xl px-4 py-3 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
-                  <Activity size={15} strokeWidth={2} className="text-orange-500" />
+              <div className="bg-teal-50 border border-teal-100 rounded-2xl px-4 py-3 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-teal-100 flex items-center justify-center shrink-0">
+                  <Activity size={15} strokeWidth={2} className="text-[#00A99D]" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-orange-700">Estás de plantão agora!</p>
-                  <p className="text-xs text-orange-500 mt-0.5">Termina às {formatHora(dataFim)}</p>
+                  <p className="text-sm font-bold text-teal-700">Estás de plantão agora!</p>
+                  <p className="text-xs text-[#00A99D] mt-0.5">Termina às {formatHora(dataFim)}</p>
                 </div>
               </div>
               <TerminarPlantaoButton plantaoId={plantao.id} />

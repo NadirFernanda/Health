@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState, useCallback } from "react";
 import { Check, X, Star, ClipboardList, MessageCircle, Ban, RotateCcw, Wallet, FileText, ExternalLink, Loader2, UserCheck } from "lucide-react";
 
@@ -276,7 +276,7 @@ export default function AdminMedicos() {
             {(m.estadoVerificacao === "EM_ANALISE" || m.estadoVerificacao === "PENDENTE") && (
               <div className="mt-3 space-y-2">
                 {!noPendingDocs && (
-                  <p className="text-[10px] text-amber-600 bg-amber-50 rounded-xl px-3 py-1.5">
+                  <p className="text-[10px] text-[#00A99D] bg-teal-50 rounded-xl px-3 py-1.5">
                     Aprova ou rejeita todos os documentos antes de decidir sobre o perfil.
                   </p>
                 )}
@@ -350,7 +350,7 @@ export default function AdminMedicos() {
 
             <button
               onClick={() => entrarComo(m.id)}
-              className="mt-2 w-full border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1.5"
+              className="mt-2 w-full border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1.5"
             >
               <UserCheck size={13} strokeWidth={2} />
               Entrar como este médico

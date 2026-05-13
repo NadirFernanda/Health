@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import { TrendingUp, ArrowUp } from "lucide-react";
 
@@ -46,7 +46,7 @@ export default function AdminTransacoes() {
         </div>
         <div className="bg-white rounded-2xl border border-gray-100 p-4">
           <p className="text-xs text-gray-400 mb-1">Comissão Medfreela (10%)</p>
-          <p className="text-lg font-bold text-purple-600">{formatAOA(totalComissao)}</p>
+          <p className="text-lg font-bold text-[#0B3C74]">{formatAOA(totalComissao)}</p>
           <p className="text-xs text-gray-400 mt-0.5">Todos os tempos</p>
         </div>
         <div className="bg-white rounded-2xl border border-gray-100 p-4">
@@ -62,9 +62,9 @@ export default function AdminTransacoes() {
       </div>
 
       {/* Info comissão */}
-      <div className="bg-purple-50 border border-purple-100 rounded-2xl p-4">
-        <p className="text-sm font-bold text-purple-800 mb-2">Modelo de Receita</p>
-        <div className="space-y-1.5 text-xs text-purple-700">
+      <div className="bg-[#0B3C74]/5 border border-[#0B3C74]/10 rounded-2xl p-4">
+        <p className="text-sm font-bold text-[#0B3C74] mb-2">Modelo de Receita</p>
+        <div className="space-y-1.5 text-xs text-[#0B3C74]">
           <div className="flex justify-between">
             <span>Total confirmado</span>
             <span className="font-bold">{formatAOA(totalCredito)}</span>
@@ -73,7 +73,7 @@ export default function AdminTransacoes() {
             <span>Comissão acumulada</span>
             <span className="font-bold">{formatAOA(totalComissao)}</span>
           </div>
-          <div className="flex justify-between border-t border-purple-200 pt-1.5 mt-1.5">
+          <div className="flex justify-between border-t border-[#0B3C74]/20 pt-1.5 mt-1.5">
             <span className="font-semibold">Taxa de comissão</span>
             <span className="font-bold">10% por plantão</span>
           </div>
@@ -111,7 +111,7 @@ export default function AdminTransacoes() {
                   <p className="font-bold text-sm text-[#00A99D]">
                     +{formatAOA(t.valorBruto)}
                   </p>
-                  <p className="text-xs text-purple-500 mt-0.5">comissão: {formatAOA(t.comissao)}</p>
+                  <p className="text-xs text-[#0B3C74]/80 mt-0.5">comissão: {formatAOA(t.comissao)}</p>
                 </div>
               </div>
             ))}

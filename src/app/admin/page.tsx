@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
@@ -28,13 +28,13 @@ type Transacao = { id: string; descricao: string; valorBruto: number; data: stri
 
 function KpiCard({ icon: Icon, title, value, sub, color }: {
   icon: LucideIcon; title: string; value: string | number; sub: string;
-  color: "blue" | "green" | "orange" | "purple";
+  color: "blue" | "green" | "teal" | "navy";
 }) {
   const cls = {
-    blue:   "bg-blue-50 text-blue-600",
-    green:  "bg-green-50 text-green-600",
-    orange: "bg-orange-50 text-orange-600",
-    purple: "bg-purple-50 text-purple-700",
+    blue:  "bg-[#0B3C74]/10 text-[#0B3C74]",
+    green: "bg-green-50 text-green-600",
+    teal:  "bg-teal-50 text-[#00A99D]",
+    navy:  "bg-[#0B3C74]/5 text-[#0B3C74]",
   }[color];
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-4">
@@ -131,9 +131,9 @@ export default function AdminDashboard() {
         <KpiCard icon={Building2} title="Clínicas" value={stats.totalClinicas}
           sub={`${stats.clinicasVerificadas} verificadas · ${stats.clinicasPendentes} pendentes`} color="green" />
         <KpiCard icon={ClipboardList} title="Plantões" value={stats.totalPlantoes}
-          sub={`${stats.plantoesAbertos} activos · ${stats.plantoesConcluidos} concluídos`} color="orange" />
+          sub={`${stats.plantoesAbertos} activos · ${stats.plantoesConcluidos} concluídos`} color="teal" />
         <KpiCard icon={Wallet} title="Comissões" value={formatAOA(stats.comissaoPlataforma)}
-          sub={`Receita total: ${formatAOA(stats.receitaPlataforma)}`} color="purple" />
+          sub={`Receita total: ${formatAOA(stats.receitaPlataforma)}`} color="navy" />
       </div>
 
       {/* Alertas pendentes */}
@@ -203,8 +203,8 @@ export default function AdminDashboard() {
           { href: "/admin/medicos",       label: "Profissionais", color: "bg-blue-50 text-[#0B3C74]" },
           { href: "/admin/clinicas",      label: "Clínicas",      color: "bg-green-50 text-green-700" },
           { href: "/admin/consultorios",  label: "Consultórios",  color: "bg-teal-50 text-teal-700" },
-          { href: "/admin/plantoes",      label: "Plantões",      color: "bg-orange-50 text-orange-700" },
-          { href: "/admin/transacoes",    label: "Finanças",      color: "bg-purple-50 text-purple-700" },
+          { href: "/admin/plantoes",      label: "Plantões",      color: "bg-teal-50 text-teal-700" },
+          { href: "/admin/transacoes",    label: "Finanças",      color: "bg-[#0B3C74]/5 text-[#0B3C74]" },
           { href: "/admin/support",       label: "Suporte",       color: "bg-gray-50 text-gray-700" },
         ].map((l) => (
           <Link key={l.href} href={l.href}

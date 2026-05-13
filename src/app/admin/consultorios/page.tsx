@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import { Check, X, Star, MessageCircle, MapPin, DoorOpen, Ban, RotateCcw, UserCheck } from "lucide-react";
 
@@ -218,7 +218,7 @@ export default function AdminConsultorios() {
 
               <button
                 onClick={() => entrarComo(c.id)}
-                className="mt-2 w-full border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1.5"
+                className="mt-2 w-full border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1.5"
               >
                 <UserCheck size={13} strokeWidth={2} />
                 Entrar como este consultório

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
@@ -45,9 +45,9 @@ export function DisputaForm({ candidaturaId, onSuccess, onCancel }: DisputaFormP
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
-        <AlertTriangle size={18} strokeWidth={1.75} className="text-amber-600 shrink-0 mt-0.5" />
-        <p className="text-xs text-amber-800">
+      <div className="flex items-start gap-3 bg-teal-50 border border-teal-200 rounded-2xl px-4 py-3">
+        <AlertTriangle size={18} strokeWidth={1.75} className="text-[#00A99D] shrink-0 mt-0.5" />
+        <p className="text-xs text-[#0B3C74]">
           Abre uma disputa apenas se tentaste resolver o problema directamente. O admin irá analisar e pode aplicar ajustes financeiros.
         </p>
       </div>

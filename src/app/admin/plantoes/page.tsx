@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { plantoesMock, plantoesDaClinica, formatAOA, formatData, formatHora } from "@/lib/mock-data";
 import { useState } from "react";
 
@@ -39,7 +39,7 @@ export default function AdminPlantoes() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-base font-bold text-gray-900">Gestão de Plantões</h1>
-        <span className="bg-orange-50 text-orange-700 text-xs font-bold px-2.5 py-1 rounded-full">{todosPlantoes.length} total</span>
+        <span className="bg-teal-50 text-teal-700 text-xs font-bold px-2.5 py-1 rounded-full">{todosPlantoes.length} total</span>
       </div>
 
       {/* Busca */}
@@ -79,7 +79,7 @@ export default function AdminPlantoes() {
             <p className="text-xs text-gray-400 mt-0.5">Pago médicos</p>
           </div>
           <div>
-            <p className="text-sm font-bold text-purple-600">{formatAOA(totalComissao)}</p>
+            <p className="text-sm font-bold text-[#0B3C74]">{formatAOA(totalComissao)}</p>
             <p className="text-xs text-gray-400 mt-0.5">Comissão Medfreela</p>
           </div>
         </div>

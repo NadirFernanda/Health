@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -50,7 +50,7 @@ function horasAtras(criadoEm: string): string {
 function BadgeVerificacao({ express }: { express?: boolean }) {
   if (express) {
     return (
-      <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-700 text-xs font-bold px-2 py-0.5 rounded-full">
+      <span className="inline-flex items-center gap-1 bg-teal-100 text-teal-700 text-xs font-bold px-2 py-0.5 rounded-full">
         <Zap size={10} strokeWidth={2.5} /> EXPRESS 48h
       </span>
     );
@@ -98,7 +98,7 @@ function CardPendente({
   const [expandido, setExpandido] = useState(false);
 
   return (
-    <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all ${express ? "border-orange-200" : "border-gray-100"}`}>
+    <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all ${express ? "border-teal-200" : "border-gray-100"}`}>
       <button
         className="w-full px-4 py-4 flex items-center gap-3 text-left"
         onClick={() => setExpandido((v) => !v)}
@@ -336,7 +336,7 @@ export default function AdminVerificacaoPage() {
         {filtro !== "NORMAL" && (
           <section>
             <div className="flex items-center gap-2 mb-3">
-              <Zap size={15} strokeWidth={2.5} className="text-orange-500" />
+              <Zap size={15} strokeWidth={2.5} className="text-[#00A99D]" />
               <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
                 Express (48h) — {filtrarMedicos(medicosPendentes).filter((m) => m.tipoVerificacao === "EXPRESS").length} pendentes
               </h2>

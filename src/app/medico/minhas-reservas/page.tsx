@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
@@ -47,13 +47,13 @@ const TIPO_LABEL: Record<string, string> = {
 
 const ESTADO_CFG: Record<EstadoReserva, { label: string; icon: React.ReactNode; cls: string }> = {
   CONFIRMADA:           { label: "Confirmada",        icon: <CheckCircle2 size={13} strokeWidth={2} />, cls: "bg-emerald-50 text-emerald-700" },
-  PENDENTE_PAGAMENTO:   { label: "Pend. Pagamento",   icon: <Hourglass size={13} strokeWidth={2} />,    cls: "bg-amber-50 text-amber-700" },
+  PENDENTE_PAGAMENTO:   { label: "Pend. Pagamento",   icon: <Hourglass size={13} strokeWidth={2} />,    cls: "bg-teal-50 text-teal-700" },
   CANCELADA:            { label: "Cancelada",          icon: <XCircle size={13} strokeWidth={2} />,      cls: "bg-red-50 text-red-600" },
   CANCELADA_PROFISSIONAL:{ label: "Cancelada",         icon: <XCircle size={13} strokeWidth={2} />,      cls: "bg-red-50 text-red-600" },
   CANCELADA_CLINICA:    { label: "Cancelada",          icon: <XCircle size={13} strokeWidth={2} />,      cls: "bg-red-50 text-red-600" },
   CONCLUIDA:            { label: "Concluída",          icon: <BadgeCheck size={13} strokeWidth={2} />,   cls: "bg-gray-100 text-gray-500" },
   AGUARDANDO_VISTORIA:  { label: "Em vistoria",        icon: <Search size={13} strokeWidth={2} />,       cls: "bg-blue-50 text-blue-700" },
-  DISPUTA_SALA:         { label: "Em disputa",         icon: <ShieldAlert size={13} strokeWidth={2} />,  cls: "bg-orange-50 text-orange-700" },
+  DISPUTA_SALA:         { label: "Em disputa",         icon: <ShieldAlert size={13} strokeWidth={2} />,  cls: "bg-teal-50 text-teal-700" },
 };
 
 function formatAOA(v: number) {
@@ -165,11 +165,11 @@ function ReservaCard({
 
         {/* Disputa notice */}
         {r.estado === "DISPUTA_SALA" && (
-          <div className="flex items-start gap-2 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2.5">
-            <AlertTriangle size={13} strokeWidth={2} className="text-orange-600 shrink-0 mt-0.5" />
-            <div className="text-xs text-orange-700">
+          <div className="flex items-start gap-2 bg-teal-50 border border-teal-200 rounded-xl px-3 py-2.5">
+            <AlertTriangle size={13} strokeWidth={2} className="text-[#00A99D] shrink-0 mt-0.5" />
+            <div className="text-xs text-teal-700">
               <p className="font-bold">Disputa aberta</p>
-              <p className="mt-0.5 text-orange-500">O consultório reportou um problema durante a vistoria. A equipa MedFreela irá contactá-lo.</p>
+              <p className="mt-0.5 text-[#00A99D]">O consultório reportou um problema durante a vistoria. A equipa MedFreela irá contactá-lo.</p>
             </div>
           </div>
         )}
@@ -203,7 +203,7 @@ function ReservaCard({
         {r.estado === "CONCLUIDA" && (
           <Link
             href={`/medico/salas/${r.sala.id}/avaliar?reserva=${r.id}`}
-            className="flex-1 text-center text-xs font-semibold text-amber-700 border border-amber-100 bg-amber-50 py-2.5 rounded-xl active:opacity-80 transition-opacity inline-flex items-center justify-center gap-1"
+            className="flex-1 text-center text-xs font-semibold text-teal-700 border border-teal-100 bg-teal-50 py-2.5 rounded-xl active:opacity-80 transition-opacity inline-flex items-center justify-center gap-1"
           >
             <Star size={12} strokeWidth={1.75} fill="currentColor" /> Avaliar Sala
           </Link>
@@ -293,7 +293,7 @@ export default function MinhasReservas() {
               </span>
             )}
             {disputas > 0 && (
-              <span className="inline-flex items-center gap-1 bg-orange-400/30 text-orange-100 text-xs font-semibold px-2.5 py-1 rounded-xl">
+              <span className="inline-flex items-center gap-1 bg-[#00A99D]/30 text-teal-100 text-xs font-semibold px-2.5 py-1 rounded-xl">
                 <AlertTriangle size={11} strokeWidth={2} /> {disputas} em disputa
               </span>
             )}
@@ -331,7 +331,7 @@ export default function MinhasReservas() {
                   </span>
                 )}
                 {hasAlert && filtro !== key && (
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-orange-500 rounded-full" />
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#00A99D] rounded-full" />
                 )}
               </button>
             );

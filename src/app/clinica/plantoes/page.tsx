@@ -1,4 +1,4 @@
-import { getAuthSession } from "@/lib/api-auth";
+﻿import { getAuthSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
@@ -47,7 +47,7 @@ export default async function PlantoesDaClinica() {
                 </p>
               </div>
               {{
-                AGUARDANDO_PAGAMENTO: <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 bg-amber-50 text-amber-700">Ag. pagamento</span>,
+                AGUARDANDO_PAGAMENTO: <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 bg-teal-50 text-teal-700">Ag. pagamento</span>,
                 ABERTO:       <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 bg-green-50 text-green-700">Aberto</span>,
                 FECHADO:      <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 bg-gray-100 text-gray-600">Fechado</span>,
                 EM_ANDAMENTO: <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 bg-yellow-50 text-yellow-700">Em andamento</span>,

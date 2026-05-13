@@ -86,17 +86,17 @@ export default function ConfirmarCandidatura({ params }: { params: Promise<{ id:
       <div>
         <TopBar titulo="Candidatura" back={`/medico/plantoes/${id}`} />
         <div className="px-4 py-10 flex flex-col items-center text-center space-y-4">
-          <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mb-4">
-            <Lock size={36} strokeWidth={1.5} className="text-orange-500" />
+          <div className="w-20 h-20 bg-teal-100 rounded-full flex items-center justify-center mb-4">
+            <Lock size={36} strokeWidth={1.5} className="text-[#00A99D]" />
           </div>
           <h2 className="text-xl font-bold text-gray-900">Verificação Necessária</h2>
           <p className="text-gray-500 text-sm leading-6 max-w-sm">
             Para se candidatar a plantões precisa de completar a Verificação Express.
             Garante a confiança das clínicas no seu perfil.
           </p>
-          <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 w-full text-left space-y-2">
-            <p className="text-sm font-bold text-orange-700 flex items-center gap-1"><CheckCircle size={14} strokeWidth={2} /> O que inclui a Verificação Express</p>
-            <ul className="text-xs text-orange-600 space-y-1">
+          <div className="bg-teal-50 border border-teal-100 rounded-2xl p-4 w-full text-left space-y-2">
+            <p className="text-sm font-bold text-teal-700 flex items-center gap-1"><CheckCircle size={14} strokeWidth={2} /> O que inclui a Verificação Express</p>
+            <ul className="text-xs text-[#00A99D] space-y-1">
               <li>• Confirmação do número de ordem/SINOME</li>
               <li>• Validação de identidade (BI/Passaporte)</li>
               <li>• Verificação de credenciais clínicas</li>

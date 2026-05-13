@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { use, useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -158,7 +158,7 @@ export default function AdminContaDetalhe({ params }: { params: Promise<{ profis
         <button
           onClick={entrarNaConta}
           disabled={impersonating}
-          className="shrink-0 flex items-center gap-1.5 border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-2 rounded-xl transition-colors disabled:opacity-60"
+          className="shrink-0 flex items-center gap-1.5 border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-semibold px-3 py-2 rounded-xl transition-colors disabled:opacity-60"
         >
           {impersonating
             ? <Loader2 size={12} className="animate-spin" />

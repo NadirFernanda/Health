@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState, useCallback } from "react";
 import { Check, X, Loader2, Building2, User, Calendar, CreditCard, Stethoscope } from "lucide-react";
 
@@ -54,7 +54,7 @@ const METODO_LABEL: Record<string, string> = {
 
 const SUBTIPO_CONFIG = {
   PUBLICACAO: { label: "PUBLICAÇÃO", cls: "bg-blue-100 text-blue-700" },
-  TAXA_RESERVA: { label: "TAXA RESERVA", cls: "bg-purple-100 text-purple-700" },
+  TAXA_RESERVA: { label: "TAXA RESERVA", cls: "bg-[#0B3C74]/10 text-[#0B3C74]" },
 } as const;
 
 export default function AdminPagamentos() {
@@ -170,9 +170,9 @@ export default function AdminPagamentos() {
 
               {/* Taxa de reserva do médico */}
               {p.candidatura && (
-                <div className="bg-purple-50 rounded-xl p-3 space-y-1 text-xs text-gray-600">
+                <div className="bg-[#0B3C74]/5 rounded-xl p-3 space-y-1 text-xs text-gray-600">
                   <p className="flex items-center gap-1.5 font-semibold text-gray-800">
-                    <Stethoscope size={12} strokeWidth={1.75} className="text-purple-400" />
+                    <Stethoscope size={12} strokeWidth={1.75} className="text-[#0B3C74]/60" />
                     {p.candidatura.medicoNome} · {p.candidatura.medicoEspecialidade}
                   </p>
                   <p className="flex items-center gap-1.5">

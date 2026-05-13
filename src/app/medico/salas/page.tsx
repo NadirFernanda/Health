@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
@@ -30,7 +30,7 @@ const TIPO_LABEL: Record<string, string> = {
 const TIPO_COLOR: Record<string, string> = {
   CONSULTORIO:   "bg-[#0B3C74]/10 text-[#0B3C74]",
   OBSERVACAO:    "bg-teal-50 text-teal-700",
-  PROCEDIMENTOS: "bg-purple-50 text-purple-700",
+  PROCEDIMENTOS: "bg-[#0B3C74]/5 text-[#0B3C74]",
 };
 
 const TIPOS = [
@@ -79,7 +79,7 @@ function SalaCard({ sala }: { sala: Sala }) {
           </span>
           {sala.totalAvaliacoes > 0 && (
             <span className="flex items-center gap-1 text-xs text-gray-600">
-              <Star size={11} strokeWidth={1.75} className="text-amber-400 fill-amber-400" />
+              <Star size={11} strokeWidth={1.75} className="text-teal-400 fill-[#00A99D]" />
               <span className="font-semibold">{sala.avaliacaoMedia.toFixed(1)}</span>
               <span className="text-gray-400">({sala.totalAvaliacoes})</span>
             </span>

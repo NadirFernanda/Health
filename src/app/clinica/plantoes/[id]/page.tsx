@@ -1,4 +1,4 @@
-import { getAuthSession, getClinicaFromSession } from "@/lib/api-auth";
+﻿import { getAuthSession, getClinicaFromSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
@@ -78,7 +78,7 @@ export default async function DetalhePlantaoClinica({
   const estadoCand: Record<string, { label: string; cls: string }> = {
     PENDENTE:              { label: "Pendente",           cls: "bg-yellow-50 text-yellow-700" },
     CONTRATO_PENDENTE:     { label: "Contrato enviado",   cls: "bg-blue-50 text-blue-700" },
-    AGUARDANDO_PAGAMENTO:  { label: "Ag. pagamento",      cls: "bg-amber-50 text-amber-700" },
+    AGUARDANDO_PAGAMENTO:  { label: "Ag. pagamento",      cls: "bg-teal-50 text-teal-700" },
     ACEITE:                { label: "Aceite",             cls: "bg-green-50 text-green-700" },
     CONCLUIDO:             { label: "Concluído",          cls: "bg-teal-50 text-teal-700" },
     RECUSADO:              { label: "Recusado",           cls: "bg-red-50 text-red-600" },

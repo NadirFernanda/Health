@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import { TopBar } from "@/components/nav";
 import { useRouter } from "next/navigation";
@@ -105,7 +105,7 @@ const corMap: Record<string, string> = {
   PLANTAO: "bg-blue-50",
   PAGAMENTO: "bg-emerald-50",
   CANDIDATURA: "bg-green-50",
-  CONTRATO: "bg-purple-50",
+  CONTRATO: "bg-[#0B3C74]/5",
   MENSAGEM: "bg-blue-50",
   VERIFICACAO_CONCLUIDA: "bg-brand-50",
   VERIFICACAO_RECUSADA: "bg-red-50",
@@ -115,7 +115,7 @@ const corMap: Record<string, string> = {
   CANDIDATURA_ACEITE: "bg-green-50",
   CANDIDATURA_RECUSADA: "bg-red-50",
   TURNO_AMANHA: "bg-blue-50",
-  RESERVA_CONFIRMADA: "bg-purple-50",
+  RESERVA_CONFIRMADA: "bg-[#0B3C74]/5",
   AVALIACAO_RECEBIDA: "bg-yellow-50",
   PAGAMENTO_PROCESSADO: "bg-emerald-50",
 };
