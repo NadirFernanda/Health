@@ -1,73 +1,94 @@
-"use client";
-import { useState, useEffect } from "react";
+import { getAuthSession, getProfissionalFromSession } from "@/lib/api-auth";
+import { prisma } from "@/lib/db";
+import { redirect } from "next/navigation";
 import { PlantaoCard } from "@/components/plantao-card";
 import Link from "next/link";
 import { Bell, User, BadgeCheck, Clock, XCircle, AlertCircle, HeadphonesIcon } from "lucide-react";
-
-type Perfil = { nome: string; verified: boolean; estadoVerificacao: string; disponivelAgora: boolean; saldoCarteira: number; totalPlantoes: number };
-type PlantaoAPI = {
-  id: string; tipoProfissional: string; especialidade: string; dataInicio: string; dataFim: string;
-  valorKwanzas: number; vagas: number; vagasPreenchidas: number; estado: string;
-  descricao: string; clinica: { id: string; nome: string; morada: string; cidade: string; provincia: string; logo: string; rating: number; totalAvaliacoes: number; verified: boolean };
-  equipamentos: Record<string, boolean>;
-};
+import DisponibilidadeToggle from "./disponivel-toggle";
 
 function formatAOA(v: number) {
   return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
 }
 
-export default function MedicoDashboard() {
-  const [perfil, setPerfil] = useState<Perfil | null>(null);
-  const [disponivel, setDisponivel] = useState(false);
-  const [plantoes, setPlantoes] = useState<PlantaoAPI[]>([]);
-  const [ganhosMes, setGanhosMes] = useState(0);
+export default async function MedicoDashboard() {
+  const session = await getAuthSession();
+  if (!session || session.role !== "MEDICO") redirect("/login");
 
-  useEffect(() => {
-    fetch("/api/medico/perfil").then((r) => r.ok ? r.json() : null).then((d) => {
-      if (d?.nome) { setPerfil(d); setDisponivel(d.disponivelAgora ?? false); }
-    }).catch(() => {});
-    fetch("/api/plantoes?pagina=1").then((r) => r.ok ? r.json() : {}).then((d: { plantoes?: PlantaoAPI[] } | PlantaoAPI[]) => {
-      const lista: PlantaoAPI[] = Array.isArray(d) ? d : ((d as { plantoes?: PlantaoAPI[] }).plantoes ?? []);
-      setPlantoes(lista.filter((p) => p.estado === "ABERTO").slice(0, 5));
-    }).catch(() => {});
-    fetch("/api/medico/ganhos").then((r) => r.ok ? r.json() : null).then((d) => {
-      if (d?.transacoes) {
-        const total = d.transacoes
-          .filter((t: { tipo: string; estado: string }) => t.tipo === "CREDITO" && t.estado === "PROCESSADO")
-          .reduce((s: number, t: { valorCentavos: string }) => s + Math.round(parseInt(t.valorCentavos) / 100), 0);
-        setGanhosMes(total);
-      }
-    }).catch(() => {});
-  }, []);
+  const prof = await getProfissionalFromSession(session);
+  if (!prof) redirect("/login");
 
-  const toggleDisponivel = async () => {
-    const next = !disponivel;
-    setDisponivel(next);
-    await fetch("/api/medico/perfil", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ disponivelAgora: next }),
-    });
-  };
+  const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+  const [plantoes, ganhos] = await Promise.all([
+    prisma.plantao.findMany({
+      where: {
+        estado: "ABERTO",
+        OR: [{ profissionalPublicadorId: null }, { profissionalPublicadorId: { not: prof.id } }],
+      },
+      select: {
+        id: true, tipoProfissional: true, especialidade: true,
+        dataInicio: true, dataFim: true, valorKwanzas: true,
+        vagas: true, vagasPreenchidas: true, estado: true, descricao: true,
+        publicadoPorMedico: true,
+        maca: true, estetoscopio: true, tensiometro: true, termometro: true,
+        computador: true, materiaisBasicos: true, nebulizador: true,
+        oximetro: true, glucometro: true, desfibrilador: true,
+        clinica: {
+          select: { id: true, nome: true, morada: true, cidade: true, provincia: true, logo: true, rating: true, totalAvaliacoes: true, verified: true },
+        },
+        profissionalPublicador: {
+          select: { id: true, nome: true, especialidade: true, rating: true, verified: true },
+        },
+        _count: { select: { candidaturas: true } },
+      },
+      orderBy: { dataInicio: "asc" },
+      take: 5,
+    }),
+    prisma.transacaoCarteira.aggregate({
+      where: { profissionalId: prof.id, tipo: "CREDITO", estado: "PROCESSADO", criadoEm: { gte: inicioMes } },
+      _sum: { valorCentavos: true },
+    }),
+  ]);
+
+  const ganhosMesAoa = Math.round(Number(ganhos._sum.valorCentavos ?? 0n) / 100);
+
+  const plantoesCard = plantoes.map((p) => ({
+    id: p.id,
+    publicadoPorMedico: p.publicadoPorMedico,
+    clinica: p.clinica
+      ? { id: p.clinica.id, nome: p.clinica.nome, morada: p.clinica.morada ?? "", cidade: p.clinica.cidade ?? "", provincia: p.clinica.provincia, logo: p.clinica.logo ?? "", rating: p.clinica.rating, totalAvaliacoes: p.clinica.totalAvaliacoes, verified: p.clinica.verified }
+      : null,
+    profissionalPublicador: p.profissionalPublicador ?? null,
+    tipoProfissional: p.tipoProfissional,
+    especialidade: p.especialidade as never,
+    dataInicio: p.dataInicio.toISOString(),
+    dataFim: p.dataFim.toISOString(),
+    valorKwanzas: p.valorKwanzas,
+    vagas: p.vagas,
+    vagasPreenchidas: p.vagasPreenchidas,
+    estado: p.estado as never,
+    descricao: p.descricao ?? "",
+    candidatos: p._count.candidaturas,
+    equipamentos: {
+      maca: p.maca, estetoscopio: p.estetoscopio, tensiometro: p.tensiometro,
+      termometro: p.termometro, computador: p.computador, materiaisBasicos: p.materiaisBasicos,
+      nebulizador: p.nebulizador, oximetro: p.oximetro, glucometro: p.glucometro, desfibrilador: p.desfibrilador,
+    },
+  }));
 
   return (
     <div>
       {/* Header */}
       <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] px-5 pt-6 pb-6">
-        {/* Logo centrada no topo */}
         <div className="flex justify-center mb-4">
           <div className="bg-white rounded-xl px-4 py-2 shadow-lg shadow-black/20">
-            <img
-              src="/Imagens/LOGO_MED_FREELA.png"
-              alt="MedFreela"
-              className="object-contain h-11 w-auto"
-            />
+            <img src="/Imagens/LOGO_MED_FREELA.png" alt="MedFreela" className="object-contain h-11 w-auto" />
           </div>
         </div>
         <div className="flex items-center justify-between mb-1">
           <div>
             <p className="text-blue-200 text-sm">Olá,</p>
-            <h1 className="text-white font-bold text-xl">{perfil?.nome ?? "..."}</h1>
+            <h1 className="text-white font-bold text-xl">{prof.nome}</h1>
           </div>
           <div className="flex gap-2">
             <Link href="/medico/notificacoes" className="relative w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white">
@@ -78,50 +99,38 @@ export default function MedicoDashboard() {
             </Link>
           </div>
         </div>
-        {perfil?.estadoVerificacao === "APROVADO" && (
+
+        {prof.estadoVerificacao === "APROVADO" && (
           <span className="inline-flex items-center gap-1 bg-[#00A99D]/30 text-green-200 text-xs font-semibold px-2.5 py-1 rounded-full mt-2">
             <BadgeCheck size={13} strokeWidth={2} /> Perfil Verificado
           </span>
         )}
-        {perfil?.estadoVerificacao === "EM_ANALISE" && (
+        {prof.estadoVerificacao === "EM_ANALISE" && (
           <span className="inline-flex items-center gap-1 bg-yellow-400/20 text-yellow-200 text-xs font-semibold px-2.5 py-1 rounded-full mt-2">
             <Clock size={13} strokeWidth={2} /> Em Verificação
           </span>
         )}
-        {perfil?.estadoVerificacao === "REJEITADO" && (
+        {prof.estadoVerificacao === "REJEITADO" && (
           <span className="inline-flex items-center gap-1 bg-red-400/20 text-red-300 text-xs font-semibold px-2.5 py-1 rounded-full mt-2">
             <XCircle size={13} strokeWidth={2} /> Verificação Recusada
           </span>
         )}
-        {perfil?.estadoVerificacao === "PENDENTE" && (
+        {prof.estadoVerificacao === "PENDENTE" && (
           <span className="inline-flex items-center gap-1 bg-white/10 text-blue-200 text-xs font-semibold px-2.5 py-1 rounded-full mt-2">
             <AlertCircle size={13} strokeWidth={2} /> Perfil por verificar
           </span>
         )}
 
-        {/* Toggle Disponível Agora */}
-        <div className={`mt-3 flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors ${disponivel ? "bg-green-500/30" : "bg-white/10"}`}>
-          <div>
-            <p className="text-white text-xs font-bold">Disponível Agora</p>
-            <p className="text-blue-200 text-xs">{disponivel ? "Clínicas podem contactar-o directamente" : "Activate para receber turnos urgentes"}</p>
-          </div>
-          <button
-            onClick={toggleDisponivel}
-            className={`w-12 h-6 rounded-full relative transition-colors shrink-0 ${disponivel ? "bg-green-400" : "bg-white/30"}`}
-          >
-            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${disponivel ? "left-6" : "left-0.5"}`} />
-          </button>
-        </div>
+        <DisponibilidadeToggle inicial={prof.disponivelAgora} />
 
-        {/* Resumo */}
         <div className="grid grid-cols-2 gap-3 mt-4">
           <div className="bg-white/15 rounded-xl p-3">
             <p className="text-blue-200 text-xs">Plantões feitos</p>
-            <p className="text-white text-2xl font-bold mt-0.5">{perfil?.totalPlantoes ?? 0}</p>
+            <p className="text-white text-2xl font-bold mt-0.5">{prof.totalPlantoes}</p>
           </div>
           <div className="bg-white/15 rounded-xl p-3">
             <p className="text-blue-200 text-xs">Ganhos este mês</p>
-            <p className="text-white text-2xl font-bold mt-0.5">{formatAOA(ganhosMes)}</p>
+            <p className="text-white text-2xl font-bold mt-0.5">{formatAOA(ganhosMesAoa)}</p>
           </div>
         </div>
       </div>
@@ -168,7 +177,7 @@ export default function MedicoDashboard() {
           <Link href="/medico/buscar" className="text-xs text-[#0B3C74] font-semibold">Ver todos</Link>
         </div>
         <div className="space-y-3">
-          {plantoes.map((p) => (
+          {plantoesCard.map((p) => (
             <PlantaoCard key={p.id} plantao={p as never} showCandidatarBtn />
           ))}
         </div>

@@ -18,29 +18,32 @@ export default async function ClinicaDashboard() {
 
   const plantoes = await prisma.plantao.findMany({
     where: { clinicaId: clinica.id, estado: "ABERTO" },
-    include: { clinica: true, _count: { select: { candidaturas: true } } },
+    select: {
+      id: true, tipoProfissional: true, especialidade: true,
+      dataInicio: true, dataFim: true, valorKwanzas: true,
+      vagas: true, vagasPreenchidas: true, estado: true, descricao: true,
+      maca: true, estetoscopio: true, tensiometro: true, termometro: true,
+      computador: true, materiaisBasicos: true, nebulizador: true,
+      oximetro: true, glucometro: true, desfibrilador: true,
+      _count: { select: { candidaturas: true } },
+    },
     orderBy: { dataInicio: "asc" },
     take: 5,
   });
 
   const totalPago = plantoes.reduce((s, p) => s + p.valorKwanzas, 0);
 
-  // Map to Plantao shape expected by PlantaoCard
-  const plantoesCard = plantoes
-    .filter((p) => p.clinica !== null)
-    .map((p) => ({
+  const clinicaCard = {
+    id: clinica.id, nome: clinica.nome, morada: clinica.morada ?? "",
+    cidade: clinica.cidade ?? "", provincia: clinica.provincia,
+    logo: clinica.logo ?? "", rating: clinica.rating,
+    totalAvaliacoes: clinica.totalAvaliacoes, verified: clinica.verified,
+  };
+
+  const plantoesCard = plantoes.map((p) => ({
     id: p.id,
-    clinica: {
-      id: p.clinica!.id,
-      nome: p.clinica!.nome,
-      morada: p.clinica!.morada ?? "",
-      cidade: p.clinica!.cidade ?? "",
-      provincia: p.clinica!.provincia,
-      logo: p.clinica!.logo ?? "",
-      rating: p.clinica!.rating,
-      totalAvaliacoes: p.clinica!.totalAvaliacoes,
-      verified: p.clinica!.verified,
-    },
+    clinica: clinicaCard,
+    profissionalPublicador: null,
     tipoProfissional: p.tipoProfissional,
     especialidade: p.especialidade as never,
     dataInicio: p.dataInicio.toISOString(),

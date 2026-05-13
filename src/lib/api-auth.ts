@@ -10,7 +10,15 @@ import Redis from "ioredis";
 
 let _redis: Redis | null = null;
 function getRedis(): Redis {
-  if (!_redis) _redis = new Redis(process.env.REDIS_URL ?? "redis://localhost:6379");
+  if (!_redis) {
+    _redis = new Redis(process.env.REDIS_URL ?? "redis://localhost:6379", {
+      maxRetriesPerRequest: 1,
+      connectTimeout: 2000,
+      enableOfflineQueue: false,
+      lazyConnect: true,
+    });
+    _redis.on("error", () => {});
+  }
   return _redis;
 }
 
