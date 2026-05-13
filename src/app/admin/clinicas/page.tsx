@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Check, X, Star, MessageCircle, MapPin, Ban, RotateCcw } from "lucide-react";
+import { Check, X, Star, MessageCircle, MapPin, Ban, RotateCcw, UserCheck } from "lucide-react";
 
 type EstadoVerificacao = "APROVADO" | "PENDENTE" | "REJEITADO" | "SUSPENSO";
 type Filtro = "TODOS" | "PENDENTE" | "APROVADO" | "REJEITADO" | "SUSPENSO";
@@ -30,6 +30,18 @@ export default function AdminClinicas() {
       .then((d) => { if (Array.isArray(d)) setLista(d); })
       .finally(() => setLoading(false));
   }, []);
+
+  const entrarComo = async (id: string) => {
+    const res = await fetch("/api/admin/impersonate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "CLINICA", profileId: id }),
+    });
+    if (res.ok) {
+      const { redirectTo } = await res.json();
+      window.location.href = redirectTo;
+    }
+  };
 
   const acao = async (id: string, a: string) => {
     await fetch(`/api/admin/clinicas/${id}`, {
@@ -148,6 +160,14 @@ export default function AdminClinicas() {
                 <RotateCcw size={13} strokeWidth={2} /> Reactivar Clínica
               </button>
             )}
+
+            <button
+              onClick={() => entrarComo(c.id)}
+              className="mt-2 w-full border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1.5"
+            >
+              <UserCheck size={13} strokeWidth={2} />
+              Entrar como esta clínica
+            </button>
           </div>
         ))}
 

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Check, X, Star, MessageCircle, MapPin, DoorOpen, Ban, RotateCcw } from "lucide-react";
+import { Check, X, Star, MessageCircle, MapPin, DoorOpen, Ban, RotateCcw, UserCheck } from "lucide-react";
 
 type EstadoVerificacao = "APROVADO" | "PENDENTE" | "REJEITADO" | "SUSPENSO";
 type Filtro = "TODOS" | "PENDENTE" | "APROVADO" | "REJEITADO" | "SUSPENSO";
@@ -42,6 +42,18 @@ export default function AdminConsultorios() {
       .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
       .finally(() => setLoading(false));
   }, []);
+
+  const entrarComo = async (id: string) => {
+    const res = await fetch("/api/admin/impersonate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "PROPRIETARIO_SALA", profileId: id }),
+    });
+    if (res.ok) {
+      const { redirectTo } = await res.json();
+      window.location.href = redirectTo;
+    }
+  };
 
   const acao = async (id: string, a: string) => {
     await fetch(`/api/admin/consultorios/${id}`, {
@@ -203,6 +215,14 @@ export default function AdminConsultorios() {
                   <RotateCcw size={13} strokeWidth={2} /> Reactivar Consultório
                 </button>
               )}
+
+              <button
+                onClick={() => entrarComo(c.id)}
+                className="mt-2 w-full border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1.5"
+              >
+                <UserCheck size={13} strokeWidth={2} />
+                Entrar como este consultório
+              </button>
             </div>
           );
         })}

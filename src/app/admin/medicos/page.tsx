@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { Check, X, Star, ClipboardList, MessageCircle, Ban, RotateCcw, Wallet, FileText, ExternalLink, Loader2 } from "lucide-react";
+import { Check, X, Star, ClipboardList, MessageCircle, Ban, RotateCcw, Wallet, FileText, ExternalLink, Loader2, UserCheck } from "lucide-react";
 
 type EstadoVerificacao = "APROVADO" | "PENDENTE" | "EM_ANALISE" | "REJEITADO" | "SUSPENSO";
 type Filtro = "TODOS" | "PENDENTE" | "EM_ANALISE" | "APROVADO" | "REJEITADO" | "SUSPENSO";
@@ -122,6 +122,18 @@ export default function AdminMedicos() {
       setActionError({ id, msg: "Erro de ligação. Tenta novamente." });
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const entrarComo = async (id: string) => {
+    const res = await fetch("/api/admin/impersonate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "MEDICO", profileId: id }),
+    });
+    if (res.ok) {
+      const { redirectTo } = await res.json();
+      window.location.href = redirectTo;
     }
   };
 
@@ -335,6 +347,14 @@ export default function AdminMedicos() {
                 Reactivar Acesso
               </button>
             )}
+
+            <button
+              onClick={() => entrarComo(m.id)}
+              className="mt-2 w-full border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1.5"
+            >
+              <UserCheck size={13} strokeWidth={2} />
+              Entrar como este médico
+            </button>
           </div>
           );
         })}
