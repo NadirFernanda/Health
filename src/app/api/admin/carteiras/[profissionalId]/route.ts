@@ -71,10 +71,10 @@ export async function GET(
     telefone: prof.user.phone,
     saldo,
     pendente,
-    transacoes: prof.transacoes.map((t) => ({
+    transacoes: prof.transacoes.map(({ valorCentavos, ...t }) => ({
       ...t,
       criadoEm: t.criadoEm.toISOString(),
-      valorAoa: Number(t.valorCentavos) / 100,
+      valorAoa: Number(valorCentavos) / 100,
     })),
     saques: prof.saques.map((s) => ({
       ...s,
