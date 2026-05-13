@@ -1,6 +1,6 @@
 ﻿"use client";
 import { useEffect, useState } from "react";
-import { Check, X, Star, MessageCircle, MapPin, DoorOpen, Ban, RotateCcw, UserCheck } from "lucide-react";
+import { Check, X, Star, MessageCircle, MapPin, DoorOpen, Ban, RotateCcw, UserCheck, Search } from "lucide-react";
 
 type EstadoVerificacao = "APROVADO" | "PENDENTE" | "REJEITADO" | "SUSPENSO";
 type Filtro = "TODOS" | "PENDENTE" | "APROVADO" | "REJEITADO" | "SUSPENSO";
@@ -27,6 +27,7 @@ function localizacao(c: Consultorio) {
 
 export default function AdminConsultorios() {
   const [filtro, setFiltro] = useState<Filtro>("TODOS");
+  const [pesquisa, setPesquisa] = useState("");
   const [lista, setLista]   = useState<Consultorio[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +72,12 @@ export default function AdminConsultorios() {
     }));
   };
 
-  const filtered = filtro === "TODOS" ? lista : lista.filter((c) => c.estadoVerificacao === filtro);
+  const q = pesquisa.toLowerCase();
+  const filtered = lista.filter((c) => {
+    const matchStatus = filtro === "TODOS" || c.estadoVerificacao === filtro;
+    const matchSearch = !q || c.nome.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || (c.morada || c.bairro || c.zonaLuanda || "").toLowerCase().includes(q);
+    return matchStatus && matchSearch;
+  });
   const count = (f: Filtro) =>
     f === "TODOS" ? lista.length : lista.filter((c) => c.estadoVerificacao === f).length;
 
@@ -111,6 +117,18 @@ export default function AdminConsultorios() {
             {f.charAt(0) + f.slice(1).toLowerCase()} ({count(f)})
           </button>
         ))}
+      </div>
+
+      {/* Pesquisa */}
+      <div className="relative">
+        <Search size={15} strokeWidth={1.75} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <input
+          type="search"
+          placeholder="Pesquisar por nome, e-mail ou localização…"
+          value={pesquisa}
+          onChange={(e) => setPesquisa(e.target.value)}
+          className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B3C74]/20"
+        />
       </div>
 
       {/* Lista */}

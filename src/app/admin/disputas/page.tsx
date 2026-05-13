@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, CheckCircle2, XCircle, Clock, ChevronRight } from "lucide-react";
+import { AlertTriangle, CheckCircle2, XCircle, Clock, ChevronRight, Search } from "lucide-react";
 import Link from "next/link";
 
 type Filtro = "TODAS" | "ABERTA" | "EM_ANALISE" | "RESOLVIDA" | "ENCERRADA";
@@ -42,24 +42,35 @@ function formatAOA(v: number) {
 export default function AdminDisputasPage() {
   const [disputas, setDisputas] = useState<DisputaItem[]>([]);
   const [filtro, setFiltro] = useState<Filtro>("TODAS");
+  const [pesquisa, setPesquisa] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const url = filtro === "TODAS" ? "/api/admin/disputas" : `/api/admin/disputas?estado=${filtro}`;
     setLoading(true);
-    fetch(url)
+    fetch("/api/admin/disputas")
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d)) setDisputas(d); })
       .finally(() => setLoading(false));
-  }, [filtro]);
+  }, []);
 
   const filtros: { value: Filtro; label: string }[] = [
-    { value: "TODAS", label: "Todas" },
-    { value: "ABERTA", label: "Abertas" },
+    { value: "TODAS",      label: "Todas" },
+    { value: "ABERTA",     label: "Abertas" },
     { value: "EM_ANALISE", label: "Em análise" },
-    { value: "RESOLVIDA", label: "Resolvidas" },
-    { value: "ENCERRADA", label: "Encerradas" },
+    { value: "RESOLVIDA",  label: "Resolvidas" },
+    { value: "ENCERRADA",  label: "Encerradas" },
   ];
+
+  const q = pesquisa.toLowerCase();
+  const filtered = disputas.filter((d) => {
+    const matchStatus = filtro === "TODAS" || d.estado === filtro;
+    const matchSearch = !q ||
+      d.medicoNome.toLowerCase().includes(q) ||
+      d.clinicaNome.toLowerCase().includes(q) ||
+      d.especialidade.toLowerCase().includes(q) ||
+      (TIPO_LABELS[d.tipo] ?? d.tipo).toLowerCase().includes(q);
+    return matchStatus && matchSearch;
+  });
 
   return (
     <div className="p-4 space-y-4 pb-10 max-w-2xl mx-auto">
@@ -68,7 +79,7 @@ export default function AdminDisputasPage() {
         <span className="bg-red-50 text-red-600 text-xs font-bold px-2.5 py-1 rounded-full">{disputas.length} total</span>
       </div>
 
-      {/* Filtros */}
+      {/* Filtros de estado */}
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
         {filtros.map((f) => (
           <button
@@ -83,21 +94,33 @@ export default function AdminDisputasPage() {
         ))}
       </div>
 
+      {/* Pesquisa */}
+      <div className="relative">
+        <Search size={15} strokeWidth={1.75} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <input
+          type="search"
+          placeholder="Pesquisar por médico, clínica, especialidade…"
+          value={pesquisa}
+          onChange={(e) => setPesquisa(e.target.value)}
+          className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B3C74]/20"
+        />
+      </div>
+
       {loading && (
         <div className="flex justify-center py-10">
           <div className="w-8 h-8 border-2 border-[#0B3C74] border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
-      {!loading && disputas.length === 0 && (
+      {!loading && filtered.length === 0 && (
         <div className="text-center py-16 text-gray-400 bg-white rounded-2xl border border-gray-100">
           <AlertTriangle size={32} className="mx-auto mb-2 text-gray-300" strokeWidth={1.25} />
-          <p className="text-sm">Nenhuma disputa encontrada.</p>
+          <p className="text-sm">{pesquisa ? `Nenhum resultado para "${pesquisa}".` : "Nenhuma disputa encontrada."}</p>
         </div>
       )}
 
       <div className="space-y-3">
-        {disputas.map((d) => {
+        {filtered.map((d) => {
           const est = ESTADO_MAP[d.estado] ?? ESTADO_MAP.ABERTA;
           return (
             <Link

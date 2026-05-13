@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Zap, Clock, CheckCircle, XCircle, ChevronRight, User, Building2, AlertTriangle } from "lucide-react";
+import { ChevronLeft, Zap, Clock, CheckCircle, XCircle, ChevronRight, User, Building2, AlertTriangle, Search } from "lucide-react";
 
 type Filtro = "TODOS" | "EXPRESS" | "NORMAL";
 
@@ -229,6 +229,7 @@ function CardPendente({
 
 export default function AdminVerificacaoPage() {
   const [filtro, setFiltro] = useState<Filtro>("TODOS");
+  const [pesquisa, setPesquisa] = useState("");
   const [medicos, setMedicos] = useState<MedicoPendente[]>([]);
   const [clinicas, setClinicas] = useState<ClinicaPendente[]>([]);
   const [loading, setLoading] = useState(true);
@@ -280,13 +281,17 @@ export default function AdminVerificacaoPage() {
   const medicosPendentes = medicos;
   const clinicasPendentes = clinicas;
 
+  const q = pesquisa.toLowerCase();
   const filtrarMedicos = (lista: MedicoPendente[]) => {
-    if (filtro === "EXPRESS") return lista.filter((m) => m.tipoVerificacao === "EXPRESS");
-    if (filtro === "NORMAL") return lista.filter((m) => m.tipoVerificacao !== "EXPRESS");
-    return lista;
+    let r = lista;
+    if (filtro === "EXPRESS") r = r.filter((m) => m.tipoVerificacao === "EXPRESS");
+    if (filtro === "NORMAL")  r = r.filter((m) => m.tipoVerificacao !== "EXPRESS");
+    if (q) r = r.filter((m) => m.nome.toLowerCase().includes(q) || m.email.toLowerCase().includes(q) || m.especialidade.toLowerCase().includes(q));
+    return r;
   };
   const filtrarClinicas = (lista: ClinicaPendente[]) => {
     if (filtro === "EXPRESS") return [];
+    if (q) return lista.filter((c) => c.nome.toLowerCase().includes(q) || c.email.toLowerCase().includes(q));
     return lista;
   };
 
@@ -314,7 +319,7 @@ export default function AdminVerificacaoPage() {
 
       <div className="px-4 py-5 space-y-5">
         {/* Filtros */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 mb-0">
           {(["TODOS", "EXPRESS", "NORMAL"] as Filtro[]).map((f) => (
             <button
               key={f}
@@ -330,6 +335,18 @@ export default function AdminVerificacaoPage() {
               {f}
             </button>
           ))}
+        </div>
+
+        {/* Pesquisa */}
+        <div className="relative">
+          <Search size={15} strokeWidth={1.75} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <input
+            type="search"
+            placeholder="Pesquisar por nome, e-mail ou especialidade…"
+            value={pesquisa}
+            onChange={(e) => setPesquisa(e.target.value)}
+            className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B3C74]/20 bg-white"
+          />
         </div>
 
         {/* Express */}

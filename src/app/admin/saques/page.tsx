@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Loader2, Check, X, AlertTriangle, ArrowDownToLine, ChevronRight } from "lucide-react";
+import { Loader2, Check, X, AlertTriangle, ArrowDownToLine, ChevronRight, Search } from "lucide-react";
 
 type Saque = {
   id: string;
@@ -29,6 +29,7 @@ export default function AdminSaques() {
   const [lista, setLista] = useState<Saque[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState<"PENDENTE" | "TODOS">("PENDENTE");
+  const [pesquisa, setPesquisa] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [rejectModal, setRejectModal] = useState<string | null>(null);
   const [rejectMotivo, setRejectMotivo] = useState("");
@@ -72,13 +73,23 @@ export default function AdminSaques() {
   }
 
   const pendentes = lista.filter((s) => s.estado === "PENDENTE").length;
-  const filtered = filtro === "PENDENTE" ? lista.filter((s) => s.estado === "PENDENTE") : lista;
+  const q = pesquisa.toLowerCase();
+  const filtered = lista.filter((s) => {
+    const matchStatus = filtro === "TODOS" || s.estado === "PENDENTE";
+    const matchSearch = !q ||
+      s.profissional.nome.toLowerCase().includes(q) ||
+      s.profissional.email.toLowerCase().includes(q) ||
+      s.dadosBancarios.banco.toLowerCase().includes(q) ||
+      s.dadosBancarios.titular.toLowerCase().includes(q) ||
+      s.dadosBancarios.iban.toLowerCase().includes(q);
+    return matchStatus && matchSearch;
+  });
 
   return (
     <div className="p-4 space-y-4 pb-10 max-w-3xl mx-auto">
       <h1 className="text-base font-bold text-gray-900">Pedidos de Levantamento</h1>
 
-      {/* Filtros */}
+      {/* Filtros de estado */}
       <div className="flex gap-2">
         {(["PENDENTE", "TODOS"] as const).map((f) => (
           <button
@@ -91,6 +102,18 @@ export default function AdminSaques() {
             {f === "PENDENTE" ? `Por processar (${pendentes})` : `Todos (${lista.length})`}
           </button>
         ))}
+      </div>
+
+      {/* Pesquisa */}
+      <div className="relative">
+        <Search size={15} strokeWidth={1.75} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <input
+          type="search"
+          placeholder="Pesquisar por profissional, banco, IBAN…"
+          value={pesquisa}
+          onChange={(e) => setPesquisa(e.target.value)}
+          className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B3C74]/20"
+        />
       </div>
 
       {loading ? (

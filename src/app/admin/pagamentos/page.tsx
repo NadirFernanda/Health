@@ -1,6 +1,6 @@
 ﻿"use client";
 import { useEffect, useState, useCallback } from "react";
-import { Check, X, Loader2, Building2, User, Calendar, CreditCard, Stethoscope } from "lucide-react";
+import { Check, X, Loader2, Building2, User, Calendar, CreditCard, Stethoscope, Search } from "lucide-react";
 
 type Candidatura = {
   id: string;
@@ -61,6 +61,7 @@ export default function AdminPagamentos() {
   const [lista, setLista] = useState<Pagamento[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState<"PENDENTE" | "CONFIRMADO">("PENDENTE");
+  const [pesquisa, setPesquisa] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [actionError, setActionError] = useState<{ id: string; msg: string } | null>(null);
 
@@ -100,7 +101,18 @@ export default function AdminPagamentos() {
     }
   };
 
-  const filtered = lista.filter((p) => p.estado === filtro);
+  const q = pesquisa.toLowerCase();
+  const filtered = lista.filter((p) => {
+    const matchStatus = p.estado === filtro;
+    const matchSearch = !q ||
+      (p.plantao?.especialidade ?? "").toLowerCase().includes(q) ||
+      (p.candidatura?.medicoNome ?? "").toLowerCase().includes(q) ||
+      (p.reservaSala?.medicoNome ?? "").toLowerCase().includes(q) ||
+      (p.reservaSala?.salaNome ?? "").toLowerCase().includes(q) ||
+      (p.reservaSala?.clinicaNome ?? "").toLowerCase().includes(q) ||
+      (METODO_LABEL[p.metodo] ?? p.metodo).toLowerCase().includes(q);
+    return matchStatus && matchSearch;
+  });
   const pendentes = lista.filter((p) => p.estado === "PENDENTE").length;
   const confirmados = lista.filter((p) => p.estado === "CONFIRMADO").length;
 
@@ -123,6 +135,18 @@ export default function AdminPagamentos() {
             {f === "PENDENTE" ? `Por confirmar (${pendentes})` : `Em escrow (${confirmados})`}
           </button>
         ))}
+      </div>
+
+      {/* Pesquisa */}
+      <div className="relative">
+        <Search size={15} strokeWidth={1.75} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <input
+          type="search"
+          placeholder="Pesquisar por especialidade, médico, sala…"
+          value={pesquisa}
+          onChange={(e) => setPesquisa(e.target.value)}
+          className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B3C74]/20"
+        />
       </div>
 
       {loading && (

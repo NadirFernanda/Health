@@ -1,6 +1,6 @@
 ﻿"use client";
 import { useEffect, useState, useCallback } from "react";
-import { Check, X, Star, ClipboardList, MessageCircle, Ban, RotateCcw, Wallet, FileText, ExternalLink, Loader2, UserCheck } from "lucide-react";
+import { Check, X, Star, ClipboardList, MessageCircle, Ban, RotateCcw, Wallet, FileText, ExternalLink, Loader2, UserCheck, Search } from "lucide-react";
 
 type EstadoVerificacao = "APROVADO" | "PENDENTE" | "EM_ANALISE" | "REJEITADO" | "SUSPENSO";
 type Filtro = "TODOS" | "PENDENTE" | "EM_ANALISE" | "APROVADO" | "REJEITADO" | "SUSPENSO";
@@ -40,6 +40,7 @@ const badgeMap: Record<EstadoVerificacao, { cls: string; label: string }> = {
 
 export default function AdminMedicos() {
   const [filtro, setFiltro] = useState<Filtro>("TODOS");
+  const [pesquisa, setPesquisa] = useState("");
   const [lista, setLista]   = useState<Medico[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -137,7 +138,12 @@ export default function AdminMedicos() {
     }
   };
 
-  const filtered = filtro === "TODOS" ? lista : lista.filter((m) => m.estadoVerificacao === filtro);
+  const q = pesquisa.toLowerCase();
+  const filtered = lista.filter((m) => {
+    const matchStatus = filtro === "TODOS" || m.estadoVerificacao === filtro;
+    const matchSearch = !q || m.nome.toLowerCase().includes(q) || m.email.toLowerCase().includes(q) || m.especialidade.toLowerCase().includes(q);
+    return matchStatus && matchSearch;
+  });
   const count = (f: Filtro) =>
     f === "TODOS" ? lista.length : lista.filter((m) => m.estadoVerificacao === f).length;
 
@@ -176,6 +182,18 @@ export default function AdminMedicos() {
             {{ TODOS: "Todos", EM_ANALISE: "Em Análise", PENDENTE: "Sem docs", APROVADO: "Aprovados", REJEITADO: "Rejeitados", SUSPENSO: "Suspensos" }[f]} ({count(f)})
           </button>
         ))}
+      </div>
+
+      {/* Pesquisa */}
+      <div className="relative">
+        <Search size={15} strokeWidth={1.75} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <input
+          type="search"
+          placeholder="Pesquisar por nome, e-mail ou especialidade…"
+          value={pesquisa}
+          onChange={(e) => setPesquisa(e.target.value)}
+          className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B3C74]/20"
+        />
       </div>
 
       {/* Lista */}

@@ -1,6 +1,6 @@
 ﻿"use client";
 import { useEffect, useState } from "react";
-import { Plus, Shield, ShieldOff, ChevronDown } from "lucide-react";
+import { Plus, Shield, ShieldOff, ChevronDown, Search } from "lucide-react";
 
 type AdminRole = "FINANCEIRO" | "GESTOR" | "SUPORTE" | "ANALISTA";
 
@@ -34,6 +34,8 @@ export default function AdminAdmins() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [pesquisa, setPesquisa] = useState("");
+  const [filtroRole, setFiltroRole] = useState<AdminRole | "TODOS" | "MASTER">("TODOS");
 
   // New admin form state
   const [fEmail, setFEmail] = useState("");
@@ -80,7 +82,7 @@ export default function AdminAdmins() {
     }
   };
 
-  const submitCreate = async (e: React.FormEvent) => {
+  const submitCreate = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitting(true);
     setFormError(null);
@@ -101,6 +103,27 @@ export default function AdminAdmins() {
       setSubmitting(false);
     }
   };
+
+  const roleOpcoes: { value: AdminRole | "TODOS" | "MASTER"; label: string }[] = [
+    { value: "TODOS",      label: "Todos" },
+    { value: "MASTER",     label: "Master" },
+    { value: "FINANCEIRO", label: "Financeiro" },
+    { value: "GESTOR",     label: "Gestor" },
+    { value: "SUPORTE",    label: "Suporte" },
+    { value: "ANALISTA",   label: "Analista" },
+  ];
+
+  const q = pesquisa.toLowerCase();
+  const filteredAdmins = admins.filter((a) => {
+    const matchRole =
+      filtroRole === "TODOS" ||
+      (filtroRole === "MASTER" && a.adminRole === null) ||
+      a.adminRole === filtroRole;
+    const matchSearch = !q ||
+      (a.adminEmail ?? a.email).toLowerCase().includes(q) ||
+      (a.adminCargo ?? "").toLowerCase().includes(q);
+    return matchRole && matchSearch;
+  });
 
   if (loading) return (
     <div className="p-4 pt-10 flex justify-center">
@@ -184,9 +207,36 @@ export default function AdminAdmins() {
         </form>
       )}
 
+      {/* Filtro por role */}
+      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+        {roleOpcoes.map((r) => (
+          <button
+            key={r.value}
+            onClick={() => setFiltroRole(r.value)}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+              filtroRole === r.value ? "bg-[#0B3C74] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            {r.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Pesquisa */}
+      <div className="relative">
+        <Search size={15} strokeWidth={1.75} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <input
+          type="search"
+          placeholder="Pesquisar por e-mail ou cargo…"
+          value={pesquisa}
+          onChange={(e) => setPesquisa(e.target.value)}
+          className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B3C74]/20"
+        />
+      </div>
+
       {/* List */}
       <div className="space-y-3">
-        {admins.map((admin) => {
+        {filteredAdmins.map((admin) => {
           const badge = getRoleBadge(admin.adminRole);
           const isMaster = admin.adminRole === null;
           return (
@@ -245,7 +295,7 @@ export default function AdminAdmins() {
           );
         })}
 
-        {admins.length === 0 && (
+        {filteredAdmins.length === 0 && (
           <div className="text-center py-14 text-gray-400 text-sm bg-white rounded-2xl border border-gray-100">
             Nenhum admin encontrado.
           </div>
