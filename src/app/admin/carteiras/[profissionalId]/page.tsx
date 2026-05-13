@@ -1,42 +1,31 @@
 "use client";
 import { use, useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, TrendingUp, ArrowUp, ArrowDownToLine, PlusCircle, MinusCircle, ChevronLeft, AlertTriangle, CheckCircle2 } from "lucide-react";
+import {
+  Loader2, TrendingUp, ArrowUp, ArrowDownToLine, PlusCircle, MinusCircle,
+  ChevronLeft, AlertTriangle, CheckCircle2, UserCheck,
+} from "lucide-react";
 
 function formatAOA(v: number) {
   return new Intl.NumberFormat("pt-AO").format(Math.round(v)) + " AOA";
 }
 
 type Transacao = {
-  id: string;
-  tipo: string;
-  descricao: string;
-  estado: string;
-  criadoEm: string;
-  valorAoa: number;
-  referencia: string | null;
+  id: string; tipo: string; descricao: string; estado: string;
+  criadoEm: string; valorAoa: number; referencia: string | null;
 };
 
 type Saque = {
-  id: string;
-  valorAoa: number;
-  estado: string;
+  id: string; valorAoa: number; estado: string;
   dadosBancarios: { banco: string; titular: string; iban: string };
-  motivoRejeicao: string | null;
-  criadoEm: string;
-  processadoEm: string | null;
+  motivoRejeicao: string | null; criadoEm: string; processadoEm: string | null;
 };
 
-type CarteiraDetalhe = {
-  id: string;
-  nome: string;
-  especialidade: string;
-  email: string;
-  telefone: string | null;
-  saldo: number;
-  pendente: number;
-  transacoes: Transacao[];
-  saques: Saque[];
+type ContaDetalhe = {
+  id: string; nome: string; especialidade: string;
+  email: string; telefone: string | null;
+  saldo: number; pendente: number;
+  transacoes: Transacao[]; saques: Saque[];
 };
 
 const ESTADO_SAQUE: Record<string, { label: string; cls: string }> = {
@@ -46,14 +35,14 @@ const ESTADO_SAQUE: Record<string, { label: string; cls: string }> = {
   CANCELADO: { label: "Cancelado", cls: "bg-gray-100 text-gray-500" },
 };
 
-export default function AdminCarteiraDetalhe({ params }: { params: Promise<{ profissionalId: string }> }) {
+export default function AdminContaDetalhe({ params }: { params: Promise<{ profissionalId: string }> }) {
   const { profissionalId } = use(params);
   const router = useRouter();
-  const [data, setData] = useState<CarteiraDetalhe | null>(null);
+  const [data, setData] = useState<ContaDetalhe | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<"movimentos" | "saques">("movimentos");
 
-  // Adjustment form
   const [showAjuste, setShowAjuste] = useState(false);
   const [ajusteTipo, setAjusteTipo] = useState<"CREDITO" | "DEBITO">("CREDITO");
   const [ajusteValor, setAjusteValor] = useState("");
@@ -61,12 +50,21 @@ export default function AdminCarteiraDetalhe({ params }: { params: Promise<{ pro
   const [ajusteLoading, setAjusteLoading] = useState(false);
   const [ajusteError, setAjusteError] = useState("");
   const [ajusteSucesso, setAjusteSucesso] = useState(false);
+  const [impersonating, setImpersonating] = useState(false);
 
   const carregar = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const r = await fetch(`/api/admin/carteiras/${profissionalId}`, { credentials: "include" });
-      if (r.ok) setData(await r.json());
+      if (r.ok) {
+        setData(await r.json());
+      } else {
+        const body = await r.json().catch(() => ({}));
+        setError((body as { error?: string }).error ?? `Erro ${r.status} — tenta recarregar a página.`);
+      }
+    } catch {
+      setError("Erro de ligação ao servidor.");
     } finally {
       setLoading(false);
     }
@@ -74,13 +72,12 @@ export default function AdminCarteiraDetalhe({ params }: { params: Promise<{ pro
 
   useEffect(() => { carregar(); }, [carregar]);
 
-  async function handleAjuste(e: React.FormEvent<HTMLFormElement>) {
+  async function handleAjuste(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setAjusteError("");
     const v = parseFloat(ajusteValor);
     if (!v || v <= 0) { setAjusteError("Valor inválido"); return; }
     if (!ajusteMotivo.trim()) { setAjusteError("Motivo obrigatório"); return; }
-
     setAjusteLoading(true);
     try {
       const res = await fetch(`/api/admin/carteiras/${profissionalId}/ajuste`, {
@@ -104,6 +101,23 @@ export default function AdminCarteiraDetalhe({ params }: { params: Promise<{ pro
     }
   }
 
+  async function entrarNaConta() {
+    setImpersonating(true);
+    try {
+      const res = await fetch("/api/admin/impersonate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: "MEDICO", profileId: profissionalId }),
+      });
+      if (res.ok) {
+        const { redirectTo } = await res.json();
+        window.location.href = redirectTo;
+      }
+    } finally {
+      setImpersonating(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center py-20">
@@ -112,9 +126,24 @@ export default function AdminCarteiraDetalhe({ params }: { params: Promise<{ pro
     );
   }
 
-  if (!data) {
-    return <div className="p-4 text-sm text-gray-500">Profissional não encontrado.</div>;
+  if (error) {
+    return (
+      <div className="p-4 space-y-3 max-w-3xl mx-auto">
+        <button onClick={() => router.back()} className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600">
+          <ChevronLeft size={16} strokeWidth={2} /> Voltar
+        </button>
+        <div className="bg-red-50 border border-red-100 rounded-2xl p-4 flex items-start gap-3 text-sm text-red-600">
+          <AlertTriangle size={16} strokeWidth={2} className="shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold">Não foi possível carregar a conta</p>
+            <p className="text-xs mt-0.5 text-red-500">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
   }
+
+  if (!data) return null;
 
   return (
     <div className="p-4 space-y-4 pb-10 max-w-3xl mx-auto">
@@ -122,13 +151,23 @@ export default function AdminCarteiraDetalhe({ params }: { params: Promise<{ pro
         <button onClick={() => router.back()} className="p-1.5 text-gray-400 hover:text-gray-600">
           <ChevronLeft size={20} strokeWidth={2} />
         </button>
-        <div>
-          <h1 className="text-base font-bold text-gray-900">{data.nome}</h1>
-          <p className="text-xs text-gray-400">{data.especialidade} · {data.email}</p>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-base font-bold text-gray-900 truncate">{data.nome}</h1>
+          <p className="text-xs text-gray-400 truncate">{data.especialidade} · {data.email}</p>
         </div>
+        <button
+          onClick={entrarNaConta}
+          disabled={impersonating}
+          className="shrink-0 flex items-center gap-1.5 border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-2 rounded-xl transition-colors disabled:opacity-60"
+        >
+          {impersonating
+            ? <Loader2 size={12} className="animate-spin" />
+            : <UserCheck size={13} strokeWidth={2} />}
+          Entrar na conta
+        </button>
       </div>
 
-      {/* Balance card */}
+      {/* Saldo */}
       <div className="bg-gradient-to-br from-[#0B3C74] to-[#00A99D] rounded-2xl px-5 py-5">
         <p className="text-blue-200 text-xs">Saldo disponível</p>
         <p className="text-white text-3xl font-bold mt-0.5">{formatAOA(data.saldo)}</p>
@@ -151,11 +190,11 @@ export default function AdminCarteiraDetalhe({ params }: { params: Promise<{ pro
         </div>
       </div>
 
-      {/* Adjustment modal */}
+      {/* Modal de ajuste */}
       {showAjuste && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end">
           <div className="bg-white w-full rounded-t-3xl p-5 space-y-4 max-h-[80vh] overflow-y-auto">
-            <h2 className="font-bold text-gray-900">{ajusteTipo === "CREDITO" ? "Creditar" : "Debitar"} carteira</h2>
+            <h2 className="font-bold text-gray-900">{ajusteTipo === "CREDITO" ? "Creditar" : "Debitar"} conta</h2>
             {ajusteSucesso ? (
               <div className="flex flex-col items-center py-4 gap-2 text-center">
                 <CheckCircle2 size={32} className="text-green-500" strokeWidth={1.5} />
@@ -165,10 +204,7 @@ export default function AdminCarteiraDetalhe({ params }: { params: Promise<{ pro
               <form onSubmit={handleAjuste} className="space-y-3">
                 <div className="flex gap-2">
                   {(["CREDITO", "DEBITO"] as const).map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setAjusteTipo(t)}
+                    <button key={t} type="button" onClick={() => setAjusteTipo(t)}
                       className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition-colors ${
                         ajusteTipo === t ? "bg-[#0B3C74] text-white border-[#0B3C74]" : "border-gray-200 text-gray-600"
                       }`}
@@ -179,22 +215,15 @@ export default function AdminCarteiraDetalhe({ params }: { params: Promise<{ pro
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-gray-600 block mb-1">Valor (AOA)</label>
-                  <input
-                    type="number"
-                    value={ajusteValor}
-                    onChange={(e) => setAjusteValor(e.target.value)}
-                    placeholder="ex: 10000"
-                    min="1"
+                  <input type="number" value={ajusteValor} onChange={(e) => setAjusteValor(e.target.value)}
+                    placeholder="ex: 10000" min="1"
                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B3C74]/20"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-gray-600 block mb-1">Motivo (ficará registado)</label>
-                  <textarea
-                    value={ajusteMotivo}
-                    onChange={(e) => setAjusteMotivo(e.target.value)}
-                    placeholder="ex: Correcção de pagamento duplicado"
-                    rows={3}
+                  <textarea value={ajusteMotivo} onChange={(e) => setAjusteMotivo(e.target.value)}
+                    placeholder="ex: Correcção de pagamento duplicado" rows={3}
                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B3C74]/20 resize-none"
                   />
                 </div>
@@ -204,16 +233,10 @@ export default function AdminCarteiraDetalhe({ params }: { params: Promise<{ pro
                   </div>
                 )}
                 <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowAjuste(false)}
+                  <button type="button" onClick={() => setShowAjuste(false)}
                     className="flex-1 border border-gray-200 text-gray-600 text-sm font-semibold py-3 rounded-2xl"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={ajusteLoading}
+                  >Cancelar</button>
+                  <button type="submit" disabled={ajusteLoading}
                     className="flex-1 bg-[#0B3C74] text-white text-sm font-bold py-3 rounded-2xl disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {ajusteLoading ? <Loader2 size={14} className="animate-spin" /> : null}
@@ -229,9 +252,7 @@ export default function AdminCarteiraDetalhe({ params }: { params: Promise<{ pro
       {/* Tabs */}
       <div className="flex gap-2">
         {(["movimentos", "saques"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
+          <button key={t} onClick={() => setTab(t)}
             className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
               tab === t ? "bg-[#0B3C74] text-white" : "bg-gray-100 text-gray-600"
             }`}
@@ -244,12 +265,10 @@ export default function AdminCarteiraDetalhe({ params }: { params: Promise<{ pro
       {tab === "movimentos" && (
         <div className="space-y-2">
           {data.transacoes.length === 0 ? (
-            <div className="text-center py-10 text-gray-400 text-sm">Sem movimentos.</div>
+            <div className="text-center py-10 text-gray-400 text-sm">Sem movimentos registados.</div>
           ) : data.transacoes.map((t) => (
             <div key={t.id} className="bg-white rounded-2xl border border-gray-100 px-4 py-3 flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                t.tipo === "CREDITO" ? "bg-green-50" : "bg-gray-100"
-              }`}>
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${t.tipo === "CREDITO" ? "bg-green-50" : "bg-gray-100"}`}>
                 {t.tipo === "CREDITO"
                   ? <TrendingUp size={16} strokeWidth={1.75} className="text-green-600" />
                   : <ArrowUp size={16} strokeWidth={1.75} className="text-gray-500" />}
