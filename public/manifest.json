@@ -4,8 +4,8 @@
   "description": "Marketplace de saúde que conecta médicos, enfermeiros e técnicos a clínicas em Luanda, Angola.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0D4F8A",
-  "theme_color": "#1A6FBB",
+  "background_color": "#0B3C74",
+  "theme_color": "#0B3C74",
   "orientation": "portrait",
   "lang": "pt",
   "icons": [
