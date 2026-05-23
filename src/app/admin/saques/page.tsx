@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Loader2, Check, X, AlertTriangle, ArrowDownToLine, ChevronRight, Search } from "lucide-react";
+import { Loader2, Check, X, AlertTriangle, ArrowDownToLine, ChevronRight, Search, Printer } from "lucide-react";
 
 type Saque = {
   id: string;
@@ -170,6 +170,14 @@ export default function AdminSaques() {
                     <AlertTriangle size={12} strokeWidth={2} /> {actionError.msg}
                   </div>
                 )}
+
+                <Link
+                  href={`/recibo/${s.id}?tipo=saque`}
+                  className="flex items-center justify-center gap-1.5 text-[#0B3C74] text-xs font-medium py-2 border-t border-gray-50 hover:text-[#0B3C74]/70 transition-colors"
+                  target="_blank"
+                >
+                  <Printer size={12} strokeWidth={1.75} /> Ver comprovativo
+                </Link>
 
                 {s.estado === "PENDENTE" && (
                   <div className="flex gap-2">

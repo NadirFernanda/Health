@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { TrendingUp, Search } from "lucide-react";
+import Link from "next/link";
+import { TrendingUp, Search, Printer } from "lucide-react";
 
 function formatAOA(v: number) {
   return new Intl.NumberFormat("pt-AO", { style: "currency", currency: "AOA", maximumFractionDigits: 0 }).format(v);
@@ -146,9 +147,19 @@ export default function AdminTransacoes() {
                     )}
                   </div>
                 </div>
-                <div className="text-right shrink-0">
-                  <p className="font-bold text-sm text-[#00A99D]">+{formatAOA(t.valorBruto)}</p>
-                  <p className="text-xs text-[#0B3C74]/80 mt-0.5">comissão: {formatAOA(t.comissao)}</p>
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="text-right">
+                    <p className="font-bold text-sm text-[#00A99D]">+{formatAOA(t.valorBruto)}</p>
+                    <p className="text-xs text-[#0B3C74]/80 mt-0.5">comissão: {formatAOA(t.comissao)}</p>
+                  </div>
+                  <Link
+                    href={`/recibo/${t.id}`}
+                    className="p-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-400 transition-colors"
+                    title="Ver comprovativo"
+                    target="_blank"
+                  >
+                    <Printer size={13} strokeWidth={1.75} />
+                  </Link>
                 </div>
               </div>
             ))}

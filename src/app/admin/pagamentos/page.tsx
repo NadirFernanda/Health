@@ -1,6 +1,7 @@
 ﻿"use client";
 import { useEffect, useState, useCallback } from "react";
-import { Check, X, Loader2, Building2, User, Calendar, CreditCard, Stethoscope, Search } from "lucide-react";
+import Link from "next/link";
+import { Check, X, Loader2, Building2, User, Calendar, CreditCard, Stethoscope, Search, Printer } from "lucide-react";
 
 type Candidatura = {
   id: string;
@@ -288,6 +289,14 @@ export default function AdminPagamentos() {
                   {p.pagoEm && ` Confirmado em ${new Date(p.pagoEm).toLocaleDateString("pt-AO")}.`}
                 </p>
               )}
+
+              <Link
+                href={`/recibo/${p.id}`}
+                className="flex items-center justify-center gap-1.5 text-[#0B3C74] text-xs font-medium py-2 border-t border-gray-50 mt-1 hover:text-[#0B3C74]/70 transition-colors"
+                target="_blank"
+              >
+                <Printer size={12} strokeWidth={1.75} /> Ver comprovativo
+              </Link>
             </div>
           );
         })}

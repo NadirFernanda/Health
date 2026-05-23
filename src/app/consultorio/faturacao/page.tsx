@@ -1,8 +1,9 @@
 import { getAuthSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { TopBar } from "@/components/nav";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Printer } from "lucide-react";
 
 function formatAOA(v: number) {
   return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
@@ -22,7 +23,11 @@ export default async function ConsultorioFaturacaoPage() {
 
   const reservas = await prisma.reservaSala.findMany({
     where: { salaId: { in: salaIds }, estado: "CONFIRMADA" },
-    include: { sala: true, profissional: { select: { nome: true } } },
+    include: {
+      sala: true,
+      profissional: { select: { nome: true } },
+      pagamentos: { where: { estado: "CONFIRMADO" }, select: { id: true }, take: 1 },
+    },
     orderBy: { criadoEm: "desc" },
   });
 
@@ -69,17 +74,29 @@ export default async function ConsultorioFaturacaoPage() {
             <div className="space-y-3">
               {reservas.map((r) => {
                 const inicio = new Date(r.data);
+                const pagamentoId = r.pagamentos[0]?.id;
                 return (
                   <div key={r.id} className="bg-white rounded-2xl border border-gray-100 px-4 py-4">
-                    <div className="flex items-center justify-between">
-                      <div>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0">
                         <p className="font-semibold text-gray-900 text-sm">{r.profissional.nome}</p>
                         <p className="text-gray-400 text-xs mt-0.5">{r.sala.nome} · {r.duracaoHoras}h</p>
                         <p className="text-gray-400 text-xs">
                           {inicio.toLocaleDateString("pt-AO", { day: "2-digit", month: "short", year: "numeric" })}
                         </p>
                       </div>
-                      <p className="font-bold text-[#00A99D] text-sm">+{formatAOA(r.valorTotal - Math.round(r.valorTotal * 0.10))}</p>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <p className="font-bold text-[#00A99D] text-sm">+{formatAOA(r.valorTotal - Math.round(r.valorTotal * 0.10))}</p>
+                        {pagamentoId && (
+                          <Link
+                            href={`/recibo/${pagamentoId}`}
+                            className="p-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-[#00A99D] transition-colors"
+                            title="Ver comprovativo"
+                          >
+                            <Printer size={13} strokeWidth={1.75} />
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );

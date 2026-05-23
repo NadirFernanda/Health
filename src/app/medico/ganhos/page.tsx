@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { TopBar } from "@/components/nav";
-import { TrendingUp, ArrowUp, X, AlertTriangle, CheckCircle2, Loader2, ArrowDownToLine } from "lucide-react";
+import { TrendingUp, ArrowUp, X, AlertTriangle, CheckCircle2, Loader2, ArrowDownToLine, Printer } from "lucide-react";
 
 function formatAOA(v: number) {
   return new Intl.NumberFormat("pt-PT").format(Math.round(v)) + " AOA";
@@ -290,13 +291,22 @@ export default function GanhosMedico() {
                         {new Date(t.criadoEm).toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" })}
                       </p>
                     </div>
-                    <div className="text-right shrink-0">
-                      <p className={`font-bold text-sm ${t.tipo === "CREDITO" ? "text-[#00A99D]" : "text-gray-600"}`}>
-                        {t.tipo === "CREDITO" ? "+" : "−"}{formatAOA(t.valorAoa)}
-                      </p>
-                      {t.estado === "PENDENTE" && (
-                        <span className="text-xs text-yellow-600 font-medium">Pendente</span>
-                      )}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="text-right">
+                        <p className={`font-bold text-sm ${t.tipo === "CREDITO" ? "text-[#00A99D]" : "text-gray-600"}`}>
+                          {t.tipo === "CREDITO" ? "+" : "−"}{formatAOA(t.valorAoa)}
+                        </p>
+                        {t.estado === "PENDENTE" && (
+                          <span className="text-xs text-[#0B3C74]/60 font-medium">Pendente</span>
+                        )}
+                      </div>
+                      <Link
+                        href={`/recibo/${t.id}?tipo=transacao`}
+                        className="p-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-400 transition-colors"
+                        title="Ver comprovativo"
+                      >
+                        <Printer size={13} strokeWidth={1.75} />
+                      </Link>
                     </div>
                   </div>
                 ))}
@@ -318,9 +328,18 @@ export default function GanhosMedico() {
                   const cfg = ESTADO_SAQUE[s.estado] ?? ESTADO_SAQUE.PENDENTE;
                   return (
                     <div key={s.id} className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2">
                         <p className="font-bold text-sm text-gray-900">{formatAOA(s.valorAoa)}</p>
-                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${cfg.cls}`}>{cfg.label}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${cfg.cls}`}>{cfg.label}</span>
+                          <Link
+                            href={`/recibo/${s.id}?tipo=saque`}
+                            className="p-1.5 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-400 transition-colors"
+                            title="Ver comprovativo"
+                          >
+                            <Printer size={12} strokeWidth={1.75} />
+                          </Link>
+                        </div>
                       </div>
                       <p className="text-xs text-gray-500">{s.dadosBancarios.banco}</p>
                       <p className="text-xs text-gray-400 font-mono">{s.dadosBancarios.iban}</p>
