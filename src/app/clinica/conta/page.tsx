@@ -1,11 +1,11 @@
 ﻿"use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { TopBar } from "@/components/nav";
 import { logoutAction } from "@/app/actions/auth";
 import Link from "next/link";
 import {
   BadgeCheck, Star, Building2, MapPin, Phone, Globe,
-  CheckCircle, Pencil, X, Save, ChevronRight, Lock, Check, Clock, XCircle,
+  CheckCircle, Pencil, X, Save, ChevronRight, Lock, Check, Clock, XCircle, Camera,
 } from "lucide-react";
 
 interface ClinicaData {
@@ -38,6 +38,8 @@ export default function ContaClinica() {
   const [contacto, setContacto] = useState("");
   const [website, setWebsite] = useState("");
   const [descricao, setDescricao] = useState("");
+  const logoInputRef = useRef<HTMLInputElement | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
 
   useEffect(() => {
     fetch("/api/clinica/perfil")
@@ -52,6 +54,19 @@ export default function ContaClinica() {
       })
       .catch(() => setLoading(false));
   }, []);
+
+  const handleLogoUpload = async (file: File | undefined) => {
+    if (!file) return;
+    setLogoUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/upload/foto", { method: "POST", body: formData });
+    if (res.ok) {
+      const { url } = await res.json();
+      setClinica((c) => c ? { ...c, logo: url } : c);
+    }
+    setLogoUploading(false);
+  };
 
   async function salvarEdicao() {
     setSalvando(true);
@@ -108,11 +123,34 @@ export default function ContaClinica() {
         <div className="flex items-start justify-between">
           {/* Logo / inicial */}
           <div className="relative">
-            <div className="w-20 h-20 rounded-2xl bg-white/20 border-2 border-white/40 flex items-center justify-center text-3xl font-black text-white shadow-lg">
-              {inicial}
+            <div className="w-20 h-20 rounded-2xl border-2 border-white/40 overflow-hidden shadow-lg bg-white/20">
+              {clinica.logo ? (
+                <img src={clinica.logo} alt={clinica.nome} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-3xl font-black text-white">
+                  {inicial}
+                </div>
+              )}
             </div>
+            <button
+              onClick={() => logoInputRef.current?.click()}
+              disabled={logoUploading}
+              className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center border-2 border-white shadow-md disabled:opacity-60"
+            >
+              {logoUploading
+                ? <div className="w-3 h-3 border-2 border-[#0B3C74] border-t-transparent rounded-full animate-spin" />
+                : <Camera size={13} strokeWidth={2} className="text-[#0B3C74]" />
+              }
+            </button>
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp"
+              className="hidden"
+              onChange={(e) => handleLogoUpload(e.target.files?.[0])}
+            />
             {clinica.verified && (
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center border-2 border-white">
+              <div className="absolute -top-1 -left-1 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center border-2 border-white">
                 <BadgeCheck size={12} strokeWidth={2.5} className="text-white" />
               </div>
             )}

@@ -5,7 +5,7 @@ import { logoutAction } from "@/app/actions/auth";
 import {
   BadgeCheck, Star, ClipboardList, Stethoscope, MapPin,
   CheckCircle, Clock, Paperclip, Lock, Check, ChevronRight,
-  Pencil, X, Save, ToggleRight, ToggleLeft, Award, XCircle, AlertCircle,
+  Pencil, X, Save, ToggleRight, ToggleLeft, Award, XCircle, AlertCircle, Camera,
 } from "lucide-react";
 
 type DocEstado = "APROVADO" | "PENDENTE" | "NAO_ENVIADO" | "REJEITADO";
@@ -31,6 +31,7 @@ interface PerfilData {
   numeroOrdem: string;
   numeroSinome: string;
   provincia: string;
+  foto: string;
   bio: string;
   rating: number;
   totalAvaliacoes: number;
@@ -66,6 +67,8 @@ export default function PerfilMedico() {
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const cvInputRef = useRef<HTMLInputElement | null>(null);
+  const fotoInputRef = useRef<HTMLInputElement | null>(null);
+  const [fotoUploading, setFotoUploading] = useState(false);
 
   const mergeDocs = (data: Array<{ tipo: DocTipo; estado: DocEstado; ficheiro?: string; url?: string }>) => {
     return docTemplate.map((base) => {
@@ -156,6 +159,19 @@ export default function PerfilMedico() {
     }
   };
 
+  const handleFotoUpload = async (file: File | undefined) => {
+    if (!file) return;
+    setFotoUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/upload/foto", { method: "POST", body: formData });
+    if (res.ok) {
+      const { url } = await res.json();
+      setPerfil((p) => p ? { ...p, foto: url } : p);
+    }
+    setFotoUploading(false);
+  };
+
   async function toggleDisponivel() {
     if (!perfil) return;
     const next = !perfil.disponivelAgora;
@@ -224,21 +240,44 @@ export default function PerfilMedico() {
         <div className="flex items-start justify-between">
           {/* Avatar */}
           <div className="relative">
-            <div className="w-20 h-20 rounded-2xl bg-white/20 border-2 border-white/40 flex items-center justify-center text-3xl font-black text-white shadow-lg">
-              {iniciais}
+            <div className="w-20 h-20 rounded-2xl border-2 border-white/40 overflow-hidden shadow-lg bg-white/20">
+              {perfil.foto ? (
+                <img src={perfil.foto} alt={perfil.nome} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-3xl font-black text-white">
+                  {iniciais}
+                </div>
+              )}
             </div>
+            <button
+              onClick={() => fotoInputRef.current?.click()}
+              disabled={fotoUploading}
+              className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center border-2 border-white shadow-md disabled:opacity-60"
+            >
+              {fotoUploading
+                ? <div className="w-3 h-3 border-2 border-[#0B3C74] border-t-transparent rounded-full animate-spin" />
+                : <Camera size={13} strokeWidth={2} className="text-[#0B3C74]" />
+              }
+            </button>
+            <input
+              ref={fotoInputRef}
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp"
+              className="hidden"
+              onChange={(e) => handleFotoUpload(e.target.files?.[0])}
+            />
             {perfil.estadoVerificacao === "APROVADO" && (
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center border-2 border-white">
+              <div className="absolute -top-1 -left-1 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center border-2 border-white">
                 <BadgeCheck size={12} strokeWidth={2.5} className="text-white" />
               </div>
             )}
             {perfil.estadoVerificacao === "EM_ANALISE" && (
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-white">
+              <div className="absolute -top-1 -left-1 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-white">
                 <Clock size={12} strokeWidth={2.5} className="text-white" />
               </div>
             )}
             {perfil.estadoVerificacao === "REJEITADO" && (
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-red-400 rounded-full flex items-center justify-center border-2 border-white">
+              <div className="absolute -top-1 -left-1 w-6 h-6 bg-red-400 rounded-full flex items-center justify-center border-2 border-white">
                 <XCircle size={12} strokeWidth={2.5} className="text-white" />
               </div>
             )}
