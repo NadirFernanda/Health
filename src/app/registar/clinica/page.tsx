@@ -219,9 +219,9 @@ export default function RegistarClinicaPage() {
 
           <p className="text-center text-gray-400 text-xs">
             Ao criar conta aceita os nossos{" "}
-            <span className="text-[#0B3C74]">Termos de Serviço</span>
+            <a href="/legal/termos" target="_blank" className="text-[#0B3C74] underline underline-offset-2">Termos de Serviço</a>
             {" "}e{" "}
-            <span className="text-[#0B3C74]">Política de Privacidade</span>.
+            <a href="/legal/privacidade" target="_blank" className="text-[#0B3C74] underline underline-offset-2">Política de Privacidade</a>.
           </p>
         </div>
       </form>

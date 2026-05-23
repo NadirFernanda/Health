@@ -9,11 +9,13 @@ import {
   SimulatedPaymentGateway,
   type MetodoPagamento,
 } from "@/components/payment-gateway";
+import { ESPECIALIDADES_MEDICAS, ESPECIALIDADES_ENFERMAGEM } from "@/lib/especialidades";
 
-const especialidades = [
-  "Medicina Geral", "Pediatria", "Ginecologia", "Cardiologia",
-  "Cirurgia", "Ortopedia", "Dermatologia", "Psiquiatria",
-];
+const especialidadesPorTipo: Record<string, readonly string[]> = {
+  MEDICO: ESPECIALIDADES_MEDICAS,
+  ENFERMEIRO: ESPECIALIDADES_ENFERMAGEM,
+  TECNICO_SAUDE: ESPECIALIDADES_MEDICAS,
+};
 
 const tiposProfissional = [
   { value: "MEDICO", label: "Médico" },
@@ -205,7 +207,7 @@ export default function PublicarPlantao() {
               className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm bg-white focus:outline-none focus:border-[#0B3C74]"
             >
               <option value="">Selecionar especialidade...</option>
-              {especialidades.map((e) => <option key={e}>{e}</option>)}
+              {(especialidadesPorTipo[form.tipoProfissional] ?? ESPECIALIDADES_MEDICAS).map((e) => <option key={e}>{e}</option>)}
             </select>
           </div>
 

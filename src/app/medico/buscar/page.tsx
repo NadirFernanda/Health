@@ -4,6 +4,7 @@ import { PlantaoCard } from "@/components/plantao-card";
 import { TopBar } from "@/components/nav";
 import { EmptyState } from "@/components/empty-state";
 import { Search, AlertCircle, Sparkles, List, CalendarDays, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { TODAS_ESPECIALIDADES } from "@/lib/especialidades";
 
 type PlantaoAPI = {
   id: string; tipoProfissional: string; especialidade: string; dataInicio: string; dataFim: string;
@@ -19,12 +20,7 @@ const tiposProfissional = [
   { value: "TECNICO_SAUDE", label: "Técnico Saúde" },
 ];
 
-const especialidades = [
-  "Medicina Geral", "Pediatria", "Ginecologia", "Cardiologia",
-  "Cirurgia", "Ortopedia", "Dermatologia", "Psiquiatria",
-  "Enfermagem Geral", "Enfermagem de Urgência",
-  "Técnico de Análises Clínicas", "Técnico de Radiologia",
-];
+const especialidades = TODAS_ESPECIALIDADES;
 
 const zonas = [
   "Centralidade Horizonte", "Talatona", "Miramar", "Alvalade", "Kilamba",

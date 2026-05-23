@@ -66,6 +66,7 @@ model Profissional {
   cidade                String?
   numeroOma             String?
   subEspecialidade      String?
+  numeroBi              String?
   avaliacoesRecebidas   Avaliacao[]         @relation("AlvoMedicoAvaliacao")
   avaliacoesFeitas      Avaliacao[]         @relation("AutorAvaliacao")
   candidaturas          Candidatura[]

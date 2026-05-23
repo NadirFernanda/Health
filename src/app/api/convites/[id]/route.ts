@@ -26,17 +26,17 @@ export async function PATCH(
   const convite = await prisma.convite.findUnique({
     where: { id },
     include: {
-      clinicaRemetente: { select: { userId: true } },
-      profissionalRemetente: { select: { userId: true } },
-      profissionalDestinatario: { select: { userId: true } },
-      consultorioDestinatario: { select: { userId: true } },
+      clinicaRemetente: { select: { userId: true, id: true } },
+      profissionalRemetente: { select: { userId: true, id: true, especialidade: true } },
+      profissionalDestinatario: { select: { userId: true, id: true } },
+      consultorioDestinatario: { select: { userId: true, id: true } },
+      sala: { select: { id: true, precoPorHora: true, nome: true } },
     },
   });
 
   if (!convite) return Response.json({ error: "Convite não encontrado" }, { status: 404 });
   if (convite.estado !== "PENDENTE") return Response.json({ error: "Este convite já foi respondido" }, { status: 409 });
 
-  // Verify the user has permission for the action
   const isRemetente =
     convite.clinicaRemetente?.userId === session.id ||
     convite.profissionalRemetente?.userId === session.id;
@@ -55,6 +55,89 @@ export async function PATCH(
     acao === "aceitar" ? "ACEITE" :
     acao === "recusar" ? "RECUSADO" :
     "CANCELADO";
+
+  // When accepted, automatically create the corresponding record
+  if (acao === "aceitar") {
+    return await prisma.$transaction(async (tx) => {
+      const atualizado = await tx.convite.update({
+        where: { id },
+        data: { estado: novoEstado, respondidoEm: new Date() },
+      });
+
+      // CLINICA → MÉDICO: create Plantao + Candidatura
+      if (convite.tipo === "CLINICA_PARA_MEDICO" && convite.clinicaRemetente && convite.profissionalDestinatario && convite.dataInicio && convite.dataFim && convite.valorKwanzas) {
+        const plantao = await tx.plantao.create({
+          data: {
+            clinicaId: convite.clinicaRemetente.id,
+            especialidade: convite.especialidade ?? "Geral",
+            dataInicio: convite.dataInicio,
+            dataFim: convite.dataFim,
+            valorKwanzas: convite.valorKwanzas,
+            vagas: 1,
+            vagasPreenchidas: 1,
+            estado: "FECHADO",
+            descricao: convite.mensagem ?? undefined,
+          },
+        });
+        await tx.candidatura.create({
+          data: {
+            plantaoId: plantao.id,
+            profissionalId: convite.profissionalDestinatario.id,
+            estado: "ACEITE",
+            respondidoEm: new Date(),
+          },
+        });
+      }
+
+      // MÉDICO → MÉDICO: create Plantao (publicadoPorMedico) + Candidatura
+      if (convite.tipo === "MEDICO_PARA_MEDICO" && convite.profissionalRemetente && convite.profissionalDestinatario && convite.dataInicio && convite.dataFim && convite.valorKwanzas) {
+        const plantao = await tx.plantao.create({
+          data: {
+            profissionalPublicadorId: convite.profissionalRemetente.id,
+            publicadoPorMedico: true,
+            especialidade: convite.especialidade ?? convite.profissionalRemetente.especialidade,
+            dataInicio: convite.dataInicio,
+            dataFim: convite.dataFim,
+            valorKwanzas: convite.valorKwanzas,
+            vagas: 1,
+            vagasPreenchidas: 1,
+            estado: "FECHADO",
+            descricao: convite.mensagem ?? undefined,
+          },
+        });
+        await tx.candidatura.create({
+          data: {
+            plantaoId: plantao.id,
+            profissionalId: convite.profissionalDestinatario.id,
+            estado: "ACEITE",
+            respondidoEm: new Date(),
+          },
+        });
+      }
+
+      // MÉDICO → CONSULTÓRIO: create ReservaSala
+      if (convite.tipo === "MEDICO_PARA_CONSULTORIO" && convite.salaId && convite.profissionalRemetente && convite.dataInicio && convite.duracaoHoras) {
+        const precoPorHora = convite.sala?.precoPorHora ?? 0;
+        const horaInicio = convite.dataInicio.toTimeString().slice(0, 5);
+        const dataFim = new Date(convite.dataInicio.getTime() + convite.duracaoHoras * 60 * 60 * 1000);
+
+        await tx.reservaSala.create({
+          data: {
+            salaId: convite.salaId,
+            profissionalId: convite.profissionalRemetente.id,
+            data: convite.dataInicio,
+            horaInicio,
+            duracaoHoras: convite.duracaoHoras,
+            valorTotal: precoPorHora * convite.duracaoHoras,
+            estado: "CONFIRMADA",
+            dataFim,
+          },
+        });
+      }
+
+      return Response.json(atualizado);
+    });
+  }
 
   const atualizado = await prisma.convite.update({
     where: { id },

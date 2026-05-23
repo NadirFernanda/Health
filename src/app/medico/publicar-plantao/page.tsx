@@ -9,12 +9,7 @@ import {
   SimulatedPaymentGateway,
   type MetodoPagamento,
 } from "@/components/payment-gateway";
-
-const especialidades = [
-  "Medicina Geral", "Pediatria", "Ginecologia", "Cardiologia",
-  "Cirurgia", "Ortopedia", "Dermatologia", "Psiquiatria",
-  "Neurologia", "Oftalmologia", "Urologia", "Anestesiologia",
-];
+import { ESPECIALIDADES_MEDICAS } from "@/lib/especialidades";
 
 const equipamentosOpcoes = [
   { key: "maca", label: "Maca de exame" },
@@ -190,7 +185,7 @@ export default function PublicarPlantaoMedico() {
               className="mt-1.5 w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-[#0B3C74]"
             >
               <option value="">Selecionar...</option>
-              {especialidades.map((e) => <option key={e} value={e}>{e}</option>)}
+              {ESPECIALIDADES_MEDICAS.map((e) => <option key={e} value={e}>{e}</option>)}
             </select>
           </div>
 

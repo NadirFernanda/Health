@@ -6,6 +6,7 @@ import { createSessionToken, COOKIE_NAME, COOKIE_MAX_AGE } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { validarDocumentoIdentificacao } from "@/lib/validacao-angola";
 
 const TIPOS_PROFISSIONAL = ["MEDICO", "ENFERMEIRO", "TECNICO_SAUDE"] as const;
 
@@ -17,6 +18,7 @@ const profissionalSchema = z.object({
   especialidade: z.string().min(2, "Especialidade obrigatória").max(100),
   zonaLuanda: z.string().max(100).optional(),
   numeroSinome: z.string().max(50).optional(),
+  numeroBi: z.string().max(20).optional(),
 });
 
 const clinicaSchema = z.object({
@@ -51,13 +53,19 @@ export async function registerProfissionalAction(
     especialidade: formData.get("especialidade")?.toString().trim() ?? "",
     zonaLuanda: formData.get("zonaLuanda")?.toString().trim() || undefined,
     numeroSinome: formData.get("numeroSinome")?.toString().trim() || undefined,
+    numeroBi: formData.get("numeroBi")?.toString().trim() || undefined,
   };
 
   const parsed = profissionalSchema.safeParse(raw);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Dados inválidos." };
   }
-  const { nome, email, password, tipo, especialidade, zonaLuanda, numeroSinome } = parsed.data;
+  const { nome, email, password, tipo, especialidade, zonaLuanda, numeroSinome, numeroBi } = parsed.data;
+
+  if (numeroBi) {
+    const biCheck = validarDocumentoIdentificacao(numeroBi);
+    if (!biCheck.valido) return { error: biCheck.erro ?? "BI/Passaporte inválido." };
+  }
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -78,6 +86,7 @@ export async function registerProfissionalAction(
           especialidade,
           cidade: zonaLuanda ?? null,
           numeroSinome: numeroSinome ?? null,
+          numeroBi: numeroBi ?? null,
         },
       },
     },
@@ -93,7 +102,7 @@ export async function registerProfissionalAction(
     path: "/",
   });
 
-  redirect("/medico");
+  redirect("/medico/boas-vindas");
 }
 
 export async function registerClinicaAction(
@@ -148,7 +157,7 @@ export async function registerClinicaAction(
     path: "/",
   });
 
-  redirect("/clinica");
+  redirect("/clinica/boas-vindas");
 }
 
 export async function registerConsultorioAction(
@@ -203,5 +212,5 @@ export async function registerConsultorioAction(
     path: "/",
   });
 
-  redirect("/consultorio");
+  redirect("/consultorio/boas-vindas");
 }

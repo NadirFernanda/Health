@@ -4,13 +4,14 @@ import { useActionState, useState } from "react";
 import { registerProfissionalAction, RegisterState } from "@/app/actions/register";
 import Link from "next/link";
 import { Eye, EyeOff, AlertTriangle, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { ESPECIALIDADES_MEDICAS, ESPECIALIDADES_ENFERMAGEM } from "@/lib/especialidades";
+import { validarDocumentoIdentificacao } from "@/lib/validacao-angola";
 
-const especialidades = [
-  "Medicina Geral", "Pediatria", "Ginecologia", "Cardiologia",
-  "Cirurgia", "Ortopedia", "Dermatologia", "Psiquiatria",
-  "Neurologia", "Urologia", "Oftalmologia", "Anestesiologia",
-  "Medicina Interna", "Oncologia", "Radiologia",
-];
+const especialidadesPorTipo: Record<string, readonly string[]> = {
+  MEDICO: ESPECIALIDADES_MEDICAS,
+  ENFERMEIRO: ESPECIALIDADES_ENFERMAGEM,
+  TECNICO_SAUDE: ESPECIALIDADES_MEDICAS,
+};
 
 const zonasLuanda = [
   "Centralidade Horizonte", "Talatona", "Miramar", "Alvalade", "Kilamba",
@@ -32,6 +33,7 @@ export default function RegistarProfissionalPage() {
     especialidade: "",
     zonaLuanda: "",
     numeroSinome: "",
+    numeroBi: "",
     email: "",
     password: "",
   });
@@ -71,6 +73,7 @@ export default function RegistarProfissionalPage() {
         <input type="hidden" name="especialidade" value={form.especialidade} />
         <input type="hidden" name="zonaLuanda" value={form.zonaLuanda} />
         <input type="hidden" name="numeroSinome" value={form.numeroSinome} />
+        <input type="hidden" name="numeroBi" value={form.numeroBi} />
         <input type="hidden" name="email" value={form.email} />
         <input type="hidden" name="password" value={form.password} />
 
@@ -130,7 +133,7 @@ export default function RegistarProfissionalPage() {
                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0B3C74] bg-white transition-colors"
                   >
                     <option value="">Seleccione...</option>
-                    {especialidades.map((e) => (
+                    {(especialidadesPorTipo[form.tipo] ?? ESPECIALIDADES_MEDICAS).map((e) => (
                       <option key={e} value={e}>{e}</option>
                     ))}
                   </select>
@@ -186,6 +189,34 @@ export default function RegistarProfissionalPage() {
                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#0B3C74] transition-colors"
                   />
                   <p className="text-xs text-gray-400 mt-1">Opcional — pode adicionar depois</p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+                    Bilhete de Identidade / Passaporte
+                  </label>
+                  <input
+                    type="text"
+                    value={form.numeroBi}
+                    onChange={(e) => set("numeroBi", e.target.value.toUpperCase())}
+                    placeholder="ex: 001234567LA2"
+                    className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none transition-colors ${
+                      form.numeroBi && !validarDocumentoIdentificacao(form.numeroBi).valido
+                        ? "border-red-300 focus:border-red-400"
+                        : "border-gray-200 focus:border-[#0B3C74]"
+                    }`}
+                  />
+                  {form.numeroBi && !validarDocumentoIdentificacao(form.numeroBi).valido && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {validarDocumentoIdentificacao(form.numeroBi).erro}
+                    </p>
+                  )}
+                  {form.numeroBi && validarDocumentoIdentificacao(form.numeroBi).valido && (
+                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                      <Check size={11} strokeWidth={2.5} /> {validarDocumentoIdentificacao(form.numeroBi).tipo} válido
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-400 mt-1">Opcional — necessário para verificação</p>
                 </div>
               </div>
 
@@ -285,9 +316,9 @@ export default function RegistarProfissionalPage() {
 
           <p className="text-center text-gray-400 text-xs">
             Ao criar conta aceita os nossos{" "}
-            <span className="text-[#0B3C74]">Termos de Serviço</span>
+            <a href="/legal/termos" target="_blank" className="text-[#0B3C74] underline underline-offset-2">Termos de Serviço</a>
             {" "}e{" "}
-            <span className="text-[#0B3C74]">Política de Privacidade</span>.
+            <a href="/legal/privacidade" target="_blank" className="text-[#0B3C74] underline underline-offset-2">Política de Privacidade</a>.
           </p>
         </div>
       </form>

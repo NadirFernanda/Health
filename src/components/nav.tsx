@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Home, Search, Building2, Wallet, User,
+  Home, Search, CalendarDays, Wallet, User,
   ClipboardList, CreditCard, ChevronLeft, DoorOpen, PlusCircle,
   type LucideIcon,
 } from "lucide-react";
@@ -17,7 +17,7 @@ interface NavItem {
 const medicoNav: NavItem[] = [
   { href: "/medico",         label: "Início",   icon: Home },
   { href: "/medico/buscar",  label: "Buscar",   icon: Search },
-  { href: "/medico/salas",   label: "Salas",    icon: Building2 },
+  { href: "/medico/agenda",  label: "Agenda",   icon: CalendarDays },
   { href: "/medico/ganhos",  label: "Ganhos",   icon: Wallet },
   { href: "/medico/perfil",  label: "Perfil",   icon: User },
 ];

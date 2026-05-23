@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { PlantaoCard } from "@/components/plantao-card";
 import Link from "next/link";
-import { Bell, User, BadgeCheck, Clock, XCircle, AlertCircle, HeadphonesIcon, Shuffle } from "lucide-react";
+import { Bell, User, BadgeCheck, Clock, XCircle, AlertCircle, HeadphonesIcon, Shuffle, CalendarDays } from "lucide-react";
 import DisponibilidadeToggle from "./disponivel-toggle";
 
 function formatAOA(v: number) {
@@ -159,6 +159,13 @@ export default async function MedicoDashboard() {
           <div>
             <p className="font-bold text-sm text-teal-800">Minhas Reservas de Salas</p>
             <p className="text-xs text-teal-600 mt-0.5">Ver e gerir as tuas reservas de consultórios →</p>
+          </div>
+        </Link>
+        <Link href="/medico/agenda" className="flex items-center gap-3 bg-indigo-50 border border-indigo-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
+          <CalendarDays size={18} strokeWidth={1.75} className="text-indigo-600 shrink-0" />
+          <div>
+            <p className="font-bold text-sm text-indigo-800">Agenda</p>
+            <p className="text-xs text-indigo-500 mt-0.5">Ver os teus plantões e reservas num calendário →</p>
           </div>
         </Link>
         <Link href="/medico/matching" className="flex items-center gap-3 bg-purple-50 border border-purple-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
