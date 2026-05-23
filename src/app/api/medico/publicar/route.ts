@@ -42,7 +42,10 @@ export async function GET() {
 
   const plantoes = await prisma.plantao.findMany({
     where: { profissionalPublicadorId: prof.id },
-    include: { _count: { select: { candidaturas: true } } },
+    include: {
+      _count: { select: { candidaturas: true } },
+      pagamentos: { select: { id: true }, take: 1 },
+    },
     orderBy: { dataInicio: "desc" },
   });
 
@@ -59,6 +62,7 @@ export async function GET() {
       estado: p.estado,
       descricao: p.descricao,
       candidaturas: p._count.candidaturas,
+      pagamentoId: p.pagamentos[0]?.id ?? null,
     }))
   );
 }

@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import { TopBar } from "@/components/nav";
 import { EmptyState } from "@/components/empty-state";
 import { useRouter } from "next/navigation";
-import { Calendar, Clock, Banknote, Users, Stethoscope } from "lucide-react";
+import Link from "next/link";
+import { Calendar, Clock, Banknote, Users, Stethoscope, Printer } from "lucide-react";
 
 type MeuPlantao = {
   id: string;
@@ -17,6 +18,7 @@ type MeuPlantao = {
   estado: string;
   descricao: string | null;
   candidaturas: number;
+  pagamentoId: string | null;
 };
 
 function formatAOA(v: number) {
@@ -117,42 +119,51 @@ export default function MeusPlantoes() {
             const estado = estadoMap[p.estado] ?? { label: p.estado, cls: "bg-gray-100 text-gray-600" };
             const vagasLivres = p.vagas - p.vagasPreenchidas;
             return (
-              <button
-                key={p.id}
-                onClick={() => router.push(`/medico/plantoes/${p.id}`)}
-                className="w-full text-left bg-white border border-gray-100 rounded-2xl p-4 shadow-sm active:scale-[0.99] transition-transform"
-              >
-                {/* Cabeçalho */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Stethoscope size={16} strokeWidth={1.75} className="text-[#0B3C74]" />
-                    <span className="font-bold text-gray-900 text-sm">{p.especialidade}</span>
+              <div key={p.id} className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+                <button
+                  onClick={() => router.push(`/medico/plantoes/${p.id}`)}
+                  className="w-full text-left p-4 active:scale-[0.99] transition-transform"
+                >
+                  {/* Cabeçalho */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Stethoscope size={16} strokeWidth={1.75} className="text-[#0B3C74]" />
+                      <span className="font-bold text-gray-900 text-sm">{p.especialidade}</span>
+                    </div>
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${estado.cls}`}>
+                      {estado.label}
+                    </span>
                   </div>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${estado.cls}`}>
-                    {estado.label}
-                  </span>
-                </div>
 
-                {/* Detalhes */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <Calendar size={13} strokeWidth={1.75} />
-                    <span>{formatData(p.dataInicio)}</span>
+                  {/* Detalhes */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <Calendar size={13} strokeWidth={1.75} />
+                      <span>{formatData(p.dataInicio)}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <Clock size={13} strokeWidth={1.75} />
+                      <span>{formatHora(p.dataInicio)} – {formatHora(p.dataFim)}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <Banknote size={13} strokeWidth={1.75} />
+                      <span className="font-semibold text-[#0B3C74]">{formatAOA(p.valorKwanzas)}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <Users size={13} strokeWidth={1.75} />
+                      <span>{vagasLivres} vaga(s) disponível(eis) · {p.candidaturas} candidatura(s)</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <Clock size={13} strokeWidth={1.75} />
-                    <span>{formatHora(p.dataInicio)} – {formatHora(p.dataFim)}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <Banknote size={13} strokeWidth={1.75} />
-                    <span className="font-semibold text-[#0B3C74]">{formatAOA(p.valorKwanzas)}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <Users size={13} strokeWidth={1.75} />
-                    <span>{vagasLivres} vaga(s) disponível(eis) · {p.candidaturas} candidatura(s)</span>
-                  </div>
-                </div>
-              </button>
+                </button>
+                {p.pagamentoId && (
+                  <Link
+                    href={`/recibo/${p.pagamentoId}`}
+                    className="flex items-center justify-center gap-1.5 py-2.5 border-t border-gray-50 text-xs font-medium text-[#0B3C74] hover:bg-gray-50 transition-colors"
+                  >
+                    <Printer size={12} strokeWidth={1.75} /> Ver comprovativo de pagamento
+                  </Link>
+                )}
+              </div>
             );
           })
         )}
