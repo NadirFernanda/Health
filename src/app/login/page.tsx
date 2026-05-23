@@ -52,9 +52,13 @@ export default function LoginPage({
           </a>
         </p>
 
-        <p className="text-center text-xs text-white/20 mt-4">
-          Medfreela © 2026 · Huambo, Angola
-        </p>
+        <div className="flex justify-center gap-3 text-xs text-white/25 mt-4">
+          <Link href="/legal/privacidade" className="hover:text-white/50 transition-colors">Privacidade</Link>
+          <span>·</span>
+          <Link href="/legal/termos" className="hover:text-white/50 transition-colors">Termos</Link>
+          <span>·</span>
+          <span>Medfreela © 2026</span>
+        </div>
       </div>
     </div>
   );

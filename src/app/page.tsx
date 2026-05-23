@@ -177,6 +177,12 @@ export default async function Home() {
           A operar em Luanda · Centralidade Horizonte
         </p>
 
+        <div className="flex justify-center gap-4 text-xs text-gray-400 mt-1">
+          <Link href="/legal/privacidade" className="hover:text-[#0B3C74] transition-colors">Privacidade</Link>
+          <span>·</span>
+          <Link href="/legal/termos" className="hover:text-[#0B3C74] transition-colors">Termos de Serviço</Link>
+        </div>
+
         <Link href="/admin" className="block text-center text-xs text-gray-300 hover:text-gray-400 mt-2 pb-2 transition-colors">
           Acesso Administrador
         </Link>
