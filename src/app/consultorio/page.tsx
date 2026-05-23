@@ -2,7 +2,7 @@ import { getAuthSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bell, User, DoorOpen, Clock, TrendingUp, Plus } from "lucide-react";
+import { Bell, User, DoorOpen, Clock, TrendingUp, Plus, Shuffle } from "lucide-react";
 
 function formatAOA(v: number) {
   return new Intl.NumberFormat("pt-AO").format(v) + " AOA";
@@ -85,6 +85,24 @@ export default async function ConsultorioDashboard() {
             <p className="text-teal-100 text-xs">Adicione uma sala disponível para alugar</p>
           </div>
         </Link>
+
+        {/* Links rápidos */}
+        <div className="space-y-2">
+          <Link href="/consultorio/convites" className="flex items-center gap-3 bg-purple-50 border border-purple-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
+            <Shuffle size={18} strokeWidth={1.75} className="text-purple-600 shrink-0" />
+            <div>
+              <p className="font-bold text-sm text-purple-800">Pedidos diretos</p>
+              <p className="text-xs text-purple-500 mt-0.5">Médicos que pediram uma sala específica →</p>
+            </div>
+          </Link>
+          <Link href="/consultorio/faturacao" className="flex items-center gap-3 bg-teal-50 border border-teal-200 rounded-2xl px-4 py-3.5 active:opacity-80 transition-opacity">
+            <TrendingUp size={18} strokeWidth={1.75} className="text-[#00A99D] shrink-0" />
+            <div>
+              <p className="font-bold text-sm text-[#0B3C74]">Faturação</p>
+              <p className="text-xs text-[#00A99D] mt-0.5">Ver pagamentos e comprovativos →</p>
+            </div>
+          </Link>
+        </div>
 
         {/* Minhas salas */}
         <section>

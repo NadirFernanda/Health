@@ -77,6 +77,8 @@ model Profissional {
   reservas              ReservaSala[]
   transacoes            TransacaoCarteira[]
   saques                PedidoSaque[]
+  convitesEnviados      Convite[]           @relation("ConvitesEnviadosMedico")
+  convitesRecebidos     Convite[]           @relation("ConvitesRecebidosMedico")
 
   @@index([tipo])
   @@index([especialidade])
@@ -113,6 +115,7 @@ model Clinica {
   plantoes            Plantao[]
   salas               Sala[]
   documentos          ClinicaDocumento[]
+  convitesEnviados    Convite[]           @relation("ConvitesEnviadosClinica")
 
   @@index([zonaLuanda])
   @@index([verified])
@@ -150,8 +153,9 @@ model Consultorio {
   verified        Boolean  @default(false)
   criadoEm        DateTime @default(now())
   updatedEm       DateTime @default(now()) @updatedAt
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  salas           Sala[]
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  salas            Sala[]
+  convitesRecebidos Convite[] @relation("ConvitesRecebidosConsultorio")
 
   @@index([zonaLuanda])
   @@index([verified])
@@ -267,6 +271,7 @@ model Sala {
   disponibilidades     DisponibilidadeSala[]
   plantoes             Plantao[]
   reservas             ReservaSala[]
+  convites             Convite[]
   clinica              Clinica?              @relation(fields: [clinicaId], references: [id], onDelete: Restrict)
   consultorio          Consultorio?          @relation(fields: [consultorioId], references: [id])
 
@@ -764,4 +769,53 @@ model AdminNotification {
   notifyDailyReport          Boolean                  @default(false)
   channel                    AdminNotificationChannel @default(SYSTEM)
   user                       User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum TipoConvite {
+  CLINICA_PARA_MEDICO
+  MEDICO_PARA_MEDICO
+  MEDICO_PARA_CONSULTORIO
+}
+
+enum EstadoConvite {
+  PENDENTE
+  ACEITE
+  RECUSADO
+  CANCELADO
+}
+
+model Convite {
+  id          String        @id @default(cuid())
+  tipo        TipoConvite
+  estado      EstadoConvite @default(PENDENTE)
+  mensagem    String?       @db.Text
+
+  clinicaRemetenteId         String?
+  profissionalRemetenteId    String?
+  profissionalDestinatarioId String?
+  consultorioDestinatarioId  String?
+
+  especialidade String?
+  dataInicio    DateTime?
+  dataFim       DateTime?
+  valorKwanzas  Int?
+
+  salaId       String?
+  duracaoHoras Int?
+
+  criadoEm     DateTime  @default(now())
+  respondidoEm DateTime?
+
+  clinicaRemetente         Clinica?      @relation("ConvitesEnviadosClinica", fields: [clinicaRemetenteId], references: [id])
+  profissionalRemetente    Profissional? @relation("ConvitesEnviadosMedico", fields: [profissionalRemetenteId], references: [id])
+  profissionalDestinatario Profissional? @relation("ConvitesRecebidosMedico", fields: [profissionalDestinatarioId], references: [id])
+  consultorioDestinatario  Consultorio?  @relation("ConvitesRecebidosConsultorio", fields: [consultorioDestinatarioId], references: [id])
+  sala                     Sala?         @relation(fields: [salaId], references: [id])
+
+  @@index([profissionalRemetenteId])
+  @@index([clinicaRemetenteId])
+  @@index([profissionalDestinatarioId])
+  @@index([consultorioDestinatarioId])
+  @@index([estado])
+  @@index([criadoEm(sort: Desc)])
 }
