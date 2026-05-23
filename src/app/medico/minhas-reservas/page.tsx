@@ -6,7 +6,7 @@ import {
   Calendar, MapPin, Clock, Banknote,
   Building2, CheckCircle2, XCircle, Hourglass,
   BadgeCheck, ClipboardList, Loader2, Star,
-  LogOut, Search, AlertTriangle, ShieldAlert,
+  LogOut, Search, AlertTriangle, ShieldAlert, Printer,
 } from "lucide-react";
 
 type EstadoReserva =
@@ -27,6 +27,7 @@ type ReservaAPI = {
   horaInicio: string;
   duracaoHoras: number;
   valorTotal: number;
+  pagamentoId: string | null;
   criadoEm: string;
   sala: {
     id: string;
@@ -209,6 +210,16 @@ function ReservaCard({
           </Link>
         )}
       </div>
+
+      {/* Receipt link */}
+      {r.pagamentoId && (
+        <Link
+          href={`/recibo/${r.pagamentoId}`}
+          className="flex items-center justify-center gap-1.5 py-2.5 border-t border-gray-50 text-xs font-medium text-[#0B3C74] hover:bg-gray-50 transition-colors"
+        >
+          <Printer size={12} strokeWidth={1.75} /> Ver comprovativo de pagamento
+        </Link>
+      )}
     </div>
   );
 }

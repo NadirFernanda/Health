@@ -46,6 +46,7 @@ export async function GET() {
           },
         },
       },
+      pagamentos: { select: { id: true }, take: 1 },
     },
     orderBy: { criadoEm: "desc" },
   });
@@ -55,6 +56,7 @@ export async function GET() {
       id: c.id,
       estado: c.estado,
       criadoEm: c.criadoEm.toISOString(),
+      pagamentoId: c.pagamentos[0]?.id ?? null,
       plantao: plantaoToJson(c.plantao),
     }))
   );

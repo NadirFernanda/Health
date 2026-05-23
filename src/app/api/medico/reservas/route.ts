@@ -24,7 +24,10 @@ export async function GET() {
 
   const reservas = await prisma.reservaSala.findMany({
     where: { profissionalId: prof.id },
-    include: { sala: { include: { clinica: true, consultorio: true } } },
+    include: {
+      sala: { include: { clinica: true, consultorio: true } },
+      pagamentos: { where: { estado: "CONFIRMADO" }, select: { id: true }, take: 1 },
+    },
     orderBy: { criadoEm: "desc" },
   });
 
@@ -38,6 +41,7 @@ export async function GET() {
       duracaoHoras: r.duracaoHoras,
       valorTotal: r.valorTotal,
       valorTotalCentavos: r.valorTotalCentavos?.toString() ?? null,
+      pagamentoId: r.pagamentos[0]?.id ?? null,
       criadoEm: r.criadoEm.toISOString(),
       sala: {
         id: r.sala.id,

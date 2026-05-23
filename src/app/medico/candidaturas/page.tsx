@@ -2,12 +2,13 @@
 import { useState, useEffect } from "react";
 import { TopBar } from "@/components/nav";
 import Link from "next/link";
-import { Calendar, Clock, Banknote, ChevronRight } from "lucide-react";
+import { Calendar, Clock, Banknote, ChevronRight, Printer } from "lucide-react";
 
 type Candidatura = {
   id: string;
   estado: string;
   criadoEm: string;
+  pagamentoId: string | null;
   plantao: {
     id: string;
     especialidade: string;
@@ -98,43 +99,52 @@ export default function MinhasCandidaturas() {
               const badge = estadoBadge[c.estado] ?? { cls: "bg-gray-100 text-gray-500", label: c.estado };
               const entidade = c.plantao.clinica?.nome ?? c.plantao.profissionalPublicador?.nome ?? "Plantão";
               return (
-                <Link
-                  key={c.id}
-                  href={`/medico/plantoes/${c.plantao.id}`}
-                  className="block bg-white rounded-2xl border border-gray-100 p-4 active:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-sm font-semibold text-gray-900 truncate">{entidade}</p>
-                        <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${badge.cls}`}>
-                          {badge.label}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-0.5">{c.plantao.especialidade}</p>
+                <div key={c.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                  <Link
+                    href={`/medico/plantoes/${c.plantao.id}`}
+                    className="block p-4 active:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-sm font-semibold text-gray-900 truncate">{entidade}</p>
+                          <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${badge.cls}`}>
+                            {badge.label}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5">{c.plantao.especialidade}</p>
 
-                      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-xs text-gray-400">
-                        <span className="flex items-center gap-1">
-                          <Calendar size={11} strokeWidth={1.75} />
-                          {formatData(c.plantao.dataInicio)}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock size={11} strokeWidth={1.75} />
-                          {formatHora(c.plantao.dataInicio)} – {formatHora(c.plantao.dataFim)}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Banknote size={11} strokeWidth={1.75} />
-                          {formatAOA(c.plantao.valorKwanzas)}
-                        </span>
-                      </div>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-xs text-gray-400">
+                          <span className="flex items-center gap-1">
+                            <Calendar size={11} strokeWidth={1.75} />
+                            {formatData(c.plantao.dataInicio)}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock size={11} strokeWidth={1.75} />
+                            {formatHora(c.plantao.dataInicio)} – {formatHora(c.plantao.dataFim)}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Banknote size={11} strokeWidth={1.75} />
+                            {formatAOA(c.plantao.valorKwanzas)}
+                          </span>
+                        </div>
 
-                      <p className="text-[10px] text-gray-300 mt-1.5">
-                        Candidatura: {new Date(c.criadoEm).toLocaleDateString("pt-AO", { day: "2-digit", month: "short", year: "numeric" })}
-                      </p>
+                        <p className="text-[10px] text-gray-300 mt-1.5">
+                          Candidatura: {new Date(c.criadoEm).toLocaleDateString("pt-AO", { day: "2-digit", month: "short", year: "numeric" })}
+                        </p>
+                      </div>
+                      <ChevronRight size={16} strokeWidth={1.75} className="text-gray-300 shrink-0 mt-1" />
                     </div>
-                    <ChevronRight size={16} strokeWidth={1.75} className="text-gray-300 shrink-0 mt-1" />
-                  </div>
-                </Link>
+                  </Link>
+                  {c.pagamentoId && (
+                    <Link
+                      href={`/recibo/${c.pagamentoId}`}
+                      className="flex items-center justify-center gap-1.5 py-2.5 border-t border-gray-50 text-xs font-medium text-[#0B3C74] hover:bg-gray-50 transition-colors"
+                    >
+                      <Printer size={12} strokeWidth={1.75} /> Ver comprovativo de pagamento
+                    </Link>
+                  )}
+                </div>
               );
             })}
 
