@@ -10,7 +10,7 @@ import type { AdminModule, AccessLevel } from "@/lib/admin-permissions";
 
 const navItems: { href: string; label: string; icon: LucideIcon; module: AdminModule; exact?: boolean }[] = [
   { href: "/admin",                 label: "Dashboard",      icon: BarChart2,    module: "dashboard", exact: true },
-  { href: "/admin/pessoas",          label: "Painel da Equipa", icon: Contact2,  module: "profissionais" },
+  { href: "/admin/pessoas",          label: "Utilizadores", icon: Contact2,  module: "profissionais" },
   { href: "/admin/medicos",         label: "Profissionais",  icon: Stethoscope, module: "profissionais" },
   { href: "/admin/clinicas",        label: "Clínicas",       icon: Building2,   module: "profissionais" },
   { href: "/admin/consultorios",    label: "Consultórios",   icon: Building,    module: "profissionais" },
