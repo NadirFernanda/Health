@@ -3,6 +3,7 @@ import { requireAdminAccess } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { criarNotificacaoComPush } from "@/lib/push";
+import { createAuditLog } from "@/lib/audit-logger";
 
 const resolveSchema = z.object({
   estado: z.enum(["EM_ANALISE", "RESOLVIDA", "ENCERRADA"]),
@@ -132,6 +133,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       });
     }
   });
+
+  await createAuditLog("admin_disputa_atualizada", {
+    entity: "Disputa",
+    entityId: id,
+    estado,
+    resolucaoNota: resolucaoNota ?? null,
+    ajusteValorKz: ajusteValorKz ?? null,
+  }, session.id);
 
   return NextResponse.json({ ok: true });
 }

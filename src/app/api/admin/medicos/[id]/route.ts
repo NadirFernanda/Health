@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { requireAdminAccess } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
 import { sendPushToUser } from "@/lib/push";
+import { createAuditLog } from "@/lib/audit-logger";
 
 export async function PATCH(
   request: NextRequest,
@@ -105,6 +106,14 @@ export async function PATCH(
       data: { isActive: true },
     });
   }
+
+  await createAuditLog("admin_verificacao_profissional", {
+    entity: "Profissional",
+    entityId: id,
+    acao,
+    motivo: (body as { motivo?: string }).motivo ?? null,
+    nome: profissional.nome,
+  }, auth.session.id);
 
   return Response.json({ ok: true });
 }

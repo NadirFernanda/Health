@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { requireAdminAccess } from "@/lib/api-auth";
 import { z } from "zod";
 import { sendPushToUser } from "@/lib/push";
+import { createAuditLog } from "@/lib/audit-logger";
 
 const UpdateStatusSchema = z.object({
   estado: z.enum(["ABERTO", "EM_ANDAMENTO", "FECHADO"]),
@@ -67,6 +68,15 @@ export async function PUT(
         data: { userId: ticket.userId, tipo: "support_ticket_status_changed", titulo, corpo, href },
       });
       sendPushToUser(ticket.userId, { title: titulo, body: corpo, href, tag: "SUPORTE" }).catch(() => {});
+    }
+
+    if (ticket.estado !== data.estado) {
+      await createAuditLog("admin_ticket_atualizado", {
+        entity: "SupportTicket",
+        entityId: id,
+        estadoAnterior: ticket.estado,
+        estadoNovo: data.estado,
+      }, authResult.session.id);
     }
 
     return NextResponse.json({

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/api-auth";
 import { checkModuleAccess } from "@/lib/admin-permissions";
 import { prisma } from "@/lib/db";
+import { createAuditLog } from "@/lib/audit-logger";
 
 export async function PATCH(
   request: NextRequest,
@@ -108,6 +109,14 @@ export async function PATCH(
       }
     });
   }
+
+  await createAuditLog("admin_saque", {
+    entity: "PedidoSaque",
+    entityId: id,
+    acao: body.acao,
+    valorAoa: saque.valorAoa,
+    motivo: body.motivo ?? null,
+  }, session.id);
 
   return NextResponse.json({ ok: true });
 }

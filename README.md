@@ -98,6 +98,11 @@ ssh root@IP_DO_SERVIDOR
 # Executar o script de deploy
 cd /var/www/medfreela
 bash deploy.sh
+
+git pull origin main
+bash deploy.sh
+
+
 ```
 
 O script `deploy.sh` faz automaticamente:

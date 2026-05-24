@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { requireAdminAccess } from "@/lib/api-auth";
 import { prisma } from "@/lib/db";
+import { createAuditLog } from "@/lib/audit-logger";
 
 export async function PATCH(
   request: NextRequest,
@@ -53,6 +54,14 @@ export async function PATCH(
       data: { isActive: true },
     });
   }
+
+  await createAuditLog("admin_verificacao_clinica", {
+    entity: "Clinica",
+    entityId: id,
+    acao,
+    motivo: (body as { motivo?: string }).motivo ?? null,
+    nome: clinica.nome,
+  }, auth.session.id);
 
   return Response.json({ ok: true });
 }

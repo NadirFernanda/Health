@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { logoutAction } from "@/app/actions/auth";
 import {
   BarChart2, Stethoscope, Building2, Building, ClipboardList, Wallet, Headphones, AlertTriangle,
-  Users, ChevronLeft, CreditCard, ArrowDownToLine, TrendingUp, Contact2, type LucideIcon,
+  Users, ChevronLeft, CreditCard, ArrowDownToLine, TrendingUp, Contact2, Activity, type LucideIcon,
 } from "lucide-react";
 import type { AdminModule, AccessLevel } from "@/lib/admin-permissions";
 
@@ -23,6 +23,7 @@ const navItems: { href: string; label: string; icon: LucideIcon; module: AdminMo
   { href: "/admin/disputas",        label: "Disputas",       icon: AlertTriangle, module: "disputas" },
   { href: "/admin/support",         label: "Suporte",        icon: Headphones,  module: "suporte" },
   { href: "/admin/admins",          label: "Admins",         icon: Users,       module: "admins" },
+  { href: "/admin/equipa",          label: "Equipa",         icon: Activity,    module: "admins" },
 ];
 
 export function AdminNav({ accessibleModules }: { accessibleModules: Partial<Record<AdminModule, AccessLevel>> }) {
