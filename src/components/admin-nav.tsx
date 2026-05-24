@@ -4,12 +4,13 @@ import { usePathname } from "next/navigation";
 import { logoutAction } from "@/app/actions/auth";
 import {
   BarChart2, Stethoscope, Building2, Building, ClipboardList, Wallet, Headphones, AlertTriangle,
-  Users, ChevronLeft, CreditCard, ArrowDownToLine, TrendingUp, type LucideIcon,
+  Users, ChevronLeft, CreditCard, ArrowDownToLine, TrendingUp, Contact2, type LucideIcon,
 } from "lucide-react";
 import type { AdminModule, AccessLevel } from "@/lib/admin-permissions";
 
 const navItems: { href: string; label: string; icon: LucideIcon; module: AdminModule; exact?: boolean }[] = [
   { href: "/admin",                 label: "Dashboard",      icon: BarChart2,    module: "dashboard", exact: true },
+  { href: "/admin/pessoas",          label: "Pessoas",        icon: Contact2,    module: "profissionais" },
   { href: "/admin/medicos",         label: "Profissionais",  icon: Stethoscope, module: "profissionais" },
   { href: "/admin/clinicas",        label: "Clínicas",       icon: Building2,   module: "profissionais" },
   { href: "/admin/consultorios",    label: "Consultórios",   icon: Building,    module: "profissionais" },
